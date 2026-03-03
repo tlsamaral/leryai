@@ -1,0 +1,9 @@
+sounddevice
+scipy
+numpy
+pygame
+google-generativeai
+openai
+gTTS
+python-dotenv
+urllib3<2

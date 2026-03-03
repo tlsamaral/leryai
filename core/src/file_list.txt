@@ -1,0 +1,4 @@
+src/audio_manager.py
+src/brain_manager.py
+src/led_controller.py
+src/main.py

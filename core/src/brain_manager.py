@@ -1,0 +1,37 @@
+import google.generativeai as genai
+import os
+from dotenv import load_dotenv
+
+class BrainManager:
+    def __init__(self):
+        load_dotenv()
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            raise ValueError("GOOGLE_API_KEY not found in .env")
+        
+        genai.configure(api_key=api_key)
+        self.model = genai.GenerativeModel('gemini-flash-latest') # Back to the working version
+        self.chat = self.model.start_chat(history=[])
+        self.system_prompt = self._load_system_prompt()
+        
+        # Initial context setting
+        self.chat.send_message(self.system_prompt)
+
+    def _load_system_prompt(self):
+        try:
+            with open("config/system-prompt.txt", "r") as f:
+                return f.read()
+        except FileNotFoundError:
+            print("Warning: config/system-prompt.txt not found. Using default.")
+            return "You are a helpful AI assistant."
+
+    def generate_response(self, user_input):
+        """
+        Sends user input to Gemini and returns the response text.
+        """
+        try:
+            response = self.chat.send_message(user_input)
+            return response.text
+        except Exception as e:
+            print(f"Error generating response: {e}")
+            return "I'm sorry, I'm having trouble thinking right now."
