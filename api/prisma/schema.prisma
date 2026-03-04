@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output = "../src/lib/prisma-client"
 }
 
 datasource db {
@@ -56,6 +57,8 @@ model Language {
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
+  username     String    @unique
+  passwordHash String
   name         String
   currentLevel UserLevel @default(A1)
   createdAt    DateTime  @default(now())
