@@ -1,10 +1,8 @@
-import type { FastifyInstance } from "fastify";
-import { authenticateWithPassword } from "./routes/authenticate-with-password.js";
-import { createAccount } from "./routes/create-account.js";
-import { refreshToken } from "./routes/refresh-token.js";
+import type { FastifyInstance } from 'fastify'
+import { authRoutes } from './routes/auth/index.js'
+import { devicesIndex } from './routes/devices/index.js'
 
 export async function appRoutes(app: FastifyInstance) {
-	app.register(authenticateWithPassword);
-	app.register(createAccount);
-	app.register(refreshToken);
+  app.register(authRoutes, { prefix: '/auth' })
+  app.register(devicesIndex, { prefix: '/devices' })
 }
