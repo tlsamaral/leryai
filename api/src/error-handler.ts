@@ -9,14 +9,14 @@ export const errorHandler: FastifyErrorHandler = (error, request, reply) => {
     return reply.status(400).send({
       message: 'Validation Error',
       code: 'ERR_VALIDATION',
-      issues: error.format()
+      issues: error.format(),
     })
   }
 
   if (error instanceof AppError) {
     return reply.status(error.statusCode).send({
       message: error.message,
-      code: error.code
+      code: error.code,
     })
   }
 
@@ -24,6 +24,6 @@ export const errorHandler: FastifyErrorHandler = (error, request, reply) => {
 
   return reply.status(500).send({
     message: 'Internal server error',
-    code: 'ERR_INTERNAL_SERVER'
+    code: 'ERR_INTERNAL_SERVER',
   })
 }
