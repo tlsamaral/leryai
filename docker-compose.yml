@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:15
+    container_name: lery_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: lery_api
+    ports:
+      - "5432:5432"
+    volumes:
+      - lery_pgdata:/var/lib/postgresql/data
+
+volumes:
+  lery_pgdata:
