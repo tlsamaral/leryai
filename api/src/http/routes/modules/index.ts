@@ -1,9 +1,9 @@
 import type { FastifyInstance } from 'fastify'
-import { listModules } from './list.js'
-import { getModule } from './get.js'
 import { createModule } from './create.js'
-import { updateModule } from './update.js'
 import { deleteModule } from './delete.js'
+import { getModule } from './get.js'
+import { listModules } from './list.js'
+import { updateModule } from './update.js'
 
 export async function modulesIndex(app: FastifyInstance) {
   app.register(listModules)

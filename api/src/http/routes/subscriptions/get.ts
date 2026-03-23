@@ -1,34 +1,38 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { BadRequestError } from '@/core/errors/bad-request-error'
-import { prisma } from '@/lib/prisma'
-
-const paramsSchema = z.object({ id: z.string() })
-const responseSchema = z.object({
-  id: z.string(),
-  userId: z.string(),
-  status: z.string(),
-  planType: z.string(),
-  expiresAt: z.string(),
-  createdAt: z.string(),
-})
+import { BadRequestError } from '@/core/errors/bad-request-error.js'
+import { NotFoundError } from '@/core/errors/not-found-error.js'
+import { prisma } from '@/lib/prisma.js'
 
 export async function getSubscription(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
     '/:id',
     {
+      onRequest: [app.authenticate],
       schema: {
         tags: ['Subscriptions'],
         summary: 'Get subscription',
-        params: paramsSchema,
-        response: { 200: responseSchema },
+        security: [{ bearerAuth: [] }],
+        params: z.object({ id: z.string().uuid() }),
+        response: {
+          200: z.object({
+            id: z.string(),
+            userId: z.string(),
+            status: z.string(),
+            planType: z.string(),
+            expiresAt: z.string(),
+            createdAt: z.string(),
+          }),
+        },
       },
     },
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const { id } = paramsSchema.parse(request.params)
+    async (request, reply) => {
+      const { id } = request.params
       const s = await prisma.subscription.findUnique({ where: { id } })
-      if (!s) throw new BadRequestError('Subscription not found')
+      if (!s) throw new NotFoundError('Subscription not found')
+      if (s.userId !== request.user.sub)
+        throw new BadRequestError('Access denied')
       return reply.status(200).send({
         id: s.id,
         userId: s.userId,

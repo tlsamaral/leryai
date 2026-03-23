@@ -1,27 +1,50 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { prisma } from '@/lib/prisma'
-import { BadRequestError } from '@/core/errors/bad-request-error'
+import { BadRequestError } from '@/core/errors/bad-request-error.js'
+import { NotFoundError } from '@/core/errors/not-found-error.js'
+import { prisma } from '@/lib/prisma.js'
 
-const paramsSchema = z.object({ id: z.string() })
-const bodySchema = z.object({ status: z.string().optional(), planType: z.string().optional(), expiresAt: z.string().optional() })
-const responseSchema = z.object({ id: z.string() })
+const subscriptionStatusSchema = z.enum([
+  'ACTIVE',
+  'PAST_DUE',
+  'CANCELED',
+  'EXPIRED',
+])
 
 export async function updateSubscription(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().put(
     '/:id',
-    { schema: { tags: ['Subscriptions'], summary: 'Update subscription', params: paramsSchema, body: bodySchema, response: { 200: responseSchema } } },
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const { id } = paramsSchema.parse(request.params as unknown)
-      const payload = bodySchema.parse(request.body as unknown)
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['Subscriptions'],
+        summary: 'Update subscription',
+        security: [{ bearerAuth: [] }],
+        params: z.object({ id: z.string().uuid() }),
+        body: z.object({
+          status: subscriptionStatusSchema.optional(),
+          planType: z.string().min(1).optional(),
+          expiresAt: z.string().datetime().optional(),
+        }),
+        response: { 200: z.object({ id: z.string() }) },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params
       const s = await prisma.subscription.findUnique({ where: { id } })
-      if (!s) throw new BadRequestError('Subscription not found')
-      const data: any = {}
-      if (payload.status) data.status = payload.status as any
-      if (payload.planType) data.planType = payload.planType
-      if (payload.expiresAt) data.expiresAt = new Date(payload.expiresAt)
-      const updated = await prisma.subscription.update({ where: { id }, data })
+      if (!s) throw new NotFoundError('Subscription not found')
+      if (s.userId !== request.user.sub)
+        throw new BadRequestError('Access denied')
+      const { status, planType, expiresAt } = request.body
+      const updated = await prisma.subscription.update({
+        where: { id },
+        data: {
+          ...(status && { status }),
+          ...(planType && { planType }),
+          ...(expiresAt && { expiresAt: new Date(expiresAt) }),
+        },
+      })
       return reply.status(200).send({ id: updated.id })
     },
   )

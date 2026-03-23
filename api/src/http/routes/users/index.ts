@@ -1,9 +1,9 @@
 import type { FastifyInstance } from 'fastify'
-import { listUsers } from './list.js'
-import { getUser } from './get.js'
 import { createUser } from './create.js'
-import { updateUser } from './update.js'
 import { deleteUser } from './delete.js'
+import { getUser } from './get.js'
+import { listUsers } from './list.js'
+import { updateUser } from './update.js'
 
 export async function usersIndex(app: FastifyInstance) {
   app.register(listUsers)

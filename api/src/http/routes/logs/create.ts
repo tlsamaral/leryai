@@ -1,21 +1,52 @@
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { prisma } from '@/lib/prisma'
-import { BadRequestError } from '@/core/errors/bad-request-error'
-
-const bodySchema = z.object({ sessionId: z.string(), userAudioTrans: z.string().optional(), leryResponse: z.string().optional(), grammaticalFixes: z.string().optional(), sentimentScore: z.number().optional() })
-const responseSchema = z.object({ id: z.string() })
+import { BadRequestError } from '@/core/errors/bad-request-error.js'
+import { NotFoundError } from '@/core/errors/not-found-error.js'
+import { prisma } from '@/lib/prisma.js'
 
 export async function createLog(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
     '/',
-    { schema: { tags: ['InteractionLogs'], summary: 'Create log', body: bodySchema, response: { 201: responseSchema } } },
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const payload = bodySchema.parse(request.body as unknown)
-      const s = await prisma.conversationSession.findUnique({ where: { id: payload.sessionId } })
-      if (!s) throw new BadRequestError('Session not found')
-      const item = await prisma.interactionLog.create({ data: { sessionId: payload.sessionId, userAudioTrans: payload.userAudioTrans, leryResponse: payload.leryResponse, grammaticalFixes: payload.grammaticalFixes, sentimentScore: payload.sentimentScore } })
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['InteractionLogs'],
+        summary: 'Create interaction log',
+        security: [{ bearerAuth: [] }],
+        body: z.object({
+          sessionId: z.string().uuid(),
+          userAudioTrans: z.string().optional(),
+          leryResponse: z.string().optional(),
+          grammaticalFixes: z.string().optional(),
+          sentimentScore: z.number().min(-1).max(1).optional(),
+        }),
+        response: { 201: z.object({ id: z.string() }) },
+      },
+    },
+    async (request, reply) => {
+      const {
+        sessionId,
+        userAudioTrans,
+        leryResponse,
+        grammaticalFixes,
+        sentimentScore,
+      } = request.body
+      const session = await prisma.conversationSession.findUnique({
+        where: { id: sessionId },
+      })
+      if (!session) throw new NotFoundError('Session not found')
+      if (session.userId !== request.user.sub)
+        throw new BadRequestError('Access denied')
+      const item = await prisma.interactionLog.create({
+        data: {
+          sessionId,
+          userAudioTrans,
+          leryResponse,
+          grammaticalFixes,
+          sentimentScore,
+        },
+      })
       return reply.status(201).send({ id: item.id })
     },
   )

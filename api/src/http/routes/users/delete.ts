@@ -1,19 +1,29 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { prisma } from '@/lib/prisma'
-import { BadRequestError } from '@/core/errors/bad-request-error'
-
-const paramsSchema = z.object({ id: z.string() })
+import { BadRequestError } from '@/core/errors/bad-request-error.js'
+import { NotFoundError } from '@/core/errors/not-found-error.js'
+import { prisma } from '@/lib/prisma.js'
 
 export async function deleteUser(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().delete(
     '/:id',
-    { schema: { tags: ['Users'], summary: 'Delete user', params: paramsSchema, response: { 204: z.null() } } },
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const { id } = paramsSchema.parse(request.params as unknown)
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['Users'],
+        summary: 'Delete user (own account only)',
+        security: [{ bearerAuth: [] }],
+        params: z.object({ id: z.string().uuid() }),
+        response: { 204: z.null() },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params
+      if (id !== request.user.sub)
+        throw new BadRequestError('Cannot delete another user')
       const user = await prisma.user.findUnique({ where: { id } })
-      if (!user) throw new BadRequestError('User not found')
+      if (!user) throw new NotFoundError('User not found')
       await prisma.user.delete({ where: { id } })
       return reply.status(204).send(null)
     },

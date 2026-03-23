@@ -1,21 +1,35 @@
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { prisma } from '@/lib/prisma'
-import { BadRequestError } from '@/core/errors/bad-request-error'
-
-const bodySchema = z.object({ title: z.string(), scenario: z.string(), systemPrompt: z.string(), order: z.number(), moduleId: z.string() })
-const responseSchema = z.object({ id: z.string() })
+import { NotFoundError } from '@/core/errors/not-found-error.js'
+import { prisma } from '@/lib/prisma.js'
 
 export async function createLesson(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
     '/',
-    { schema: { tags: ['Lessons'], summary: 'Create lesson', body: bodySchema, response: { 201: responseSchema } } },
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const payload = bodySchema.parse(request.body as unknown)
-      const mod = await prisma.module.findUnique({ where: { id: payload.moduleId } })
-      if (!mod) throw new BadRequestError('Module not found')
-      const l = await prisma.lesson.create({ data: { title: payload.title, scenario: payload.scenario, systemPrompt: payload.systemPrompt, order: payload.order, moduleId: payload.moduleId } })
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['Lessons'],
+        summary: 'Create lesson',
+        security: [{ bearerAuth: [] }],
+        body: z.object({
+          title: z.string().min(1),
+          scenario: z.string().min(1),
+          systemPrompt: z.string().min(1),
+          order: z.number().int().min(1),
+          moduleId: z.string().uuid(),
+        }),
+        response: { 201: z.object({ id: z.string() }) },
+      },
+    },
+    async (request, reply) => {
+      const { title, scenario, systemPrompt, order, moduleId } = request.body
+      const mod = await prisma.module.findUnique({ where: { id: moduleId } })
+      if (!mod) throw new NotFoundError('Module not found')
+      const l = await prisma.lesson.create({
+        data: { title, scenario, systemPrompt, order, moduleId },
+      })
       return reply.status(201).send({ id: l.id })
     },
   )

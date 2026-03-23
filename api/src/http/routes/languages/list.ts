@@ -1,18 +1,7 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { prisma } from '@/lib/prisma'
-import { BadRequestError } from '@/core/errors/bad-request-error'
-
-const responseSchema = z.array(
-  z.object({
-    id: z.string(),
-    code: z.string(),
-    name: z.string(),
-    isActive: z.boolean(),
-    createdAt: z.string(),
-  }),
-)
+import { prisma } from '@/lib/prisma.js'
 
 export async function listLanguages(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -21,19 +10,30 @@ export async function listLanguages(app: FastifyInstance) {
       schema: {
         tags: ['Languages'],
         summary: 'List languages',
-        response: { 200: responseSchema },
+        response: {
+          200: z.array(
+            z.object({
+              id: z.string(),
+              code: z.string(),
+              name: z.string(),
+              isActive: z.boolean(),
+              createdAt: z.string(),
+            }),
+          ),
+        },
       },
     },
-    async (_request: FastifyRequest, reply: FastifyReply) => {
+    async (_request, reply) => {
       const langs = await prisma.language.findMany({ orderBy: { code: 'asc' } })
-      const payload = langs.map((l) => ({
-        id: l.id,
-        code: l.code,
-        name: l.name,
-        isActive: l.isActive,
-        createdAt: l.createdAt.toISOString(),
-      }))
-      return reply.status(200).send(payload)
+      return reply.status(200).send(
+        langs.map((l) => ({
+          id: l.id,
+          code: l.code,
+          name: l.name,
+          isActive: l.isActive,
+          createdAt: l.createdAt.toISOString(),
+        })),
+      )
     },
   )
 }

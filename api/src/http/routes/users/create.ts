@@ -1,23 +1,40 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { hash } from 'bcryptjs'
+import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { prisma } from '@/lib/prisma'
-import { BadRequestError } from '@/core/errors/bad-request-error'
-
-const bodySchema = z.object({ name: z.string(), username: z.string(), email: z.string().email(), password: z.string().min(6) })
-const responseSchema = z.object({ id: z.string() })
+import { BadRequestError } from '@/core/errors/bad-request-error.js'
+import { prisma } from '@/lib/prisma.js'
 
 export async function createUser(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
     '/',
-    { schema: { tags: ['Users'], summary: 'Create user', body: bodySchema, response: { 201: responseSchema } } },
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const { name, username, email, password } = bodySchema.parse(request.body as unknown)
+    {
+      onRequest: [app.authenticate],
+      schema: {
+        tags: ['Users'],
+        summary: 'Create user (admin)',
+        security: [{ bearerAuth: [] }],
+        body: z.object({
+          name: z.string().min(1),
+          username: z.string().min(3),
+          email: z.string().email(),
+          password: z.string().min(6),
+        }),
+        response: { 201: z.object({ id: z.string() }) },
+      },
+    },
+    async (request, reply) => {
+      const { name, username, email, password } = request.body
       const existingEmail = await prisma.user.findUnique({ where: { email } })
       if (existingEmail) throw new BadRequestError('Email already in use')
-      const existingUsername = await prisma.user.findUnique({ where: { username } })
+      const existingUsername = await prisma.user.findUnique({
+        where: { username },
+      })
       if (existingUsername) throw new BadRequestError('Username already in use')
-      const user = await prisma.user.create({ data: { name, username, email, passwordHash: password } })
+      const passwordHash = await hash(password, 6)
+      const user = await prisma.user.create({
+        data: { name, username, email, passwordHash },
+      })
       return reply.status(201).send({ id: user.id })
     },
   )

@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
-import { BadRequestError } from '@/core/errors/bad-request-error'
-import { prisma } from '@/lib/prisma'
+import { BadRequestError } from '@/core/errors/bad-request-error.js'
+import { prisma } from '@/lib/prisma.js'
 
 export async function refreshToken(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().patch(
@@ -22,7 +22,7 @@ export async function refreshToken(app: FastifyInstance) {
     async (request, reply) => {
       try {
         await request.jwtVerify({ onlyCookie: true })
-      } catch (err) {
+      } catch {
         throw new BadRequestError('Invalid refresh token')
       }
 

@@ -1,9 +1,9 @@
 import type { FastifyInstance } from 'fastify'
-import { listSessions } from './list.js'
-import { getSession } from './get.js'
 import { createSession } from './create.js'
-import { updateSession } from './update.js'
 import { deleteSession } from './delete.js'
+import { getSession } from './get.js'
+import { listSessions } from './list.js'
+import { updateSession } from './update.js'
 
 export async function sessionsIndex(app: FastifyInstance) {
   app.register(listSessions)
