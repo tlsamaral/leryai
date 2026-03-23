@@ -34,6 +34,11 @@ export type Subscription = $Result.DefaultSelection<Prisma.$SubscriptionPayload>
  */
 export type Device = $Result.DefaultSelection<Prisma.$DevicePayload>
 /**
+ * Model UserProfile
+ * 
+ */
+export type UserProfile = $Result.DefaultSelection<Prisma.$UserProfilePayload>
+/**
  * Model Level
  * 
  */
@@ -282,6 +287,16 @@ export class PrismaClient<
     * ```
     */
   get device(): Prisma.DeviceDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.userProfile`: Exposes CRUD operations for the **UserProfile** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserProfiles
+    * const userProfiles = await prisma.userProfile.findMany()
+    * ```
+    */
+  get userProfile(): Prisma.UserProfileDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.level`: Exposes CRUD operations for the **Level** model.
@@ -780,6 +795,7 @@ export namespace Prisma {
     User: 'User',
     Subscription: 'Subscription',
     Device: 'Device',
+    UserProfile: 'UserProfile',
     Level: 'Level',
     Module: 'Module',
     Lesson: 'Lesson',
@@ -801,7 +817,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "language" | "user" | "subscription" | "device" | "level" | "module" | "lesson" | "userProgress" | "conversationSession" | "interactionLog"
+      modelProps: "language" | "user" | "subscription" | "device" | "userProfile" | "level" | "module" | "lesson" | "userProgress" | "conversationSession" | "interactionLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1098,6 +1114,80 @@ export namespace Prisma {
           count: {
             args: Prisma.DeviceCountArgs<ExtArgs>
             result: $Utils.Optional<DeviceCountAggregateOutputType> | number
+          }
+        }
+      }
+      UserProfile: {
+        payload: Prisma.$UserProfilePayload<ExtArgs>
+        fields: Prisma.UserProfileFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserProfileFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserProfilePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserProfileFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserProfilePayload>
+          }
+          findFirst: {
+            args: Prisma.UserProfileFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserProfilePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserProfileFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserProfilePayload>
+          }
+          findMany: {
+            args: Prisma.UserProfileFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserProfilePayload>[]
+          }
+          create: {
+            args: Prisma.UserProfileCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserProfilePayload>
+          }
+          createMany: {
+            args: Prisma.UserProfileCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UserProfileCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserProfilePayload>[]
+          }
+          delete: {
+            args: Prisma.UserProfileDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserProfilePayload>
+          }
+          update: {
+            args: Prisma.UserProfileUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserProfilePayload>
+          }
+          deleteMany: {
+            args: Prisma.UserProfileDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserProfileUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UserProfileUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserProfilePayload>[]
+          }
+          upsert: {
+            args: Prisma.UserProfileUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserProfilePayload>
+          }
+          aggregate: {
+            args: Prisma.UserProfileAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserProfile>
+          }
+          groupBy: {
+            args: Prisma.UserProfileGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserProfileGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UserProfileCountArgs<ExtArgs>
+            result: $Utils.Optional<UserProfileCountAggregateOutputType> | number
           }
         }
       }
@@ -1657,6 +1747,7 @@ export namespace Prisma {
     user?: UserOmit
     subscription?: SubscriptionOmit
     device?: DeviceOmit
+    userProfile?: UserProfileOmit
     level?: LevelOmit
     module?: ModuleOmit
     lesson?: LessonOmit
@@ -1904,10 +1995,12 @@ export namespace Prisma {
 
   export type LessonCountOutputType = {
     userProgress: number
+    sessions: number
   }
 
   export type LessonCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     userProgress?: boolean | LessonCountOutputTypeCountUserProgressArgs
+    sessions?: boolean | LessonCountOutputTypeCountSessionsArgs
   }
 
   // Custom InputTypes
@@ -1926,6 +2019,13 @@ export namespace Prisma {
    */
   export type LessonCountOutputTypeCountUserProgressArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserProgressWhereInput
+  }
+
+  /**
+   * LessonCountOutputType without action
+   */
+  export type LessonCountOutputTypeCountSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ConversationSessionWhereInput
   }
 
 
@@ -3259,6 +3359,7 @@ export namespace Prisma {
     updatedAt?: boolean
     targetLanguageId?: boolean
     targetLanguage?: boolean | User$targetLanguageArgs<ExtArgs>
+    profile?: boolean | User$profileArgs<ExtArgs>
     devices?: boolean | User$devicesArgs<ExtArgs>
     subscriptions?: boolean | User$subscriptionsArgs<ExtArgs>
     progress?: boolean | User$progressArgs<ExtArgs>
@@ -3307,6 +3408,7 @@ export namespace Prisma {
   export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "username" | "passwordHash" | "name" | "currentLevel" | "createdAt" | "updatedAt" | "targetLanguageId", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     targetLanguage?: boolean | User$targetLanguageArgs<ExtArgs>
+    profile?: boolean | User$profileArgs<ExtArgs>
     devices?: boolean | User$devicesArgs<ExtArgs>
     subscriptions?: boolean | User$subscriptionsArgs<ExtArgs>
     progress?: boolean | User$progressArgs<ExtArgs>
@@ -3324,6 +3426,7 @@ export namespace Prisma {
     name: "User"
     objects: {
       targetLanguage: Prisma.$LanguagePayload<ExtArgs> | null
+      profile: Prisma.$UserProfilePayload<ExtArgs> | null
       devices: Prisma.$DevicePayload<ExtArgs>[]
       subscriptions: Prisma.$SubscriptionPayload<ExtArgs>[]
       progress: Prisma.$UserProgressPayload<ExtArgs>[]
@@ -3734,6 +3837,7 @@ export namespace Prisma {
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     targetLanguage<T extends User$targetLanguageArgs<ExtArgs> = {}>(args?: Subset<T, User$targetLanguageArgs<ExtArgs>>): Prisma__LanguageClient<$Result.GetResult<Prisma.$LanguagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    profile<T extends User$profileArgs<ExtArgs> = {}>(args?: Subset<T, User$profileArgs<ExtArgs>>): Prisma__UserProfileClient<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     devices<T extends User$devicesArgs<ExtArgs> = {}>(args?: Subset<T, User$devicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DevicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     subscriptions<T extends User$subscriptionsArgs<ExtArgs> = {}>(args?: Subset<T, User$subscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     progress<T extends User$progressArgs<ExtArgs> = {}>(args?: Subset<T, User$progressArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserProgressPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4188,6 +4292,25 @@ export namespace Prisma {
      */
     include?: LanguageInclude<ExtArgs> | null
     where?: LanguageWhereInput
+  }
+
+  /**
+   * User.profile
+   */
+  export type User$profileArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProfile
+     */
+    select?: UserProfileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProfile
+     */
+    omit?: UserProfileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserProfileInclude<ExtArgs> | null
+    where?: UserProfileWhereInput
   }
 
   /**
@@ -6448,6 +6571,1121 @@ export namespace Prisma {
 
 
   /**
+   * Model UserProfile
+   */
+
+  export type AggregateUserProfile = {
+    _count: UserProfileCountAggregateOutputType | null
+    _min: UserProfileMinAggregateOutputType | null
+    _max: UserProfileMaxAggregateOutputType | null
+  }
+
+  export type UserProfileMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    nativeLanguage: string | null
+    occupation: string | null
+    ageGroup: string | null
+    learningGoal: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserProfileMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    nativeLanguage: string | null
+    occupation: string | null
+    ageGroup: string | null
+    learningGoal: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserProfileCountAggregateOutputType = {
+    id: number
+    userId: number
+    nativeLanguage: number
+    interests: number
+    hobbies: number
+    occupation: number
+    ageGroup: number
+    learningGoal: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type UserProfileMinAggregateInputType = {
+    id?: true
+    userId?: true
+    nativeLanguage?: true
+    occupation?: true
+    ageGroup?: true
+    learningGoal?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserProfileMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    nativeLanguage?: true
+    occupation?: true
+    ageGroup?: true
+    learningGoal?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserProfileCountAggregateInputType = {
+    id?: true
+    userId?: true
+    nativeLanguage?: true
+    interests?: true
+    hobbies?: true
+    occupation?: true
+    ageGroup?: true
+    learningGoal?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type UserProfileAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserProfile to aggregate.
+     */
+    where?: UserProfileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserProfiles to fetch.
+     */
+    orderBy?: UserProfileOrderByWithRelationInput | UserProfileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserProfileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserProfiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserProfiles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserProfiles
+    **/
+    _count?: true | UserProfileCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserProfileMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserProfileMaxAggregateInputType
+  }
+
+  export type GetUserProfileAggregateType<T extends UserProfileAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserProfile]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserProfile[P]>
+      : GetScalarType<T[P], AggregateUserProfile[P]>
+  }
+
+
+
+
+  export type UserProfileGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserProfileWhereInput
+    orderBy?: UserProfileOrderByWithAggregationInput | UserProfileOrderByWithAggregationInput[]
+    by: UserProfileScalarFieldEnum[] | UserProfileScalarFieldEnum
+    having?: UserProfileScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserProfileCountAggregateInputType | true
+    _min?: UserProfileMinAggregateInputType
+    _max?: UserProfileMaxAggregateInputType
+  }
+
+  export type UserProfileGroupByOutputType = {
+    id: string
+    userId: string
+    nativeLanguage: string
+    interests: string[]
+    hobbies: string[]
+    occupation: string | null
+    ageGroup: string | null
+    learningGoal: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: UserProfileCountAggregateOutputType | null
+    _min: UserProfileMinAggregateOutputType | null
+    _max: UserProfileMaxAggregateOutputType | null
+  }
+
+  type GetUserProfileGroupByPayload<T extends UserProfileGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserProfileGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserProfileGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserProfileGroupByOutputType[P]>
+            : GetScalarType<T[P], UserProfileGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserProfileSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    nativeLanguage?: boolean
+    interests?: boolean
+    hobbies?: boolean
+    occupation?: boolean
+    ageGroup?: boolean
+    learningGoal?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userProfile"]>
+
+  export type UserProfileSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    nativeLanguage?: boolean
+    interests?: boolean
+    hobbies?: boolean
+    occupation?: boolean
+    ageGroup?: boolean
+    learningGoal?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userProfile"]>
+
+  export type UserProfileSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    nativeLanguage?: boolean
+    interests?: boolean
+    hobbies?: boolean
+    occupation?: boolean
+    ageGroup?: boolean
+    learningGoal?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userProfile"]>
+
+  export type UserProfileSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    nativeLanguage?: boolean
+    interests?: boolean
+    hobbies?: boolean
+    occupation?: boolean
+    ageGroup?: boolean
+    learningGoal?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type UserProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "nativeLanguage" | "interests" | "hobbies" | "occupation" | "ageGroup" | "learningGoal" | "createdAt" | "updatedAt", ExtArgs["result"]["userProfile"]>
+  export type UserProfileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type UserProfileIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type UserProfileIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $UserProfilePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserProfile"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      nativeLanguage: string
+      interests: string[]
+      hobbies: string[]
+      occupation: string | null
+      ageGroup: string | null
+      learningGoal: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["userProfile"]>
+    composites: {}
+  }
+
+  type UserProfileGetPayload<S extends boolean | null | undefined | UserProfileDefaultArgs> = $Result.GetResult<Prisma.$UserProfilePayload, S>
+
+  type UserProfileCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserProfileFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserProfileCountAggregateInputType | true
+    }
+
+  export interface UserProfileDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserProfile'], meta: { name: 'UserProfile' } }
+    /**
+     * Find zero or one UserProfile that matches the filter.
+     * @param {UserProfileFindUniqueArgs} args - Arguments to find a UserProfile
+     * @example
+     * // Get one UserProfile
+     * const userProfile = await prisma.userProfile.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserProfileFindUniqueArgs>(args: SelectSubset<T, UserProfileFindUniqueArgs<ExtArgs>>): Prisma__UserProfileClient<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserProfile that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserProfileFindUniqueOrThrowArgs} args - Arguments to find a UserProfile
+     * @example
+     * // Get one UserProfile
+     * const userProfile = await prisma.userProfile.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserProfileFindUniqueOrThrowArgs>(args: SelectSubset<T, UserProfileFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserProfileClient<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserProfile that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserProfileFindFirstArgs} args - Arguments to find a UserProfile
+     * @example
+     * // Get one UserProfile
+     * const userProfile = await prisma.userProfile.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserProfileFindFirstArgs>(args?: SelectSubset<T, UserProfileFindFirstArgs<ExtArgs>>): Prisma__UserProfileClient<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserProfile that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserProfileFindFirstOrThrowArgs} args - Arguments to find a UserProfile
+     * @example
+     * // Get one UserProfile
+     * const userProfile = await prisma.userProfile.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserProfileFindFirstOrThrowArgs>(args?: SelectSubset<T, UserProfileFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserProfileClient<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserProfiles that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserProfileFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserProfiles
+     * const userProfiles = await prisma.userProfile.findMany()
+     * 
+     * // Get first 10 UserProfiles
+     * const userProfiles = await prisma.userProfile.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userProfileWithIdOnly = await prisma.userProfile.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserProfileFindManyArgs>(args?: SelectSubset<T, UserProfileFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserProfile.
+     * @param {UserProfileCreateArgs} args - Arguments to create a UserProfile.
+     * @example
+     * // Create one UserProfile
+     * const UserProfile = await prisma.userProfile.create({
+     *   data: {
+     *     // ... data to create a UserProfile
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserProfileCreateArgs>(args: SelectSubset<T, UserProfileCreateArgs<ExtArgs>>): Prisma__UserProfileClient<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserProfiles.
+     * @param {UserProfileCreateManyArgs} args - Arguments to create many UserProfiles.
+     * @example
+     * // Create many UserProfiles
+     * const userProfile = await prisma.userProfile.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserProfileCreateManyArgs>(args?: SelectSubset<T, UserProfileCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many UserProfiles and returns the data saved in the database.
+     * @param {UserProfileCreateManyAndReturnArgs} args - Arguments to create many UserProfiles.
+     * @example
+     * // Create many UserProfiles
+     * const userProfile = await prisma.userProfile.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many UserProfiles and only return the `id`
+     * const userProfileWithIdOnly = await prisma.userProfile.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UserProfileCreateManyAndReturnArgs>(args?: SelectSubset<T, UserProfileCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a UserProfile.
+     * @param {UserProfileDeleteArgs} args - Arguments to delete one UserProfile.
+     * @example
+     * // Delete one UserProfile
+     * const UserProfile = await prisma.userProfile.delete({
+     *   where: {
+     *     // ... filter to delete one UserProfile
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserProfileDeleteArgs>(args: SelectSubset<T, UserProfileDeleteArgs<ExtArgs>>): Prisma__UserProfileClient<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserProfile.
+     * @param {UserProfileUpdateArgs} args - Arguments to update one UserProfile.
+     * @example
+     * // Update one UserProfile
+     * const userProfile = await prisma.userProfile.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserProfileUpdateArgs>(args: SelectSubset<T, UserProfileUpdateArgs<ExtArgs>>): Prisma__UserProfileClient<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserProfiles.
+     * @param {UserProfileDeleteManyArgs} args - Arguments to filter UserProfiles to delete.
+     * @example
+     * // Delete a few UserProfiles
+     * const { count } = await prisma.userProfile.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserProfileDeleteManyArgs>(args?: SelectSubset<T, UserProfileDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserProfiles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserProfileUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserProfiles
+     * const userProfile = await prisma.userProfile.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserProfileUpdateManyArgs>(args: SelectSubset<T, UserProfileUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserProfiles and returns the data updated in the database.
+     * @param {UserProfileUpdateManyAndReturnArgs} args - Arguments to update many UserProfiles.
+     * @example
+     * // Update many UserProfiles
+     * const userProfile = await prisma.userProfile.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more UserProfiles and only return the `id`
+     * const userProfileWithIdOnly = await prisma.userProfile.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UserProfileUpdateManyAndReturnArgs>(args: SelectSubset<T, UserProfileUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one UserProfile.
+     * @param {UserProfileUpsertArgs} args - Arguments to update or create a UserProfile.
+     * @example
+     * // Update or create a UserProfile
+     * const userProfile = await prisma.userProfile.upsert({
+     *   create: {
+     *     // ... data to create a UserProfile
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserProfile we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserProfileUpsertArgs>(args: SelectSubset<T, UserProfileUpsertArgs<ExtArgs>>): Prisma__UserProfileClient<$Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UserProfiles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserProfileCountArgs} args - Arguments to filter UserProfiles to count.
+     * @example
+     * // Count the number of UserProfiles
+     * const count = await prisma.userProfile.count({
+     *   where: {
+     *     // ... the filter for the UserProfiles we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserProfileCountArgs>(
+      args?: Subset<T, UserProfileCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserProfileCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserProfile.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserProfileAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserProfileAggregateArgs>(args: Subset<T, UserProfileAggregateArgs>): Prisma.PrismaPromise<GetUserProfileAggregateType<T>>
+
+    /**
+     * Group by UserProfile.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserProfileGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserProfileGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserProfileGroupByArgs['orderBy'] }
+        : { orderBy?: UserProfileGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserProfileGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserProfileGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserProfile model
+   */
+  readonly fields: UserProfileFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserProfile.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserProfileClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserProfile model
+   */
+  interface UserProfileFieldRefs {
+    readonly id: FieldRef<"UserProfile", 'String'>
+    readonly userId: FieldRef<"UserProfile", 'String'>
+    readonly nativeLanguage: FieldRef<"UserProfile", 'String'>
+    readonly interests: FieldRef<"UserProfile", 'String[]'>
+    readonly hobbies: FieldRef<"UserProfile", 'String[]'>
+    readonly occupation: FieldRef<"UserProfile", 'String'>
+    readonly ageGroup: FieldRef<"UserProfile", 'String'>
+    readonly learningGoal: FieldRef<"UserProfile", 'String'>
+    readonly createdAt: FieldRef<"UserProfile", 'DateTime'>
+    readonly updatedAt: FieldRef<"UserProfile", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserProfile findUnique
+   */
+  export type UserProfileFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProfile
+     */
+    select?: UserProfileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProfile
+     */
+    omit?: UserProfileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which UserProfile to fetch.
+     */
+    where: UserProfileWhereUniqueInput
+  }
+
+  /**
+   * UserProfile findUniqueOrThrow
+   */
+  export type UserProfileFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProfile
+     */
+    select?: UserProfileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProfile
+     */
+    omit?: UserProfileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which UserProfile to fetch.
+     */
+    where: UserProfileWhereUniqueInput
+  }
+
+  /**
+   * UserProfile findFirst
+   */
+  export type UserProfileFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProfile
+     */
+    select?: UserProfileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProfile
+     */
+    omit?: UserProfileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which UserProfile to fetch.
+     */
+    where?: UserProfileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserProfiles to fetch.
+     */
+    orderBy?: UserProfileOrderByWithRelationInput | UserProfileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserProfiles.
+     */
+    cursor?: UserProfileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserProfiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserProfiles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserProfiles.
+     */
+    distinct?: UserProfileScalarFieldEnum | UserProfileScalarFieldEnum[]
+  }
+
+  /**
+   * UserProfile findFirstOrThrow
+   */
+  export type UserProfileFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProfile
+     */
+    select?: UserProfileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProfile
+     */
+    omit?: UserProfileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which UserProfile to fetch.
+     */
+    where?: UserProfileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserProfiles to fetch.
+     */
+    orderBy?: UserProfileOrderByWithRelationInput | UserProfileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserProfiles.
+     */
+    cursor?: UserProfileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserProfiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserProfiles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserProfiles.
+     */
+    distinct?: UserProfileScalarFieldEnum | UserProfileScalarFieldEnum[]
+  }
+
+  /**
+   * UserProfile findMany
+   */
+  export type UserProfileFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProfile
+     */
+    select?: UserProfileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProfile
+     */
+    omit?: UserProfileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserProfileInclude<ExtArgs> | null
+    /**
+     * Filter, which UserProfiles to fetch.
+     */
+    where?: UserProfileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserProfiles to fetch.
+     */
+    orderBy?: UserProfileOrderByWithRelationInput | UserProfileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserProfiles.
+     */
+    cursor?: UserProfileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserProfiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserProfiles.
+     */
+    skip?: number
+    distinct?: UserProfileScalarFieldEnum | UserProfileScalarFieldEnum[]
+  }
+
+  /**
+   * UserProfile create
+   */
+  export type UserProfileCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProfile
+     */
+    select?: UserProfileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProfile
+     */
+    omit?: UserProfileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserProfileInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UserProfile.
+     */
+    data: XOR<UserProfileCreateInput, UserProfileUncheckedCreateInput>
+  }
+
+  /**
+   * UserProfile createMany
+   */
+  export type UserProfileCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserProfiles.
+     */
+    data: UserProfileCreateManyInput | UserProfileCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UserProfile createManyAndReturn
+   */
+  export type UserProfileCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProfile
+     */
+    select?: UserProfileSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProfile
+     */
+    omit?: UserProfileOmit<ExtArgs> | null
+    /**
+     * The data used to create many UserProfiles.
+     */
+    data: UserProfileCreateManyInput | UserProfileCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserProfileIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UserProfile update
+   */
+  export type UserProfileUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProfile
+     */
+    select?: UserProfileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProfile
+     */
+    omit?: UserProfileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserProfileInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UserProfile.
+     */
+    data: XOR<UserProfileUpdateInput, UserProfileUncheckedUpdateInput>
+    /**
+     * Choose, which UserProfile to update.
+     */
+    where: UserProfileWhereUniqueInput
+  }
+
+  /**
+   * UserProfile updateMany
+   */
+  export type UserProfileUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserProfiles.
+     */
+    data: XOR<UserProfileUpdateManyMutationInput, UserProfileUncheckedUpdateManyInput>
+    /**
+     * Filter which UserProfiles to update
+     */
+    where?: UserProfileWhereInput
+    /**
+     * Limit how many UserProfiles to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserProfile updateManyAndReturn
+   */
+  export type UserProfileUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProfile
+     */
+    select?: UserProfileSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProfile
+     */
+    omit?: UserProfileOmit<ExtArgs> | null
+    /**
+     * The data used to update UserProfiles.
+     */
+    data: XOR<UserProfileUpdateManyMutationInput, UserProfileUncheckedUpdateManyInput>
+    /**
+     * Filter which UserProfiles to update
+     */
+    where?: UserProfileWhereInput
+    /**
+     * Limit how many UserProfiles to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserProfileIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UserProfile upsert
+   */
+  export type UserProfileUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProfile
+     */
+    select?: UserProfileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProfile
+     */
+    omit?: UserProfileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserProfileInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UserProfile to update in case it exists.
+     */
+    where: UserProfileWhereUniqueInput
+    /**
+     * In case the UserProfile found by the `where` argument doesn't exist, create a new UserProfile with this data.
+     */
+    create: XOR<UserProfileCreateInput, UserProfileUncheckedCreateInput>
+    /**
+     * In case the UserProfile was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserProfileUpdateInput, UserProfileUncheckedUpdateInput>
+  }
+
+  /**
+   * UserProfile delete
+   */
+  export type UserProfileDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProfile
+     */
+    select?: UserProfileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProfile
+     */
+    omit?: UserProfileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserProfileInclude<ExtArgs> | null
+    /**
+     * Filter which UserProfile to delete.
+     */
+    where: UserProfileWhereUniqueInput
+  }
+
+  /**
+   * UserProfile deleteMany
+   */
+  export type UserProfileDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserProfiles to delete
+     */
+    where?: UserProfileWhereInput
+    /**
+     * Limit how many UserProfiles to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserProfile without action
+   */
+  export type UserProfileDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProfile
+     */
+    select?: UserProfileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProfile
+     */
+    omit?: UserProfileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserProfileInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model Level
    */
 
@@ -7545,21 +8783,27 @@ export namespace Prisma {
   export type ModuleMinAggregateOutputType = {
     id: string | null
     name: string | null
+    description: string | null
     order: number | null
+    isGenerated: boolean | null
     levelId: string | null
   }
 
   export type ModuleMaxAggregateOutputType = {
     id: string | null
     name: string | null
+    description: string | null
     order: number | null
+    isGenerated: boolean | null
     levelId: string | null
   }
 
   export type ModuleCountAggregateOutputType = {
     id: number
     name: number
+    description: number
     order: number
+    isGenerated: number
     levelId: number
     _all: number
   }
@@ -7576,21 +8820,27 @@ export namespace Prisma {
   export type ModuleMinAggregateInputType = {
     id?: true
     name?: true
+    description?: true
     order?: true
+    isGenerated?: true
     levelId?: true
   }
 
   export type ModuleMaxAggregateInputType = {
     id?: true
     name?: true
+    description?: true
     order?: true
+    isGenerated?: true
     levelId?: true
   }
 
   export type ModuleCountAggregateInputType = {
     id?: true
     name?: true
+    description?: true
     order?: true
+    isGenerated?: true
     levelId?: true
     _all?: true
   }
@@ -7684,7 +8934,9 @@ export namespace Prisma {
   export type ModuleGroupByOutputType = {
     id: string
     name: string
+    description: string | null
     order: number
+    isGenerated: boolean
     levelId: string
     _count: ModuleCountAggregateOutputType | null
     _avg: ModuleAvgAggregateOutputType | null
@@ -7710,7 +8962,9 @@ export namespace Prisma {
   export type ModuleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    description?: boolean
     order?: boolean
+    isGenerated?: boolean
     levelId?: boolean
     level?: boolean | LevelDefaultArgs<ExtArgs>
     lessons?: boolean | Module$lessonsArgs<ExtArgs>
@@ -7720,7 +8974,9 @@ export namespace Prisma {
   export type ModuleSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    description?: boolean
     order?: boolean
+    isGenerated?: boolean
     levelId?: boolean
     level?: boolean | LevelDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["module"]>
@@ -7728,7 +8984,9 @@ export namespace Prisma {
   export type ModuleSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    description?: boolean
     order?: boolean
+    isGenerated?: boolean
     levelId?: boolean
     level?: boolean | LevelDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["module"]>
@@ -7736,11 +8994,13 @@ export namespace Prisma {
   export type ModuleSelectScalar = {
     id?: boolean
     name?: boolean
+    description?: boolean
     order?: boolean
+    isGenerated?: boolean
     levelId?: boolean
   }
 
-  export type ModuleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "order" | "levelId", ExtArgs["result"]["module"]>
+  export type ModuleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "order" | "isGenerated" | "levelId", ExtArgs["result"]["module"]>
   export type ModuleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     level?: boolean | LevelDefaultArgs<ExtArgs>
     lessons?: boolean | Module$lessonsArgs<ExtArgs>
@@ -7762,7 +9022,9 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
+      description: string | null
       order: number
+      isGenerated: boolean
       levelId: string
     }, ExtArgs["result"]["module"]>
     composites: {}
@@ -8191,7 +9453,9 @@ export namespace Prisma {
   interface ModuleFieldRefs {
     readonly id: FieldRef<"Module", 'String'>
     readonly name: FieldRef<"Module", 'String'>
+    readonly description: FieldRef<"Module", 'String'>
     readonly order: FieldRef<"Module", 'Int'>
+    readonly isGenerated: FieldRef<"Module", 'Boolean'>
     readonly levelId: FieldRef<"Module", 'String'>
   }
     
@@ -8656,7 +9920,9 @@ export namespace Prisma {
     title: string | null
     scenario: string | null
     systemPrompt: string | null
+    objectives: string | null
     order: number | null
+    isGenerated: boolean | null
     moduleId: string | null
   }
 
@@ -8665,7 +9931,9 @@ export namespace Prisma {
     title: string | null
     scenario: string | null
     systemPrompt: string | null
+    objectives: string | null
     order: number | null
+    isGenerated: boolean | null
     moduleId: string | null
   }
 
@@ -8674,7 +9942,9 @@ export namespace Prisma {
     title: number
     scenario: number
     systemPrompt: number
+    objectives: number
     order: number
+    isGenerated: number
     moduleId: number
     _all: number
   }
@@ -8693,7 +9963,9 @@ export namespace Prisma {
     title?: true
     scenario?: true
     systemPrompt?: true
+    objectives?: true
     order?: true
+    isGenerated?: true
     moduleId?: true
   }
 
@@ -8702,7 +9974,9 @@ export namespace Prisma {
     title?: true
     scenario?: true
     systemPrompt?: true
+    objectives?: true
     order?: true
+    isGenerated?: true
     moduleId?: true
   }
 
@@ -8711,7 +9985,9 @@ export namespace Prisma {
     title?: true
     scenario?: true
     systemPrompt?: true
+    objectives?: true
     order?: true
+    isGenerated?: true
     moduleId?: true
     _all?: true
   }
@@ -8807,7 +10083,9 @@ export namespace Prisma {
     title: string
     scenario: string
     systemPrompt: string
+    objectives: string | null
     order: number
+    isGenerated: boolean
     moduleId: string
     _count: LessonCountAggregateOutputType | null
     _avg: LessonAvgAggregateOutputType | null
@@ -8835,10 +10113,13 @@ export namespace Prisma {
     title?: boolean
     scenario?: boolean
     systemPrompt?: boolean
+    objectives?: boolean
     order?: boolean
+    isGenerated?: boolean
     moduleId?: boolean
     module?: boolean | ModuleDefaultArgs<ExtArgs>
     userProgress?: boolean | Lesson$userProgressArgs<ExtArgs>
+    sessions?: boolean | Lesson$sessionsArgs<ExtArgs>
     _count?: boolean | LessonCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["lesson"]>
 
@@ -8847,7 +10128,9 @@ export namespace Prisma {
     title?: boolean
     scenario?: boolean
     systemPrompt?: boolean
+    objectives?: boolean
     order?: boolean
+    isGenerated?: boolean
     moduleId?: boolean
     module?: boolean | ModuleDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["lesson"]>
@@ -8857,7 +10140,9 @@ export namespace Prisma {
     title?: boolean
     scenario?: boolean
     systemPrompt?: boolean
+    objectives?: boolean
     order?: boolean
+    isGenerated?: boolean
     moduleId?: boolean
     module?: boolean | ModuleDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["lesson"]>
@@ -8867,14 +10152,17 @@ export namespace Prisma {
     title?: boolean
     scenario?: boolean
     systemPrompt?: boolean
+    objectives?: boolean
     order?: boolean
+    isGenerated?: boolean
     moduleId?: boolean
   }
 
-  export type LessonOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "scenario" | "systemPrompt" | "order" | "moduleId", ExtArgs["result"]["lesson"]>
+  export type LessonOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "scenario" | "systemPrompt" | "objectives" | "order" | "isGenerated" | "moduleId", ExtArgs["result"]["lesson"]>
   export type LessonInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     module?: boolean | ModuleDefaultArgs<ExtArgs>
     userProgress?: boolean | Lesson$userProgressArgs<ExtArgs>
+    sessions?: boolean | Lesson$sessionsArgs<ExtArgs>
     _count?: boolean | LessonCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type LessonIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8889,13 +10177,16 @@ export namespace Prisma {
     objects: {
       module: Prisma.$ModulePayload<ExtArgs>
       userProgress: Prisma.$UserProgressPayload<ExtArgs>[]
+      sessions: Prisma.$ConversationSessionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       title: string
       scenario: string
       systemPrompt: string
+      objectives: string | null
       order: number
+      isGenerated: boolean
       moduleId: string
     }, ExtArgs["result"]["lesson"]>
     composites: {}
@@ -9293,6 +10584,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     module<T extends ModuleDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ModuleDefaultArgs<ExtArgs>>): Prisma__ModuleClient<$Result.GetResult<Prisma.$ModulePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     userProgress<T extends Lesson$userProgressArgs<ExtArgs> = {}>(args?: Subset<T, Lesson$userProgressArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserProgressPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    sessions<T extends Lesson$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, Lesson$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9326,7 +10618,9 @@ export namespace Prisma {
     readonly title: FieldRef<"Lesson", 'String'>
     readonly scenario: FieldRef<"Lesson", 'String'>
     readonly systemPrompt: FieldRef<"Lesson", 'String'>
+    readonly objectives: FieldRef<"Lesson", 'String'>
     readonly order: FieldRef<"Lesson", 'Int'>
+    readonly isGenerated: FieldRef<"Lesson", 'Boolean'>
     readonly moduleId: FieldRef<"Lesson", 'String'>
   }
     
@@ -9745,6 +11039,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: UserProgressScalarFieldEnum | UserProgressScalarFieldEnum[]
+  }
+
+  /**
+   * Lesson.sessions
+   */
+  export type Lesson$sessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationSession
+     */
+    select?: ConversationSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationSession
+     */
+    omit?: ConversationSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationSessionInclude<ExtArgs> | null
+    where?: ConversationSessionWhereInput
+    orderBy?: ConversationSessionOrderByWithRelationInput | ConversationSessionOrderByWithRelationInput[]
+    cursor?: ConversationSessionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ConversationSessionScalarFieldEnum | ConversationSessionScalarFieldEnum[]
   }
 
   /**
@@ -10910,6 +12228,7 @@ export namespace Prisma {
     id: string | null
     userId: string | null
     mode: $Enums.InteractionMode | null
+    lessonId: string | null
     startedAt: Date | null
     endedAt: Date | null
   }
@@ -10918,6 +12237,7 @@ export namespace Prisma {
     id: string | null
     userId: string | null
     mode: $Enums.InteractionMode | null
+    lessonId: string | null
     startedAt: Date | null
     endedAt: Date | null
   }
@@ -10926,6 +12246,7 @@ export namespace Prisma {
     id: number
     userId: number
     mode: number
+    lessonId: number
     startedAt: number
     endedAt: number
     _all: number
@@ -10936,6 +12257,7 @@ export namespace Prisma {
     id?: true
     userId?: true
     mode?: true
+    lessonId?: true
     startedAt?: true
     endedAt?: true
   }
@@ -10944,6 +12266,7 @@ export namespace Prisma {
     id?: true
     userId?: true
     mode?: true
+    lessonId?: true
     startedAt?: true
     endedAt?: true
   }
@@ -10952,6 +12275,7 @@ export namespace Prisma {
     id?: true
     userId?: true
     mode?: true
+    lessonId?: true
     startedAt?: true
     endedAt?: true
     _all?: true
@@ -11033,6 +12357,7 @@ export namespace Prisma {
     id: string
     userId: string
     mode: $Enums.InteractionMode
+    lessonId: string | null
     startedAt: Date
     endedAt: Date | null
     _count: ConversationSessionCountAggregateOutputType | null
@@ -11058,9 +12383,11 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     mode?: boolean
+    lessonId?: boolean
     startedAt?: boolean
     endedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    lesson?: boolean | ConversationSession$lessonArgs<ExtArgs>
     interactions?: boolean | ConversationSession$interactionsArgs<ExtArgs>
     _count?: boolean | ConversationSessionCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversationSession"]>
@@ -11069,51 +12396,61 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     mode?: boolean
+    lessonId?: boolean
     startedAt?: boolean
     endedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    lesson?: boolean | ConversationSession$lessonArgs<ExtArgs>
   }, ExtArgs["result"]["conversationSession"]>
 
   export type ConversationSessionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
     mode?: boolean
+    lessonId?: boolean
     startedAt?: boolean
     endedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    lesson?: boolean | ConversationSession$lessonArgs<ExtArgs>
   }, ExtArgs["result"]["conversationSession"]>
 
   export type ConversationSessionSelectScalar = {
     id?: boolean
     userId?: boolean
     mode?: boolean
+    lessonId?: boolean
     startedAt?: boolean
     endedAt?: boolean
   }
 
-  export type ConversationSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "mode" | "startedAt" | "endedAt", ExtArgs["result"]["conversationSession"]>
+  export type ConversationSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "mode" | "lessonId" | "startedAt" | "endedAt", ExtArgs["result"]["conversationSession"]>
   export type ConversationSessionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    lesson?: boolean | ConversationSession$lessonArgs<ExtArgs>
     interactions?: boolean | ConversationSession$interactionsArgs<ExtArgs>
     _count?: boolean | ConversationSessionCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ConversationSessionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    lesson?: boolean | ConversationSession$lessonArgs<ExtArgs>
   }
   export type ConversationSessionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    lesson?: boolean | ConversationSession$lessonArgs<ExtArgs>
   }
 
   export type $ConversationSessionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "ConversationSession"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      lesson: Prisma.$LessonPayload<ExtArgs> | null
       interactions: Prisma.$InteractionLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
       mode: $Enums.InteractionMode
+      lessonId: string | null
       startedAt: Date
       endedAt: Date | null
     }, ExtArgs["result"]["conversationSession"]>
@@ -11511,6 +12848,7 @@ export namespace Prisma {
   export interface Prisma__ConversationSessionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    lesson<T extends ConversationSession$lessonArgs<ExtArgs> = {}>(args?: Subset<T, ConversationSession$lessonArgs<ExtArgs>>): Prisma__LessonClient<$Result.GetResult<Prisma.$LessonPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     interactions<T extends ConversationSession$interactionsArgs<ExtArgs> = {}>(args?: Subset<T, ConversationSession$interactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InteractionLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -11544,6 +12882,7 @@ export namespace Prisma {
     readonly id: FieldRef<"ConversationSession", 'String'>
     readonly userId: FieldRef<"ConversationSession", 'String'>
     readonly mode: FieldRef<"ConversationSession", 'InteractionMode'>
+    readonly lessonId: FieldRef<"ConversationSession", 'String'>
     readonly startedAt: FieldRef<"ConversationSession", 'DateTime'>
     readonly endedAt: FieldRef<"ConversationSession", 'DateTime'>
   }
@@ -11939,6 +13278,25 @@ export namespace Prisma {
      * Limit how many ConversationSessions to delete.
      */
     limit?: number
+  }
+
+  /**
+   * ConversationSession.lesson
+   */
+  export type ConversationSession$lessonArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Lesson
+     */
+    select?: LessonSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Lesson
+     */
+    omit?: LessonOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LessonInclude<ExtArgs> | null
+    where?: LessonWhereInput
   }
 
   /**
@@ -13166,6 +14524,22 @@ export namespace Prisma {
   export type DeviceScalarFieldEnum = (typeof DeviceScalarFieldEnum)[keyof typeof DeviceScalarFieldEnum]
 
 
+  export const UserProfileScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    nativeLanguage: 'nativeLanguage',
+    interests: 'interests',
+    hobbies: 'hobbies',
+    occupation: 'occupation',
+    ageGroup: 'ageGroup',
+    learningGoal: 'learningGoal',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type UserProfileScalarFieldEnum = (typeof UserProfileScalarFieldEnum)[keyof typeof UserProfileScalarFieldEnum]
+
+
   export const LevelScalarFieldEnum: {
     id: 'id',
     code: 'code',
@@ -13179,7 +14553,9 @@ export namespace Prisma {
   export const ModuleScalarFieldEnum: {
     id: 'id',
     name: 'name',
+    description: 'description',
     order: 'order',
+    isGenerated: 'isGenerated',
     levelId: 'levelId'
   };
 
@@ -13191,7 +14567,9 @@ export namespace Prisma {
     title: 'title',
     scenario: 'scenario',
     systemPrompt: 'systemPrompt',
+    objectives: 'objectives',
     order: 'order',
+    isGenerated: 'isGenerated',
     moduleId: 'moduleId'
   };
 
@@ -13215,6 +14593,7 @@ export namespace Prisma {
     id: 'id',
     userId: 'userId',
     mode: 'mode',
+    lessonId: 'lessonId',
     startedAt: 'startedAt',
     endedAt: 'endedAt'
   };
@@ -13458,6 +14837,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"User"> | Date | string
     targetLanguageId?: StringNullableFilter<"User"> | string | null
     targetLanguage?: XOR<LanguageNullableScalarRelationFilter, LanguageWhereInput> | null
+    profile?: XOR<UserProfileNullableScalarRelationFilter, UserProfileWhereInput> | null
     devices?: DeviceListRelationFilter
     subscriptions?: SubscriptionListRelationFilter
     progress?: UserProgressListRelationFilter
@@ -13475,6 +14855,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     targetLanguageId?: SortOrderInput | SortOrder
     targetLanguage?: LanguageOrderByWithRelationInput
+    profile?: UserProfileOrderByWithRelationInput
     devices?: DeviceOrderByRelationAggregateInput
     subscriptions?: SubscriptionOrderByRelationAggregateInput
     progress?: UserProgressOrderByRelationAggregateInput
@@ -13495,6 +14876,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"User"> | Date | string
     targetLanguageId?: StringNullableFilter<"User"> | string | null
     targetLanguage?: XOR<LanguageNullableScalarRelationFilter, LanguageWhereInput> | null
+    profile?: XOR<UserProfileNullableScalarRelationFilter, UserProfileWhereInput> | null
     devices?: DeviceListRelationFilter
     subscriptions?: SubscriptionListRelationFilter
     progress?: UserProgressListRelationFilter
@@ -13651,6 +15033,86 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Device"> | string
   }
 
+  export type UserProfileWhereInput = {
+    AND?: UserProfileWhereInput | UserProfileWhereInput[]
+    OR?: UserProfileWhereInput[]
+    NOT?: UserProfileWhereInput | UserProfileWhereInput[]
+    id?: StringFilter<"UserProfile"> | string
+    userId?: StringFilter<"UserProfile"> | string
+    nativeLanguage?: StringFilter<"UserProfile"> | string
+    interests?: StringNullableListFilter<"UserProfile">
+    hobbies?: StringNullableListFilter<"UserProfile">
+    occupation?: StringNullableFilter<"UserProfile"> | string | null
+    ageGroup?: StringNullableFilter<"UserProfile"> | string | null
+    learningGoal?: StringNullableFilter<"UserProfile"> | string | null
+    createdAt?: DateTimeFilter<"UserProfile"> | Date | string
+    updatedAt?: DateTimeFilter<"UserProfile"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type UserProfileOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    nativeLanguage?: SortOrder
+    interests?: SortOrder
+    hobbies?: SortOrder
+    occupation?: SortOrderInput | SortOrder
+    ageGroup?: SortOrderInput | SortOrder
+    learningGoal?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type UserProfileWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    AND?: UserProfileWhereInput | UserProfileWhereInput[]
+    OR?: UserProfileWhereInput[]
+    NOT?: UserProfileWhereInput | UserProfileWhereInput[]
+    nativeLanguage?: StringFilter<"UserProfile"> | string
+    interests?: StringNullableListFilter<"UserProfile">
+    hobbies?: StringNullableListFilter<"UserProfile">
+    occupation?: StringNullableFilter<"UserProfile"> | string | null
+    ageGroup?: StringNullableFilter<"UserProfile"> | string | null
+    learningGoal?: StringNullableFilter<"UserProfile"> | string | null
+    createdAt?: DateTimeFilter<"UserProfile"> | Date | string
+    updatedAt?: DateTimeFilter<"UserProfile"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "userId">
+
+  export type UserProfileOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    nativeLanguage?: SortOrder
+    interests?: SortOrder
+    hobbies?: SortOrder
+    occupation?: SortOrderInput | SortOrder
+    ageGroup?: SortOrderInput | SortOrder
+    learningGoal?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: UserProfileCountOrderByAggregateInput
+    _max?: UserProfileMaxOrderByAggregateInput
+    _min?: UserProfileMinOrderByAggregateInput
+  }
+
+  export type UserProfileScalarWhereWithAggregatesInput = {
+    AND?: UserProfileScalarWhereWithAggregatesInput | UserProfileScalarWhereWithAggregatesInput[]
+    OR?: UserProfileScalarWhereWithAggregatesInput[]
+    NOT?: UserProfileScalarWhereWithAggregatesInput | UserProfileScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"UserProfile"> | string
+    userId?: StringWithAggregatesFilter<"UserProfile"> | string
+    nativeLanguage?: StringWithAggregatesFilter<"UserProfile"> | string
+    interests?: StringNullableListFilter<"UserProfile">
+    hobbies?: StringNullableListFilter<"UserProfile">
+    occupation?: StringNullableWithAggregatesFilter<"UserProfile"> | string | null
+    ageGroup?: StringNullableWithAggregatesFilter<"UserProfile"> | string | null
+    learningGoal?: StringNullableWithAggregatesFilter<"UserProfile"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"UserProfile"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"UserProfile"> | Date | string
+  }
+
   export type LevelWhereInput = {
     AND?: LevelWhereInput | LevelWhereInput[]
     OR?: LevelWhereInput[]
@@ -13711,7 +15173,9 @@ export namespace Prisma {
     NOT?: ModuleWhereInput | ModuleWhereInput[]
     id?: StringFilter<"Module"> | string
     name?: StringFilter<"Module"> | string
+    description?: StringNullableFilter<"Module"> | string | null
     order?: IntFilter<"Module"> | number
+    isGenerated?: BoolFilter<"Module"> | boolean
     levelId?: StringFilter<"Module"> | string
     level?: XOR<LevelScalarRelationFilter, LevelWhereInput>
     lessons?: LessonListRelationFilter
@@ -13720,7 +15184,9 @@ export namespace Prisma {
   export type ModuleOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
+    description?: SortOrderInput | SortOrder
     order?: SortOrder
+    isGenerated?: SortOrder
     levelId?: SortOrder
     level?: LevelOrderByWithRelationInput
     lessons?: LessonOrderByRelationAggregateInput
@@ -13732,7 +15198,9 @@ export namespace Prisma {
     OR?: ModuleWhereInput[]
     NOT?: ModuleWhereInput | ModuleWhereInput[]
     name?: StringFilter<"Module"> | string
+    description?: StringNullableFilter<"Module"> | string | null
     order?: IntFilter<"Module"> | number
+    isGenerated?: BoolFilter<"Module"> | boolean
     levelId?: StringFilter<"Module"> | string
     level?: XOR<LevelScalarRelationFilter, LevelWhereInput>
     lessons?: LessonListRelationFilter
@@ -13741,7 +15209,9 @@ export namespace Prisma {
   export type ModuleOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
+    description?: SortOrderInput | SortOrder
     order?: SortOrder
+    isGenerated?: SortOrder
     levelId?: SortOrder
     _count?: ModuleCountOrderByAggregateInput
     _avg?: ModuleAvgOrderByAggregateInput
@@ -13756,7 +15226,9 @@ export namespace Prisma {
     NOT?: ModuleScalarWhereWithAggregatesInput | ModuleScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Module"> | string
     name?: StringWithAggregatesFilter<"Module"> | string
+    description?: StringNullableWithAggregatesFilter<"Module"> | string | null
     order?: IntWithAggregatesFilter<"Module"> | number
+    isGenerated?: BoolWithAggregatesFilter<"Module"> | boolean
     levelId?: StringWithAggregatesFilter<"Module"> | string
   }
 
@@ -13768,10 +15240,13 @@ export namespace Prisma {
     title?: StringFilter<"Lesson"> | string
     scenario?: StringFilter<"Lesson"> | string
     systemPrompt?: StringFilter<"Lesson"> | string
+    objectives?: StringNullableFilter<"Lesson"> | string | null
     order?: IntFilter<"Lesson"> | number
+    isGenerated?: BoolFilter<"Lesson"> | boolean
     moduleId?: StringFilter<"Lesson"> | string
     module?: XOR<ModuleScalarRelationFilter, ModuleWhereInput>
     userProgress?: UserProgressListRelationFilter
+    sessions?: ConversationSessionListRelationFilter
   }
 
   export type LessonOrderByWithRelationInput = {
@@ -13779,10 +15254,13 @@ export namespace Prisma {
     title?: SortOrder
     scenario?: SortOrder
     systemPrompt?: SortOrder
+    objectives?: SortOrderInput | SortOrder
     order?: SortOrder
+    isGenerated?: SortOrder
     moduleId?: SortOrder
     module?: ModuleOrderByWithRelationInput
     userProgress?: UserProgressOrderByRelationAggregateInput
+    sessions?: ConversationSessionOrderByRelationAggregateInput
   }
 
   export type LessonWhereUniqueInput = Prisma.AtLeast<{
@@ -13793,10 +15271,13 @@ export namespace Prisma {
     title?: StringFilter<"Lesson"> | string
     scenario?: StringFilter<"Lesson"> | string
     systemPrompt?: StringFilter<"Lesson"> | string
+    objectives?: StringNullableFilter<"Lesson"> | string | null
     order?: IntFilter<"Lesson"> | number
+    isGenerated?: BoolFilter<"Lesson"> | boolean
     moduleId?: StringFilter<"Lesson"> | string
     module?: XOR<ModuleScalarRelationFilter, ModuleWhereInput>
     userProgress?: UserProgressListRelationFilter
+    sessions?: ConversationSessionListRelationFilter
   }, "id">
 
   export type LessonOrderByWithAggregationInput = {
@@ -13804,7 +15285,9 @@ export namespace Prisma {
     title?: SortOrder
     scenario?: SortOrder
     systemPrompt?: SortOrder
+    objectives?: SortOrderInput | SortOrder
     order?: SortOrder
+    isGenerated?: SortOrder
     moduleId?: SortOrder
     _count?: LessonCountOrderByAggregateInput
     _avg?: LessonAvgOrderByAggregateInput
@@ -13821,7 +15304,9 @@ export namespace Prisma {
     title?: StringWithAggregatesFilter<"Lesson"> | string
     scenario?: StringWithAggregatesFilter<"Lesson"> | string
     systemPrompt?: StringWithAggregatesFilter<"Lesson"> | string
+    objectives?: StringNullableWithAggregatesFilter<"Lesson"> | string | null
     order?: IntWithAggregatesFilter<"Lesson"> | number
+    isGenerated?: BoolWithAggregatesFilter<"Lesson"> | boolean
     moduleId?: StringWithAggregatesFilter<"Lesson"> | string
   }
 
@@ -13903,9 +15388,11 @@ export namespace Prisma {
     id?: StringFilter<"ConversationSession"> | string
     userId?: StringFilter<"ConversationSession"> | string
     mode?: EnumInteractionModeFilter<"ConversationSession"> | $Enums.InteractionMode
+    lessonId?: StringNullableFilter<"ConversationSession"> | string | null
     startedAt?: DateTimeFilter<"ConversationSession"> | Date | string
     endedAt?: DateTimeNullableFilter<"ConversationSession"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    lesson?: XOR<LessonNullableScalarRelationFilter, LessonWhereInput> | null
     interactions?: InteractionLogListRelationFilter
   }
 
@@ -13913,9 +15400,11 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     mode?: SortOrder
+    lessonId?: SortOrderInput | SortOrder
     startedAt?: SortOrder
     endedAt?: SortOrderInput | SortOrder
     user?: UserOrderByWithRelationInput
+    lesson?: LessonOrderByWithRelationInput
     interactions?: InteractionLogOrderByRelationAggregateInput
   }
 
@@ -13926,9 +15415,11 @@ export namespace Prisma {
     NOT?: ConversationSessionWhereInput | ConversationSessionWhereInput[]
     userId?: StringFilter<"ConversationSession"> | string
     mode?: EnumInteractionModeFilter<"ConversationSession"> | $Enums.InteractionMode
+    lessonId?: StringNullableFilter<"ConversationSession"> | string | null
     startedAt?: DateTimeFilter<"ConversationSession"> | Date | string
     endedAt?: DateTimeNullableFilter<"ConversationSession"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    lesson?: XOR<LessonNullableScalarRelationFilter, LessonWhereInput> | null
     interactions?: InteractionLogListRelationFilter
   }, "id">
 
@@ -13936,6 +15427,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     mode?: SortOrder
+    lessonId?: SortOrderInput | SortOrder
     startedAt?: SortOrder
     endedAt?: SortOrderInput | SortOrder
     _count?: ConversationSessionCountOrderByAggregateInput
@@ -13950,6 +15442,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"ConversationSession"> | string
     userId?: StringWithAggregatesFilter<"ConversationSession"> | string
     mode?: EnumInteractionModeWithAggregatesFilter<"ConversationSession"> | $Enums.InteractionMode
+    lessonId?: StringNullableWithAggregatesFilter<"ConversationSession"> | string | null
     startedAt?: DateTimeWithAggregatesFilter<"ConversationSession"> | Date | string
     endedAt?: DateTimeNullableWithAggregatesFilter<"ConversationSession"> | Date | string | null
   }
@@ -14095,6 +15588,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguage?: LanguageCreateNestedOneWithoutUsersInput
+    profile?: UserProfileCreateNestedOneWithoutUserInput
     devices?: DeviceCreateNestedManyWithoutUserInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
     progress?: UserProgressCreateNestedManyWithoutUserInput
@@ -14111,6 +15605,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguageId?: string | null
+    profile?: UserProfileUncheckedCreateNestedOneWithoutUserInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
     progress?: UserProgressUncheckedCreateNestedManyWithoutUserInput
@@ -14127,6 +15622,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguage?: LanguageUpdateOneWithoutUsersNestedInput
+    profile?: UserProfileUpdateOneWithoutUserNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
     progress?: UserProgressUpdateManyWithoutUserNestedInput
@@ -14143,6 +15639,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: UserProfileUncheckedUpdateOneWithoutUserNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     progress?: UserProgressUncheckedUpdateManyWithoutUserNestedInput
@@ -14308,6 +15805,96 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
   }
 
+  export type UserProfileCreateInput = {
+    id?: string
+    nativeLanguage?: string
+    interests?: UserProfileCreateinterestsInput | string[]
+    hobbies?: UserProfileCreatehobbiesInput | string[]
+    occupation?: string | null
+    ageGroup?: string | null
+    learningGoal?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutProfileInput
+  }
+
+  export type UserProfileUncheckedCreateInput = {
+    id?: string
+    userId: string
+    nativeLanguage?: string
+    interests?: UserProfileCreateinterestsInput | string[]
+    hobbies?: UserProfileCreatehobbiesInput | string[]
+    occupation?: string | null
+    ageGroup?: string | null
+    learningGoal?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserProfileUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nativeLanguage?: StringFieldUpdateOperationsInput | string
+    interests?: UserProfileUpdateinterestsInput | string[]
+    hobbies?: UserProfileUpdatehobbiesInput | string[]
+    occupation?: NullableStringFieldUpdateOperationsInput | string | null
+    ageGroup?: NullableStringFieldUpdateOperationsInput | string | null
+    learningGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutProfileNestedInput
+  }
+
+  export type UserProfileUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    nativeLanguage?: StringFieldUpdateOperationsInput | string
+    interests?: UserProfileUpdateinterestsInput | string[]
+    hobbies?: UserProfileUpdatehobbiesInput | string[]
+    occupation?: NullableStringFieldUpdateOperationsInput | string | null
+    ageGroup?: NullableStringFieldUpdateOperationsInput | string | null
+    learningGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserProfileCreateManyInput = {
+    id?: string
+    userId: string
+    nativeLanguage?: string
+    interests?: UserProfileCreateinterestsInput | string[]
+    hobbies?: UserProfileCreatehobbiesInput | string[]
+    occupation?: string | null
+    ageGroup?: string | null
+    learningGoal?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserProfileUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nativeLanguage?: StringFieldUpdateOperationsInput | string
+    interests?: UserProfileUpdateinterestsInput | string[]
+    hobbies?: UserProfileUpdatehobbiesInput | string[]
+    occupation?: NullableStringFieldUpdateOperationsInput | string | null
+    ageGroup?: NullableStringFieldUpdateOperationsInput | string | null
+    learningGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserProfileUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    nativeLanguage?: StringFieldUpdateOperationsInput | string
+    interests?: UserProfileUpdateinterestsInput | string[]
+    hobbies?: UserProfileUpdatehobbiesInput | string[]
+    occupation?: NullableStringFieldUpdateOperationsInput | string | null
+    ageGroup?: NullableStringFieldUpdateOperationsInput | string | null
+    learningGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type LevelCreateInput = {
     id?: string
     code: $Enums.UserLevel
@@ -14363,7 +15950,9 @@ export namespace Prisma {
   export type ModuleCreateInput = {
     id?: string
     name: string
+    description?: string | null
     order: number
+    isGenerated?: boolean
     level: LevelCreateNestedOneWithoutModulesInput
     lessons?: LessonCreateNestedManyWithoutModuleInput
   }
@@ -14371,7 +15960,9 @@ export namespace Prisma {
   export type ModuleUncheckedCreateInput = {
     id?: string
     name: string
+    description?: string | null
     order: number
+    isGenerated?: boolean
     levelId: string
     lessons?: LessonUncheckedCreateNestedManyWithoutModuleInput
   }
@@ -14379,7 +15970,9 @@ export namespace Prisma {
   export type ModuleUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
     level?: LevelUpdateOneRequiredWithoutModulesNestedInput
     lessons?: LessonUpdateManyWithoutModuleNestedInput
   }
@@ -14387,7 +15980,9 @@ export namespace Prisma {
   export type ModuleUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
     levelId?: StringFieldUpdateOperationsInput | string
     lessons?: LessonUncheckedUpdateManyWithoutModuleNestedInput
   }
@@ -14395,20 +15990,26 @@ export namespace Prisma {
   export type ModuleCreateManyInput = {
     id?: string
     name: string
+    description?: string | null
     order: number
+    isGenerated?: boolean
     levelId: string
   }
 
   export type ModuleUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type ModuleUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
     levelId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -14417,9 +16018,12 @@ export namespace Prisma {
     title: string
     scenario: string
     systemPrompt: string
+    objectives?: string | null
     order: number
+    isGenerated?: boolean
     module: ModuleCreateNestedOneWithoutLessonsInput
     userProgress?: UserProgressCreateNestedManyWithoutLessonInput
+    sessions?: ConversationSessionCreateNestedManyWithoutLessonInput
   }
 
   export type LessonUncheckedCreateInput = {
@@ -14427,9 +16031,12 @@ export namespace Prisma {
     title: string
     scenario: string
     systemPrompt: string
+    objectives?: string | null
     order: number
+    isGenerated?: boolean
     moduleId: string
     userProgress?: UserProgressUncheckedCreateNestedManyWithoutLessonInput
+    sessions?: ConversationSessionUncheckedCreateNestedManyWithoutLessonInput
   }
 
   export type LessonUpdateInput = {
@@ -14437,9 +16044,12 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     scenario?: StringFieldUpdateOperationsInput | string
     systemPrompt?: StringFieldUpdateOperationsInput | string
+    objectives?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
     module?: ModuleUpdateOneRequiredWithoutLessonsNestedInput
     userProgress?: UserProgressUpdateManyWithoutLessonNestedInput
+    sessions?: ConversationSessionUpdateManyWithoutLessonNestedInput
   }
 
   export type LessonUncheckedUpdateInput = {
@@ -14447,9 +16057,12 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     scenario?: StringFieldUpdateOperationsInput | string
     systemPrompt?: StringFieldUpdateOperationsInput | string
+    objectives?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
     moduleId?: StringFieldUpdateOperationsInput | string
     userProgress?: UserProgressUncheckedUpdateManyWithoutLessonNestedInput
+    sessions?: ConversationSessionUncheckedUpdateManyWithoutLessonNestedInput
   }
 
   export type LessonCreateManyInput = {
@@ -14457,7 +16070,9 @@ export namespace Prisma {
     title: string
     scenario: string
     systemPrompt: string
+    objectives?: string | null
     order: number
+    isGenerated?: boolean
     moduleId: string
   }
 
@@ -14466,7 +16081,9 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     scenario?: StringFieldUpdateOperationsInput | string
     systemPrompt?: StringFieldUpdateOperationsInput | string
+    objectives?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type LessonUncheckedUpdateManyInput = {
@@ -14474,7 +16091,9 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     scenario?: StringFieldUpdateOperationsInput | string
     systemPrompt?: StringFieldUpdateOperationsInput | string
+    objectives?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
     moduleId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -14552,6 +16171,7 @@ export namespace Prisma {
     startedAt?: Date | string
     endedAt?: Date | string | null
     user: UserCreateNestedOneWithoutSessionsInput
+    lesson?: LessonCreateNestedOneWithoutSessionsInput
     interactions?: InteractionLogCreateNestedManyWithoutSessionInput
   }
 
@@ -14559,6 +16179,7 @@ export namespace Prisma {
     id?: string
     userId: string
     mode: $Enums.InteractionMode
+    lessonId?: string | null
     startedAt?: Date | string
     endedAt?: Date | string | null
     interactions?: InteractionLogUncheckedCreateNestedManyWithoutSessionInput
@@ -14570,6 +16191,7 @@ export namespace Prisma {
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutSessionsNestedInput
+    lesson?: LessonUpdateOneWithoutSessionsNestedInput
     interactions?: InteractionLogUpdateManyWithoutSessionNestedInput
   }
 
@@ -14577,6 +16199,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     mode?: EnumInteractionModeFieldUpdateOperationsInput | $Enums.InteractionMode
+    lessonId?: NullableStringFieldUpdateOperationsInput | string | null
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     interactions?: InteractionLogUncheckedUpdateManyWithoutSessionNestedInput
@@ -14586,6 +16209,7 @@ export namespace Prisma {
     id?: string
     userId: string
     mode: $Enums.InteractionMode
+    lessonId?: string | null
     startedAt?: Date | string
     endedAt?: Date | string | null
   }
@@ -14601,6 +16225,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     mode?: EnumInteractionModeFieldUpdateOperationsInput | $Enums.InteractionMode
+    lessonId?: NullableStringFieldUpdateOperationsInput | string | null
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -14816,6 +16441,11 @@ export namespace Prisma {
     isNot?: LanguageWhereInput | null
   }
 
+  export type UserProfileNullableScalarRelationFilter = {
+    is?: UserProfileWhereInput | null
+    isNot?: UserProfileWhereInput | null
+  }
+
   export type DeviceListRelationFilter = {
     every?: DeviceWhereInput
     some?: DeviceWhereInput
@@ -15001,6 +16631,49 @@ export namespace Prisma {
     userId?: SortOrder
   }
 
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
+  export type UserProfileCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    nativeLanguage?: SortOrder
+    interests?: SortOrder
+    hobbies?: SortOrder
+    occupation?: SortOrder
+    ageGroup?: SortOrder
+    learningGoal?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserProfileMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    nativeLanguage?: SortOrder
+    occupation?: SortOrder
+    ageGroup?: SortOrder
+    learningGoal?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserProfileMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    nativeLanguage?: SortOrder
+    occupation?: SortOrder
+    ageGroup?: SortOrder
+    learningGoal?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type LanguageScalarRelationFilter = {
     is?: LanguageWhereInput
     isNot?: LanguageWhereInput
@@ -15071,7 +16744,9 @@ export namespace Prisma {
   export type ModuleCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    description?: SortOrder
     order?: SortOrder
+    isGenerated?: SortOrder
     levelId?: SortOrder
   }
 
@@ -15082,14 +16757,18 @@ export namespace Prisma {
   export type ModuleMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    description?: SortOrder
     order?: SortOrder
+    isGenerated?: SortOrder
     levelId?: SortOrder
   }
 
   export type ModuleMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    description?: SortOrder
     order?: SortOrder
+    isGenerated?: SortOrder
     levelId?: SortOrder
   }
 
@@ -15123,7 +16802,9 @@ export namespace Prisma {
     title?: SortOrder
     scenario?: SortOrder
     systemPrompt?: SortOrder
+    objectives?: SortOrder
     order?: SortOrder
+    isGenerated?: SortOrder
     moduleId?: SortOrder
   }
 
@@ -15136,7 +16817,9 @@ export namespace Prisma {
     title?: SortOrder
     scenario?: SortOrder
     systemPrompt?: SortOrder
+    objectives?: SortOrder
     order?: SortOrder
+    isGenerated?: SortOrder
     moduleId?: SortOrder
   }
 
@@ -15145,7 +16828,9 @@ export namespace Prisma {
     title?: SortOrder
     scenario?: SortOrder
     systemPrompt?: SortOrder
+    objectives?: SortOrder
     order?: SortOrder
+    isGenerated?: SortOrder
     moduleId?: SortOrder
   }
 
@@ -15238,6 +16923,11 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
+  export type LessonNullableScalarRelationFilter = {
+    is?: LessonWhereInput | null
+    isNot?: LessonWhereInput | null
+  }
+
   export type InteractionLogListRelationFilter = {
     every?: InteractionLogWhereInput
     some?: InteractionLogWhereInput
@@ -15252,6 +16942,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     mode?: SortOrder
+    lessonId?: SortOrder
     startedAt?: SortOrder
     endedAt?: SortOrder
   }
@@ -15260,6 +16951,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     mode?: SortOrder
+    lessonId?: SortOrder
     startedAt?: SortOrder
     endedAt?: SortOrder
   }
@@ -15268,6 +16960,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     mode?: SortOrder
+    lessonId?: SortOrder
     startedAt?: SortOrder
     endedAt?: SortOrder
   }
@@ -15468,6 +17161,12 @@ export namespace Prisma {
     connect?: LanguageWhereUniqueInput
   }
 
+  export type UserProfileCreateNestedOneWithoutUserInput = {
+    create?: XOR<UserProfileCreateWithoutUserInput, UserProfileUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserProfileCreateOrConnectWithoutUserInput
+    connect?: UserProfileWhereUniqueInput
+  }
+
   export type DeviceCreateNestedManyWithoutUserInput = {
     create?: XOR<DeviceCreateWithoutUserInput, DeviceUncheckedCreateWithoutUserInput> | DeviceCreateWithoutUserInput[] | DeviceUncheckedCreateWithoutUserInput[]
     connectOrCreate?: DeviceCreateOrConnectWithoutUserInput | DeviceCreateOrConnectWithoutUserInput[]
@@ -15494,6 +17193,12 @@ export namespace Prisma {
     connectOrCreate?: ConversationSessionCreateOrConnectWithoutUserInput | ConversationSessionCreateOrConnectWithoutUserInput[]
     createMany?: ConversationSessionCreateManyUserInputEnvelope
     connect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+  }
+
+  export type UserProfileUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<UserProfileCreateWithoutUserInput, UserProfileUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserProfileCreateOrConnectWithoutUserInput
+    connect?: UserProfileWhereUniqueInput
   }
 
   export type DeviceUncheckedCreateNestedManyWithoutUserInput = {
@@ -15536,6 +17241,16 @@ export namespace Prisma {
     delete?: LanguageWhereInput | boolean
     connect?: LanguageWhereUniqueInput
     update?: XOR<XOR<LanguageUpdateToOneWithWhereWithoutUsersInput, LanguageUpdateWithoutUsersInput>, LanguageUncheckedUpdateWithoutUsersInput>
+  }
+
+  export type UserProfileUpdateOneWithoutUserNestedInput = {
+    create?: XOR<UserProfileCreateWithoutUserInput, UserProfileUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserProfileCreateOrConnectWithoutUserInput
+    upsert?: UserProfileUpsertWithoutUserInput
+    disconnect?: UserProfileWhereInput | boolean
+    delete?: UserProfileWhereInput | boolean
+    connect?: UserProfileWhereUniqueInput
+    update?: XOR<XOR<UserProfileUpdateToOneWithWhereWithoutUserInput, UserProfileUpdateWithoutUserInput>, UserProfileUncheckedUpdateWithoutUserInput>
   }
 
   export type DeviceUpdateManyWithoutUserNestedInput = {
@@ -15596,6 +17311,16 @@ export namespace Prisma {
 
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
+  }
+
+  export type UserProfileUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<UserProfileCreateWithoutUserInput, UserProfileUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserProfileCreateOrConnectWithoutUserInput
+    upsert?: UserProfileUpsertWithoutUserInput
+    disconnect?: UserProfileWhereInput | boolean
+    delete?: UserProfileWhereInput | boolean
+    connect?: UserProfileWhereUniqueInput
+    update?: XOR<XOR<UserProfileUpdateToOneWithWhereWithoutUserInput, UserProfileUpdateWithoutUserInput>, UserProfileUncheckedUpdateWithoutUserInput>
   }
 
   export type DeviceUncheckedUpdateManyWithoutUserNestedInput = {
@@ -15684,6 +17409,38 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutDevicesInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutDevicesInput, UserUpdateWithoutDevicesInput>, UserUncheckedUpdateWithoutDevicesInput>
+  }
+
+  export type UserProfileCreateinterestsInput = {
+    set: string[]
+  }
+
+  export type UserProfileCreatehobbiesInput = {
+    set: string[]
+  }
+
+  export type UserCreateNestedOneWithoutProfileInput = {
+    create?: XOR<UserCreateWithoutProfileInput, UserUncheckedCreateWithoutProfileInput>
+    connectOrCreate?: UserCreateOrConnectWithoutProfileInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserProfileUpdateinterestsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserProfileUpdatehobbiesInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserUpdateOneRequiredWithoutProfileNestedInput = {
+    create?: XOR<UserCreateWithoutProfileInput, UserUncheckedCreateWithoutProfileInput>
+    connectOrCreate?: UserCreateOrConnectWithoutProfileInput
+    upsert?: UserUpsertWithoutProfileInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutProfileInput, UserUpdateWithoutProfileInput>, UserUncheckedUpdateWithoutProfileInput>
   }
 
   export type LanguageCreateNestedOneWithoutLevelsInput = {
@@ -15819,11 +17576,25 @@ export namespace Prisma {
     connect?: UserProgressWhereUniqueInput | UserProgressWhereUniqueInput[]
   }
 
+  export type ConversationSessionCreateNestedManyWithoutLessonInput = {
+    create?: XOR<ConversationSessionCreateWithoutLessonInput, ConversationSessionUncheckedCreateWithoutLessonInput> | ConversationSessionCreateWithoutLessonInput[] | ConversationSessionUncheckedCreateWithoutLessonInput[]
+    connectOrCreate?: ConversationSessionCreateOrConnectWithoutLessonInput | ConversationSessionCreateOrConnectWithoutLessonInput[]
+    createMany?: ConversationSessionCreateManyLessonInputEnvelope
+    connect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+  }
+
   export type UserProgressUncheckedCreateNestedManyWithoutLessonInput = {
     create?: XOR<UserProgressCreateWithoutLessonInput, UserProgressUncheckedCreateWithoutLessonInput> | UserProgressCreateWithoutLessonInput[] | UserProgressUncheckedCreateWithoutLessonInput[]
     connectOrCreate?: UserProgressCreateOrConnectWithoutLessonInput | UserProgressCreateOrConnectWithoutLessonInput[]
     createMany?: UserProgressCreateManyLessonInputEnvelope
     connect?: UserProgressWhereUniqueInput | UserProgressWhereUniqueInput[]
+  }
+
+  export type ConversationSessionUncheckedCreateNestedManyWithoutLessonInput = {
+    create?: XOR<ConversationSessionCreateWithoutLessonInput, ConversationSessionUncheckedCreateWithoutLessonInput> | ConversationSessionCreateWithoutLessonInput[] | ConversationSessionUncheckedCreateWithoutLessonInput[]
+    connectOrCreate?: ConversationSessionCreateOrConnectWithoutLessonInput | ConversationSessionCreateOrConnectWithoutLessonInput[]
+    createMany?: ConversationSessionCreateManyLessonInputEnvelope
+    connect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
   }
 
   export type ModuleUpdateOneRequiredWithoutLessonsNestedInput = {
@@ -15848,6 +17619,20 @@ export namespace Prisma {
     deleteMany?: UserProgressScalarWhereInput | UserProgressScalarWhereInput[]
   }
 
+  export type ConversationSessionUpdateManyWithoutLessonNestedInput = {
+    create?: XOR<ConversationSessionCreateWithoutLessonInput, ConversationSessionUncheckedCreateWithoutLessonInput> | ConversationSessionCreateWithoutLessonInput[] | ConversationSessionUncheckedCreateWithoutLessonInput[]
+    connectOrCreate?: ConversationSessionCreateOrConnectWithoutLessonInput | ConversationSessionCreateOrConnectWithoutLessonInput[]
+    upsert?: ConversationSessionUpsertWithWhereUniqueWithoutLessonInput | ConversationSessionUpsertWithWhereUniqueWithoutLessonInput[]
+    createMany?: ConversationSessionCreateManyLessonInputEnvelope
+    set?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    disconnect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    delete?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    connect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    update?: ConversationSessionUpdateWithWhereUniqueWithoutLessonInput | ConversationSessionUpdateWithWhereUniqueWithoutLessonInput[]
+    updateMany?: ConversationSessionUpdateManyWithWhereWithoutLessonInput | ConversationSessionUpdateManyWithWhereWithoutLessonInput[]
+    deleteMany?: ConversationSessionScalarWhereInput | ConversationSessionScalarWhereInput[]
+  }
+
   export type UserProgressUncheckedUpdateManyWithoutLessonNestedInput = {
     create?: XOR<UserProgressCreateWithoutLessonInput, UserProgressUncheckedCreateWithoutLessonInput> | UserProgressCreateWithoutLessonInput[] | UserProgressUncheckedCreateWithoutLessonInput[]
     connectOrCreate?: UserProgressCreateOrConnectWithoutLessonInput | UserProgressCreateOrConnectWithoutLessonInput[]
@@ -15860,6 +17645,20 @@ export namespace Prisma {
     update?: UserProgressUpdateWithWhereUniqueWithoutLessonInput | UserProgressUpdateWithWhereUniqueWithoutLessonInput[]
     updateMany?: UserProgressUpdateManyWithWhereWithoutLessonInput | UserProgressUpdateManyWithWhereWithoutLessonInput[]
     deleteMany?: UserProgressScalarWhereInput | UserProgressScalarWhereInput[]
+  }
+
+  export type ConversationSessionUncheckedUpdateManyWithoutLessonNestedInput = {
+    create?: XOR<ConversationSessionCreateWithoutLessonInput, ConversationSessionUncheckedCreateWithoutLessonInput> | ConversationSessionCreateWithoutLessonInput[] | ConversationSessionUncheckedCreateWithoutLessonInput[]
+    connectOrCreate?: ConversationSessionCreateOrConnectWithoutLessonInput | ConversationSessionCreateOrConnectWithoutLessonInput[]
+    upsert?: ConversationSessionUpsertWithWhereUniqueWithoutLessonInput | ConversationSessionUpsertWithWhereUniqueWithoutLessonInput[]
+    createMany?: ConversationSessionCreateManyLessonInputEnvelope
+    set?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    disconnect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    delete?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    connect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+    update?: ConversationSessionUpdateWithWhereUniqueWithoutLessonInput | ConversationSessionUpdateWithWhereUniqueWithoutLessonInput[]
+    updateMany?: ConversationSessionUpdateManyWithWhereWithoutLessonInput | ConversationSessionUpdateManyWithWhereWithoutLessonInput[]
+    deleteMany?: ConversationSessionScalarWhereInput | ConversationSessionScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutProgressInput = {
@@ -15900,6 +17699,12 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type LessonCreateNestedOneWithoutSessionsInput = {
+    create?: XOR<LessonCreateWithoutSessionsInput, LessonUncheckedCreateWithoutSessionsInput>
+    connectOrCreate?: LessonCreateOrConnectWithoutSessionsInput
+    connect?: LessonWhereUniqueInput
+  }
+
   export type InteractionLogCreateNestedManyWithoutSessionInput = {
     create?: XOR<InteractionLogCreateWithoutSessionInput, InteractionLogUncheckedCreateWithoutSessionInput> | InteractionLogCreateWithoutSessionInput[] | InteractionLogUncheckedCreateWithoutSessionInput[]
     connectOrCreate?: InteractionLogCreateOrConnectWithoutSessionInput | InteractionLogCreateOrConnectWithoutSessionInput[]
@@ -15928,6 +17733,16 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutSessionsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSessionsInput, UserUpdateWithoutSessionsInput>, UserUncheckedUpdateWithoutSessionsInput>
+  }
+
+  export type LessonUpdateOneWithoutSessionsNestedInput = {
+    create?: XOR<LessonCreateWithoutSessionsInput, LessonUncheckedCreateWithoutSessionsInput>
+    connectOrCreate?: LessonCreateOrConnectWithoutSessionsInput
+    upsert?: LessonUpsertWithoutSessionsInput
+    disconnect?: LessonWhereInput | boolean
+    delete?: LessonWhereInput | boolean
+    connect?: LessonWhereUniqueInput
+    update?: XOR<XOR<LessonUpdateToOneWithWhereWithoutSessionsInput, LessonUpdateWithoutSessionsInput>, LessonUncheckedUpdateWithoutSessionsInput>
   }
 
   export type InteractionLogUpdateManyWithoutSessionNestedInput = {
@@ -16282,6 +18097,7 @@ export namespace Prisma {
     currentLevel?: $Enums.UserLevel
     createdAt?: Date | string
     updatedAt?: Date | string
+    profile?: UserProfileCreateNestedOneWithoutUserInput
     devices?: DeviceCreateNestedManyWithoutUserInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
     progress?: UserProgressCreateNestedManyWithoutUserInput
@@ -16297,6 +18113,7 @@ export namespace Prisma {
     currentLevel?: $Enums.UserLevel
     createdAt?: Date | string
     updatedAt?: Date | string
+    profile?: UserProfileUncheckedCreateNestedOneWithoutUserInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
     progress?: UserProgressUncheckedCreateNestedManyWithoutUserInput
@@ -16393,6 +18210,35 @@ export namespace Prisma {
     create: XOR<LanguageCreateWithoutUsersInput, LanguageUncheckedCreateWithoutUsersInput>
   }
 
+  export type UserProfileCreateWithoutUserInput = {
+    id?: string
+    nativeLanguage?: string
+    interests?: UserProfileCreateinterestsInput | string[]
+    hobbies?: UserProfileCreatehobbiesInput | string[]
+    occupation?: string | null
+    ageGroup?: string | null
+    learningGoal?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserProfileUncheckedCreateWithoutUserInput = {
+    id?: string
+    nativeLanguage?: string
+    interests?: UserProfileCreateinterestsInput | string[]
+    hobbies?: UserProfileCreatehobbiesInput | string[]
+    occupation?: string | null
+    ageGroup?: string | null
+    learningGoal?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserProfileCreateOrConnectWithoutUserInput = {
+    where: UserProfileWhereUniqueInput
+    create: XOR<UserProfileCreateWithoutUserInput, UserProfileUncheckedCreateWithoutUserInput>
+  }
+
   export type DeviceCreateWithoutUserInput = {
     id?: string
     serialNumber: string
@@ -16478,12 +18324,14 @@ export namespace Prisma {
     mode: $Enums.InteractionMode
     startedAt?: Date | string
     endedAt?: Date | string | null
+    lesson?: LessonCreateNestedOneWithoutSessionsInput
     interactions?: InteractionLogCreateNestedManyWithoutSessionInput
   }
 
   export type ConversationSessionUncheckedCreateWithoutUserInput = {
     id?: string
     mode: $Enums.InteractionMode
+    lessonId?: string | null
     startedAt?: Date | string
     endedAt?: Date | string | null
     interactions?: InteractionLogUncheckedCreateNestedManyWithoutSessionInput
@@ -16526,6 +18374,41 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     levels?: LevelUncheckedUpdateManyWithoutLanguageNestedInput
+  }
+
+  export type UserProfileUpsertWithoutUserInput = {
+    update: XOR<UserProfileUpdateWithoutUserInput, UserProfileUncheckedUpdateWithoutUserInput>
+    create: XOR<UserProfileCreateWithoutUserInput, UserProfileUncheckedCreateWithoutUserInput>
+    where?: UserProfileWhereInput
+  }
+
+  export type UserProfileUpdateToOneWithWhereWithoutUserInput = {
+    where?: UserProfileWhereInput
+    data: XOR<UserProfileUpdateWithoutUserInput, UserProfileUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserProfileUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nativeLanguage?: StringFieldUpdateOperationsInput | string
+    interests?: UserProfileUpdateinterestsInput | string[]
+    hobbies?: UserProfileUpdatehobbiesInput | string[]
+    occupation?: NullableStringFieldUpdateOperationsInput | string | null
+    ageGroup?: NullableStringFieldUpdateOperationsInput | string | null
+    learningGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserProfileUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nativeLanguage?: StringFieldUpdateOperationsInput | string
+    interests?: UserProfileUpdateinterestsInput | string[]
+    hobbies?: UserProfileUpdatehobbiesInput | string[]
+    occupation?: NullableStringFieldUpdateOperationsInput | string | null
+    ageGroup?: NullableStringFieldUpdateOperationsInput | string | null
+    learningGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DeviceUpsertWithWhereUniqueWithoutUserInput = {
@@ -16636,6 +18519,7 @@ export namespace Prisma {
     id?: StringFilter<"ConversationSession"> | string
     userId?: StringFilter<"ConversationSession"> | string
     mode?: EnumInteractionModeFilter<"ConversationSession"> | $Enums.InteractionMode
+    lessonId?: StringNullableFilter<"ConversationSession"> | string | null
     startedAt?: DateTimeFilter<"ConversationSession"> | Date | string
     endedAt?: DateTimeNullableFilter<"ConversationSession"> | Date | string | null
   }
@@ -16650,6 +18534,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguage?: LanguageCreateNestedOneWithoutUsersInput
+    profile?: UserProfileCreateNestedOneWithoutUserInput
     devices?: DeviceCreateNestedManyWithoutUserInput
     progress?: UserProgressCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionCreateNestedManyWithoutUserInput
@@ -16665,6 +18550,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguageId?: string | null
+    profile?: UserProfileUncheckedCreateNestedOneWithoutUserInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     progress?: UserProgressUncheckedCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
@@ -16696,6 +18582,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguage?: LanguageUpdateOneWithoutUsersNestedInput
+    profile?: UserProfileUpdateOneWithoutUserNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
     progress?: UserProgressUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUpdateManyWithoutUserNestedInput
@@ -16711,6 +18598,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: UserProfileUncheckedUpdateOneWithoutUserNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     progress?: UserProgressUncheckedUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
@@ -16726,6 +18614,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguage?: LanguageCreateNestedOneWithoutUsersInput
+    profile?: UserProfileCreateNestedOneWithoutUserInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
     progress?: UserProgressCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionCreateNestedManyWithoutUserInput
@@ -16741,6 +18630,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguageId?: string | null
+    profile?: UserProfileUncheckedCreateNestedOneWithoutUserInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
     progress?: UserProgressUncheckedCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
@@ -16772,6 +18662,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguage?: LanguageUpdateOneWithoutUsersNestedInput
+    profile?: UserProfileUpdateOneWithoutUserNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
     progress?: UserProgressUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUpdateManyWithoutUserNestedInput
@@ -16787,6 +18678,87 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: UserProfileUncheckedUpdateOneWithoutUserNestedInput
+    subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    progress?: UserProgressUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutProfileInput = {
+    id?: string
+    email: string
+    username: string
+    passwordHash: string
+    name: string
+    currentLevel?: $Enums.UserLevel
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    targetLanguage?: LanguageCreateNestedOneWithoutUsersInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    progress?: UserProgressCreateNestedManyWithoutUserInput
+    sessions?: ConversationSessionCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutProfileInput = {
+    id?: string
+    email: string
+    username: string
+    passwordHash: string
+    name: string
+    currentLevel?: $Enums.UserLevel
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    targetLanguageId?: string | null
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    progress?: UserProgressUncheckedCreateNestedManyWithoutUserInput
+    sessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutProfileInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutProfileInput, UserUncheckedCreateWithoutProfileInput>
+  }
+
+  export type UserUpsertWithoutProfileInput = {
+    update: XOR<UserUpdateWithoutProfileInput, UserUncheckedUpdateWithoutProfileInput>
+    create: XOR<UserCreateWithoutProfileInput, UserUncheckedCreateWithoutProfileInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutProfileInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutProfileInput, UserUncheckedUpdateWithoutProfileInput>
+  }
+
+  export type UserUpdateWithoutProfileInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    targetLanguage?: LanguageUpdateOneWithoutUsersNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    progress?: UserProgressUpdateManyWithoutUserNestedInput
+    sessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutProfileInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     progress?: UserProgressUncheckedUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
@@ -16818,14 +18790,18 @@ export namespace Prisma {
   export type ModuleCreateWithoutLevelInput = {
     id?: string
     name: string
+    description?: string | null
     order: number
+    isGenerated?: boolean
     lessons?: LessonCreateNestedManyWithoutModuleInput
   }
 
   export type ModuleUncheckedCreateWithoutLevelInput = {
     id?: string
     name: string
+    description?: string | null
     order: number
+    isGenerated?: boolean
     lessons?: LessonUncheckedCreateNestedManyWithoutModuleInput
   }
 
@@ -16890,7 +18866,9 @@ export namespace Prisma {
     NOT?: ModuleScalarWhereInput | ModuleScalarWhereInput[]
     id?: StringFilter<"Module"> | string
     name?: StringFilter<"Module"> | string
+    description?: StringNullableFilter<"Module"> | string | null
     order?: IntFilter<"Module"> | number
+    isGenerated?: BoolFilter<"Module"> | boolean
     levelId?: StringFilter<"Module"> | string
   }
 
@@ -16918,8 +18896,11 @@ export namespace Prisma {
     title: string
     scenario: string
     systemPrompt: string
+    objectives?: string | null
     order: number
+    isGenerated?: boolean
     userProgress?: UserProgressCreateNestedManyWithoutLessonInput
+    sessions?: ConversationSessionCreateNestedManyWithoutLessonInput
   }
 
   export type LessonUncheckedCreateWithoutModuleInput = {
@@ -16927,8 +18908,11 @@ export namespace Prisma {
     title: string
     scenario: string
     systemPrompt: string
+    objectives?: string | null
     order: number
+    isGenerated?: boolean
     userProgress?: UserProgressUncheckedCreateNestedManyWithoutLessonInput
+    sessions?: ConversationSessionUncheckedCreateNestedManyWithoutLessonInput
   }
 
   export type LessonCreateOrConnectWithoutModuleInput = {
@@ -16990,21 +18974,27 @@ export namespace Prisma {
     title?: StringFilter<"Lesson"> | string
     scenario?: StringFilter<"Lesson"> | string
     systemPrompt?: StringFilter<"Lesson"> | string
+    objectives?: StringNullableFilter<"Lesson"> | string | null
     order?: IntFilter<"Lesson"> | number
+    isGenerated?: BoolFilter<"Lesson"> | boolean
     moduleId?: StringFilter<"Lesson"> | string
   }
 
   export type ModuleCreateWithoutLessonsInput = {
     id?: string
     name: string
+    description?: string | null
     order: number
+    isGenerated?: boolean
     level: LevelCreateNestedOneWithoutModulesInput
   }
 
   export type ModuleUncheckedCreateWithoutLessonsInput = {
     id?: string
     name: string
+    description?: string | null
     order: number
+    isGenerated?: boolean
     levelId: string
   }
 
@@ -17041,6 +19031,34 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ConversationSessionCreateWithoutLessonInput = {
+    id?: string
+    mode: $Enums.InteractionMode
+    startedAt?: Date | string
+    endedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutSessionsInput
+    interactions?: InteractionLogCreateNestedManyWithoutSessionInput
+  }
+
+  export type ConversationSessionUncheckedCreateWithoutLessonInput = {
+    id?: string
+    userId: string
+    mode: $Enums.InteractionMode
+    startedAt?: Date | string
+    endedAt?: Date | string | null
+    interactions?: InteractionLogUncheckedCreateNestedManyWithoutSessionInput
+  }
+
+  export type ConversationSessionCreateOrConnectWithoutLessonInput = {
+    where: ConversationSessionWhereUniqueInput
+    create: XOR<ConversationSessionCreateWithoutLessonInput, ConversationSessionUncheckedCreateWithoutLessonInput>
+  }
+
+  export type ConversationSessionCreateManyLessonInputEnvelope = {
+    data: ConversationSessionCreateManyLessonInput | ConversationSessionCreateManyLessonInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ModuleUpsertWithoutLessonsInput = {
     update: XOR<ModuleUpdateWithoutLessonsInput, ModuleUncheckedUpdateWithoutLessonsInput>
     create: XOR<ModuleCreateWithoutLessonsInput, ModuleUncheckedCreateWithoutLessonsInput>
@@ -17055,14 +19073,18 @@ export namespace Prisma {
   export type ModuleUpdateWithoutLessonsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
     level?: LevelUpdateOneRequiredWithoutModulesNestedInput
   }
 
   export type ModuleUncheckedUpdateWithoutLessonsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
     levelId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -17082,6 +19104,22 @@ export namespace Prisma {
     data: XOR<UserProgressUpdateManyMutationInput, UserProgressUncheckedUpdateManyWithoutLessonInput>
   }
 
+  export type ConversationSessionUpsertWithWhereUniqueWithoutLessonInput = {
+    where: ConversationSessionWhereUniqueInput
+    update: XOR<ConversationSessionUpdateWithoutLessonInput, ConversationSessionUncheckedUpdateWithoutLessonInput>
+    create: XOR<ConversationSessionCreateWithoutLessonInput, ConversationSessionUncheckedCreateWithoutLessonInput>
+  }
+
+  export type ConversationSessionUpdateWithWhereUniqueWithoutLessonInput = {
+    where: ConversationSessionWhereUniqueInput
+    data: XOR<ConversationSessionUpdateWithoutLessonInput, ConversationSessionUncheckedUpdateWithoutLessonInput>
+  }
+
+  export type ConversationSessionUpdateManyWithWhereWithoutLessonInput = {
+    where: ConversationSessionScalarWhereInput
+    data: XOR<ConversationSessionUpdateManyMutationInput, ConversationSessionUncheckedUpdateManyWithoutLessonInput>
+  }
+
   export type UserCreateWithoutProgressInput = {
     id?: string
     email: string
@@ -17092,6 +19130,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguage?: LanguageCreateNestedOneWithoutUsersInput
+    profile?: UserProfileCreateNestedOneWithoutUserInput
     devices?: DeviceCreateNestedManyWithoutUserInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionCreateNestedManyWithoutUserInput
@@ -17107,6 +19146,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguageId?: string | null
+    profile?: UserProfileUncheckedCreateNestedOneWithoutUserInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
@@ -17122,8 +19162,11 @@ export namespace Prisma {
     title: string
     scenario: string
     systemPrompt: string
+    objectives?: string | null
     order: number
+    isGenerated?: boolean
     module: ModuleCreateNestedOneWithoutLessonsInput
+    sessions?: ConversationSessionCreateNestedManyWithoutLessonInput
   }
 
   export type LessonUncheckedCreateWithoutUserProgressInput = {
@@ -17131,8 +19174,11 @@ export namespace Prisma {
     title: string
     scenario: string
     systemPrompt: string
+    objectives?: string | null
     order: number
+    isGenerated?: boolean
     moduleId: string
+    sessions?: ConversationSessionUncheckedCreateNestedManyWithoutLessonInput
   }
 
   export type LessonCreateOrConnectWithoutUserProgressInput = {
@@ -17161,6 +19207,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguage?: LanguageUpdateOneWithoutUsersNestedInput
+    profile?: UserProfileUpdateOneWithoutUserNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUpdateManyWithoutUserNestedInput
@@ -17176,6 +19223,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: UserProfileUncheckedUpdateOneWithoutUserNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
@@ -17197,8 +19245,11 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     scenario?: StringFieldUpdateOperationsInput | string
     systemPrompt?: StringFieldUpdateOperationsInput | string
+    objectives?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
     module?: ModuleUpdateOneRequiredWithoutLessonsNestedInput
+    sessions?: ConversationSessionUpdateManyWithoutLessonNestedInput
   }
 
   export type LessonUncheckedUpdateWithoutUserProgressInput = {
@@ -17206,8 +19257,11 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     scenario?: StringFieldUpdateOperationsInput | string
     systemPrompt?: StringFieldUpdateOperationsInput | string
+    objectives?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
     moduleId?: StringFieldUpdateOperationsInput | string
+    sessions?: ConversationSessionUncheckedUpdateManyWithoutLessonNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -17220,6 +19274,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguage?: LanguageCreateNestedOneWithoutUsersInput
+    profile?: UserProfileCreateNestedOneWithoutUserInput
     devices?: DeviceCreateNestedManyWithoutUserInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
     progress?: UserProgressCreateNestedManyWithoutUserInput
@@ -17235,6 +19290,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguageId?: string | null
+    profile?: UserProfileUncheckedCreateNestedOneWithoutUserInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
     progress?: UserProgressUncheckedCreateNestedManyWithoutUserInput
@@ -17243,6 +19299,35 @@ export namespace Prisma {
   export type UserCreateOrConnectWithoutSessionsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutSessionsInput, UserUncheckedCreateWithoutSessionsInput>
+  }
+
+  export type LessonCreateWithoutSessionsInput = {
+    id?: string
+    title: string
+    scenario: string
+    systemPrompt: string
+    objectives?: string | null
+    order: number
+    isGenerated?: boolean
+    module: ModuleCreateNestedOneWithoutLessonsInput
+    userProgress?: UserProgressCreateNestedManyWithoutLessonInput
+  }
+
+  export type LessonUncheckedCreateWithoutSessionsInput = {
+    id?: string
+    title: string
+    scenario: string
+    systemPrompt: string
+    objectives?: string | null
+    order: number
+    isGenerated?: boolean
+    moduleId: string
+    userProgress?: UserProgressUncheckedCreateNestedManyWithoutLessonInput
+  }
+
+  export type LessonCreateOrConnectWithoutSessionsInput = {
+    where: LessonWhereUniqueInput
+    create: XOR<LessonCreateWithoutSessionsInput, LessonUncheckedCreateWithoutSessionsInput>
   }
 
   export type InteractionLogCreateWithoutSessionInput = {
@@ -17294,6 +19379,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguage?: LanguageUpdateOneWithoutUsersNestedInput
+    profile?: UserProfileUpdateOneWithoutUserNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
     progress?: UserProgressUpdateManyWithoutUserNestedInput
@@ -17309,9 +19395,45 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: UserProfileUncheckedUpdateOneWithoutUserNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     progress?: UserProgressUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type LessonUpsertWithoutSessionsInput = {
+    update: XOR<LessonUpdateWithoutSessionsInput, LessonUncheckedUpdateWithoutSessionsInput>
+    create: XOR<LessonCreateWithoutSessionsInput, LessonUncheckedCreateWithoutSessionsInput>
+    where?: LessonWhereInput
+  }
+
+  export type LessonUpdateToOneWithWhereWithoutSessionsInput = {
+    where?: LessonWhereInput
+    data: XOR<LessonUpdateWithoutSessionsInput, LessonUncheckedUpdateWithoutSessionsInput>
+  }
+
+  export type LessonUpdateWithoutSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    scenario?: StringFieldUpdateOperationsInput | string
+    systemPrompt?: StringFieldUpdateOperationsInput | string
+    objectives?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    module?: ModuleUpdateOneRequiredWithoutLessonsNestedInput
+    userProgress?: UserProgressUpdateManyWithoutLessonNestedInput
+  }
+
+  export type LessonUncheckedUpdateWithoutSessionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    scenario?: StringFieldUpdateOperationsInput | string
+    systemPrompt?: StringFieldUpdateOperationsInput | string
+    objectives?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    moduleId?: StringFieldUpdateOperationsInput | string
+    userProgress?: UserProgressUncheckedUpdateManyWithoutLessonNestedInput
   }
 
   export type InteractionLogUpsertWithWhereUniqueWithoutSessionInput = {
@@ -17349,12 +19471,14 @@ export namespace Prisma {
     startedAt?: Date | string
     endedAt?: Date | string | null
     user: UserCreateNestedOneWithoutSessionsInput
+    lesson?: LessonCreateNestedOneWithoutSessionsInput
   }
 
   export type ConversationSessionUncheckedCreateWithoutInteractionsInput = {
     id?: string
     userId: string
     mode: $Enums.InteractionMode
+    lessonId?: string | null
     startedAt?: Date | string
     endedAt?: Date | string | null
   }
@@ -17381,12 +19505,14 @@ export namespace Prisma {
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutSessionsNestedInput
+    lesson?: LessonUpdateOneWithoutSessionsNestedInput
   }
 
   export type ConversationSessionUncheckedUpdateWithoutInteractionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     mode?: EnumInteractionModeFieldUpdateOperationsInput | $Enums.InteractionMode
+    lessonId?: NullableStringFieldUpdateOperationsInput | string | null
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -17437,6 +19563,7 @@ export namespace Prisma {
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: UserProfileUpdateOneWithoutUserNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
     progress?: UserProgressUpdateManyWithoutUserNestedInput
@@ -17452,6 +19579,7 @@ export namespace Prisma {
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profile?: UserProfileUncheckedUpdateOneWithoutUserNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     progress?: UserProgressUncheckedUpdateManyWithoutUserNestedInput
@@ -17497,6 +19625,7 @@ export namespace Prisma {
   export type ConversationSessionCreateManyUserInput = {
     id?: string
     mode: $Enums.InteractionMode
+    lessonId?: string | null
     startedAt?: Date | string
     endedAt?: Date | string | null
   }
@@ -17581,12 +19710,14 @@ export namespace Prisma {
     mode?: EnumInteractionModeFieldUpdateOperationsInput | $Enums.InteractionMode
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lesson?: LessonUpdateOneWithoutSessionsNestedInput
     interactions?: InteractionLogUpdateManyWithoutSessionNestedInput
   }
 
   export type ConversationSessionUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     mode?: EnumInteractionModeFieldUpdateOperationsInput | $Enums.InteractionMode
+    lessonId?: NullableStringFieldUpdateOperationsInput | string | null
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     interactions?: InteractionLogUncheckedUpdateManyWithoutSessionNestedInput
@@ -17595,6 +19726,7 @@ export namespace Prisma {
   export type ConversationSessionUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     mode?: EnumInteractionModeFieldUpdateOperationsInput | $Enums.InteractionMode
+    lessonId?: NullableStringFieldUpdateOperationsInput | string | null
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -17602,27 +19734,35 @@ export namespace Prisma {
   export type ModuleCreateManyLevelInput = {
     id?: string
     name: string
+    description?: string | null
     order: number
+    isGenerated?: boolean
   }
 
   export type ModuleUpdateWithoutLevelInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
     lessons?: LessonUpdateManyWithoutModuleNestedInput
   }
 
   export type ModuleUncheckedUpdateWithoutLevelInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
     lessons?: LessonUncheckedUpdateManyWithoutModuleNestedInput
   }
 
   export type ModuleUncheckedUpdateManyWithoutLevelInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type LessonCreateManyModuleInput = {
@@ -17630,7 +19770,9 @@ export namespace Prisma {
     title: string
     scenario: string
     systemPrompt: string
+    objectives?: string | null
     order: number
+    isGenerated?: boolean
   }
 
   export type LessonUpdateWithoutModuleInput = {
@@ -17638,8 +19780,11 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     scenario?: StringFieldUpdateOperationsInput | string
     systemPrompt?: StringFieldUpdateOperationsInput | string
+    objectives?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
     userProgress?: UserProgressUpdateManyWithoutLessonNestedInput
+    sessions?: ConversationSessionUpdateManyWithoutLessonNestedInput
   }
 
   export type LessonUncheckedUpdateWithoutModuleInput = {
@@ -17647,8 +19792,11 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     scenario?: StringFieldUpdateOperationsInput | string
     systemPrompt?: StringFieldUpdateOperationsInput | string
+    objectives?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
     userProgress?: UserProgressUncheckedUpdateManyWithoutLessonNestedInput
+    sessions?: ConversationSessionUncheckedUpdateManyWithoutLessonNestedInput
   }
 
   export type LessonUncheckedUpdateManyWithoutModuleInput = {
@@ -17656,7 +19804,9 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     scenario?: StringFieldUpdateOperationsInput | string
     systemPrompt?: StringFieldUpdateOperationsInput | string
+    objectives?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type UserProgressCreateManyLessonInput = {
@@ -17666,6 +19816,14 @@ export namespace Prisma {
     status?: $Enums.LessonStatus
     attempts?: number
     lastAttempt?: Date | string
+  }
+
+  export type ConversationSessionCreateManyLessonInput = {
+    id?: string
+    userId: string
+    mode: $Enums.InteractionMode
+    startedAt?: Date | string
+    endedAt?: Date | string | null
   }
 
   export type UserProgressUpdateWithoutLessonInput = {
@@ -17693,6 +19851,32 @@ export namespace Prisma {
     status?: EnumLessonStatusFieldUpdateOperationsInput | $Enums.LessonStatus
     attempts?: IntFieldUpdateOperationsInput | number
     lastAttempt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ConversationSessionUpdateWithoutLessonInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    mode?: EnumInteractionModeFieldUpdateOperationsInput | $Enums.InteractionMode
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutSessionsNestedInput
+    interactions?: InteractionLogUpdateManyWithoutSessionNestedInput
+  }
+
+  export type ConversationSessionUncheckedUpdateWithoutLessonInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    mode?: EnumInteractionModeFieldUpdateOperationsInput | $Enums.InteractionMode
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    interactions?: InteractionLogUncheckedUpdateManyWithoutSessionNestedInput
+  }
+
+  export type ConversationSessionUncheckedUpdateManyWithoutLessonInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    mode?: EnumInteractionModeFieldUpdateOperationsInput | $Enums.InteractionMode
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type InteractionLogCreateManySessionInput = {

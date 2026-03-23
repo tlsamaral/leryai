@@ -158,6 +158,19 @@ exports.Prisma.DeviceScalarFieldEnum = {
   userId: 'userId'
 };
 
+exports.Prisma.UserProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  nativeLanguage: 'nativeLanguage',
+  interests: 'interests',
+  hobbies: 'hobbies',
+  occupation: 'occupation',
+  ageGroup: 'ageGroup',
+  learningGoal: 'learningGoal',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.LevelScalarFieldEnum = {
   id: 'id',
   code: 'code',
@@ -168,7 +181,9 @@ exports.Prisma.LevelScalarFieldEnum = {
 exports.Prisma.ModuleScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  description: 'description',
   order: 'order',
+  isGenerated: 'isGenerated',
   levelId: 'levelId'
 };
 
@@ -177,7 +192,9 @@ exports.Prisma.LessonScalarFieldEnum = {
   title: 'title',
   scenario: 'scenario',
   systemPrompt: 'systemPrompt',
+  objectives: 'objectives',
   order: 'order',
+  isGenerated: 'isGenerated',
   moduleId: 'moduleId'
 };
 
@@ -195,6 +212,7 @@ exports.Prisma.ConversationSessionScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   mode: 'mode',
+  lessonId: 'lessonId',
   startedAt: 'startedAt',
   endedAt: 'endedAt'
 };
@@ -257,6 +275,7 @@ exports.Prisma.ModelName = {
   User: 'User',
   Subscription: 'Subscription',
   Device: 'Device',
+  UserProfile: 'UserProfile',
   Level: 'Level',
   Module: 'Module',
   Lesson: 'Lesson',

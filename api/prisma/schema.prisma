@@ -69,6 +69,7 @@ model User {
   targetLanguage   Language? @relation("UserTargetLanguage", fields: [targetLanguageId], references: [id])
 
   // Relações
+  profile       UserProfile?
   devices       Device[]
   subscriptions Subscription[]
   progress      UserProgress[]
@@ -101,6 +102,20 @@ model Device {
   @@index([serialNumber, isActive])
 }
 
+model UserProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  nativeLanguage String   @default("pt-BR") // Idioma nativo do aluno
+  interests      String[] // ex: ["music", "travel", "technology"]
+  hobbies        String[] // ex: ["gaming", "cooking"]
+  occupation     String?  // Profissão — ajuda a contextualizar cenários
+  ageGroup       String?  // ex: "teen", "adult", "senior"
+  learningGoal   String?  // ex: "travel", "work", "academic"
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
 model Level {
   id          String    @id @default(uuid())
   code        UserLevel
@@ -117,12 +132,14 @@ model Level {
 }
 
 model Module {
-  id      String   @id @default(uuid())
-  name    String
-  order   Int // Ordem de progressão dentro do nível
-  levelId String
-  level   Level    @relation(fields: [levelId], references: [id])
-  lessons Lesson[]
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  order       Int // Ordem de progressão dentro do nível
+  isGenerated Boolean  @default(false) // Gerado automaticamente pela IA
+  levelId     String
+  level       Level    @relation(fields: [levelId], references: [id])
+  lessons     Lesson[]
 }
 
 model Lesson {
@@ -130,10 +147,13 @@ model Lesson {
   title        String
   scenario     String // Ex: "At the Airport"
   systemPrompt String         @db.Text // Contexto específico para o Gemini
+  objectives   String?        @db.Text // Objetivos pedagógicos da lição
   order        Int // Ordem dentro do módulo
+  isGenerated  Boolean        @default(false) // Gerada automaticamente pela IA
   moduleId     String
   module       Module         @relation(fields: [moduleId], references: [id])
   userProgress UserProgress[]
+  sessions     ConversationSession[]
 }
 
 model UserProgress {
@@ -157,6 +177,8 @@ model ConversationSession {
   userId       String
   user         User             @relation(fields: [userId], references: [id])
   mode         InteractionMode
+  lessonId     String? // Vincula sessão guiada à lição específica
+  lesson       Lesson?          @relation(fields: [lessonId], references: [id])
   startedAt    DateTime         @default(now())
   endedAt      DateTime?
   interactions InteractionLog[]
