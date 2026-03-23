@@ -1,10 +1,11 @@
 import type { FastifyInstance } from 'fastify'
-import { createDevice } from './create-device'
-import { deleteDevice } from './delete-device'
-import { getDevice } from './get-device'
-import { listDevices } from './list-devices'
-import { registerDevice } from './register-device'
-import { updateDevice } from './update-device'
+import { createDevice } from './create-device.js'
+import { deleteDevice } from './delete-device.js'
+import { getDevice } from './get-device.js'
+import { listDevices } from './list-devices.js'
+import { registerDevice } from './register-device.js'
+import { releaseDevice } from './release-device.js'
+import { updateDevice } from './update-device.js'
 
 export async function devicesIndex(app: FastifyInstance) {
   app.register(listDevices)
@@ -13,4 +14,5 @@ export async function devicesIndex(app: FastifyInstance) {
   app.register(updateDevice)
   app.register(deleteDevice)
   app.register(registerDevice)
+  app.register(releaseDevice)
 }
