@@ -74,6 +74,7 @@ model User {
   subscriptions Subscription[]
   progress      UserProgress[]
   sessions      ConversationSession[]
+  modules       Module[]
 
   @@index([email])
 }
@@ -95,11 +96,12 @@ model Device {
   serialNumber String   @unique // Identificação única física (HWID da Raspberry Pi)
   nickname     String? // Nome dado pelo utilizador
   isActive     Boolean  @default(true)
-  lastSeen     DateTime @default(now())
   userId       String
   user         User     @relation(fields: [userId], references: [id])
+  apiKey       String?  @unique // Token imutável longo para IoT
 
   @@index([serialNumber, isActive])
+  @@index([apiKey])
 }
 
 model UserProfile {
@@ -139,6 +141,8 @@ model Module {
   isGenerated Boolean  @default(false) // Gerado automaticamente pela IA
   levelId     String
   level       Level    @relation(fields: [levelId], references: [id])
+  userId      String? // Vinculado a um usuário específico (se personalizado)
+  user        User?    @relation(fields: [userId], references: [id])
   lessons     Lesson[]
 }
 
