@@ -1,3 +1,4 @@
+import crypto from 'node:crypto'
 import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
@@ -15,7 +16,12 @@ export async function registerDevice(app: FastifyInstance) {
         summary: 'Register device to authenticated user',
         security: [{ bearerAuth: [] }],
         body: z.object({ serialNumber: z.string().min(1) }),
-        response: { 200: z.object({ id: z.string() }) },
+        response: {
+          200: z.object({
+            id: z.string(),
+            apiKey: z.string().nullable(),
+          }),
+        },
       },
     },
     async (request, reply) => {
@@ -25,13 +31,18 @@ export async function registerDevice(app: FastifyInstance) {
       if (!device) throw new NotFoundError('Device not found')
       if (device.userId && device.userId !== userId)
         throw new BadRequestError('Device already claimed by another user')
-      if (device.userId === userId)
-        return reply.status(200).send({ id: device.id })
+
+      if (device.userId === userId && device.apiKey)
+        return reply.status(200).send({ id: device.id, apiKey: device.apiKey })
+
+      const apiKey = `lery_${crypto.randomBytes(32).toString('hex')}`
+
       const updated = await prisma.device.update({
         where: { serialNumber },
-        data: { userId, isActive: false },
+        data: { userId, isActive: true, apiKey },
       })
-      return reply.status(200).send({ id: updated.id })
+
+      return reply.status(200).send({ id: updated.id, apiKey: updated.apiKey })
     },
   )
 }
