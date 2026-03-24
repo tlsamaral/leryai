@@ -19,7 +19,6 @@ export async function listDevices(app: FastifyInstance) {
               serialNumber: z.string(),
               nickname: z.string().nullable(),
               isActive: z.boolean(),
-              lastSeen: z.string(),
               userId: z.string(),
             }),
           ),
@@ -35,7 +34,6 @@ export async function listDevices(app: FastifyInstance) {
           serialNumber: d.serialNumber,
           nickname: d.nickname,
           isActive: d.isActive,
-          lastSeen: d.lastSeen.toISOString(),
           userId: d.userId,
         })),
       )
