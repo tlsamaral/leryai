@@ -1878,6 +1878,7 @@ export namespace Prisma {
     subscriptions: number
     progress: number
     sessions: number
+    modules: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1885,6 +1886,7 @@ export namespace Prisma {
     subscriptions?: boolean | UserCountOutputTypeCountSubscriptionsArgs
     progress?: boolean | UserCountOutputTypeCountProgressArgs
     sessions?: boolean | UserCountOutputTypeCountSessionsArgs
+    modules?: boolean | UserCountOutputTypeCountModulesArgs
   }
 
   // Custom InputTypes
@@ -1924,6 +1926,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ConversationSessionWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountModulesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ModuleWhereInput
   }
 
 
@@ -3364,6 +3373,7 @@ export namespace Prisma {
     subscriptions?: boolean | User$subscriptionsArgs<ExtArgs>
     progress?: boolean | User$progressArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
+    modules?: boolean | User$modulesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3413,6 +3423,7 @@ export namespace Prisma {
     subscriptions?: boolean | User$subscriptionsArgs<ExtArgs>
     progress?: boolean | User$progressArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
+    modules?: boolean | User$modulesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3431,6 +3442,7 @@ export namespace Prisma {
       subscriptions: Prisma.$SubscriptionPayload<ExtArgs>[]
       progress: Prisma.$UserProgressPayload<ExtArgs>[]
       sessions: Prisma.$ConversationSessionPayload<ExtArgs>[]
+      modules: Prisma.$ModulePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3842,6 +3854,7 @@ export namespace Prisma {
     subscriptions<T extends User$subscriptionsArgs<ExtArgs> = {}>(args?: Subset<T, User$subscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     progress<T extends User$progressArgs<ExtArgs> = {}>(args?: Subset<T, User$progressArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserProgressPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sessions<T extends User$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    modules<T extends User$modulesArgs<ExtArgs> = {}>(args?: Subset<T, User$modulesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ModulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4407,6 +4420,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ConversationSessionScalarFieldEnum | ConversationSessionScalarFieldEnum[]
+  }
+
+  /**
+   * User.modules
+   */
+  export type User$modulesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Module
+     */
+    select?: ModuleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Module
+     */
+    omit?: ModuleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ModuleInclude<ExtArgs> | null
+    where?: ModuleWhereInput
+    orderBy?: ModuleOrderByWithRelationInput | ModuleOrderByWithRelationInput[]
+    cursor?: ModuleWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ModuleScalarFieldEnum | ModuleScalarFieldEnum[]
   }
 
   /**
@@ -5514,8 +5551,8 @@ export namespace Prisma {
     serialNumber: string | null
     nickname: string | null
     isActive: boolean | null
-    lastSeen: Date | null
     userId: string | null
+    apiKey: string | null
   }
 
   export type DeviceMaxAggregateOutputType = {
@@ -5523,8 +5560,8 @@ export namespace Prisma {
     serialNumber: string | null
     nickname: string | null
     isActive: boolean | null
-    lastSeen: Date | null
     userId: string | null
+    apiKey: string | null
   }
 
   export type DeviceCountAggregateOutputType = {
@@ -5532,8 +5569,8 @@ export namespace Prisma {
     serialNumber: number
     nickname: number
     isActive: number
-    lastSeen: number
     userId: number
+    apiKey: number
     _all: number
   }
 
@@ -5543,8 +5580,8 @@ export namespace Prisma {
     serialNumber?: true
     nickname?: true
     isActive?: true
-    lastSeen?: true
     userId?: true
+    apiKey?: true
   }
 
   export type DeviceMaxAggregateInputType = {
@@ -5552,8 +5589,8 @@ export namespace Prisma {
     serialNumber?: true
     nickname?: true
     isActive?: true
-    lastSeen?: true
     userId?: true
+    apiKey?: true
   }
 
   export type DeviceCountAggregateInputType = {
@@ -5561,8 +5598,8 @@ export namespace Prisma {
     serialNumber?: true
     nickname?: true
     isActive?: true
-    lastSeen?: true
     userId?: true
+    apiKey?: true
     _all?: true
   }
 
@@ -5643,8 +5680,8 @@ export namespace Prisma {
     serialNumber: string
     nickname: string | null
     isActive: boolean
-    lastSeen: Date
     userId: string
+    apiKey: string | null
     _count: DeviceCountAggregateOutputType | null
     _min: DeviceMinAggregateOutputType | null
     _max: DeviceMaxAggregateOutputType | null
@@ -5669,8 +5706,8 @@ export namespace Prisma {
     serialNumber?: boolean
     nickname?: boolean
     isActive?: boolean
-    lastSeen?: boolean
     userId?: boolean
+    apiKey?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["device"]>
 
@@ -5679,8 +5716,8 @@ export namespace Prisma {
     serialNumber?: boolean
     nickname?: boolean
     isActive?: boolean
-    lastSeen?: boolean
     userId?: boolean
+    apiKey?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["device"]>
 
@@ -5689,8 +5726,8 @@ export namespace Prisma {
     serialNumber?: boolean
     nickname?: boolean
     isActive?: boolean
-    lastSeen?: boolean
     userId?: boolean
+    apiKey?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["device"]>
 
@@ -5699,11 +5736,11 @@ export namespace Prisma {
     serialNumber?: boolean
     nickname?: boolean
     isActive?: boolean
-    lastSeen?: boolean
     userId?: boolean
+    apiKey?: boolean
   }
 
-  export type DeviceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "serialNumber" | "nickname" | "isActive" | "lastSeen" | "userId", ExtArgs["result"]["device"]>
+  export type DeviceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "serialNumber" | "nickname" | "isActive" | "userId" | "apiKey", ExtArgs["result"]["device"]>
   export type DeviceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -5724,8 +5761,8 @@ export namespace Prisma {
       serialNumber: string
       nickname: string | null
       isActive: boolean
-      lastSeen: Date
       userId: string
+      apiKey: string | null
     }, ExtArgs["result"]["device"]>
     composites: {}
   }
@@ -6154,8 +6191,8 @@ export namespace Prisma {
     readonly serialNumber: FieldRef<"Device", 'String'>
     readonly nickname: FieldRef<"Device", 'String'>
     readonly isActive: FieldRef<"Device", 'Boolean'>
-    readonly lastSeen: FieldRef<"Device", 'DateTime'>
     readonly userId: FieldRef<"Device", 'String'>
+    readonly apiKey: FieldRef<"Device", 'String'>
   }
     
 
@@ -8787,6 +8824,7 @@ export namespace Prisma {
     order: number | null
     isGenerated: boolean | null
     levelId: string | null
+    userId: string | null
   }
 
   export type ModuleMaxAggregateOutputType = {
@@ -8796,6 +8834,7 @@ export namespace Prisma {
     order: number | null
     isGenerated: boolean | null
     levelId: string | null
+    userId: string | null
   }
 
   export type ModuleCountAggregateOutputType = {
@@ -8805,6 +8844,7 @@ export namespace Prisma {
     order: number
     isGenerated: number
     levelId: number
+    userId: number
     _all: number
   }
 
@@ -8824,6 +8864,7 @@ export namespace Prisma {
     order?: true
     isGenerated?: true
     levelId?: true
+    userId?: true
   }
 
   export type ModuleMaxAggregateInputType = {
@@ -8833,6 +8874,7 @@ export namespace Prisma {
     order?: true
     isGenerated?: true
     levelId?: true
+    userId?: true
   }
 
   export type ModuleCountAggregateInputType = {
@@ -8842,6 +8884,7 @@ export namespace Prisma {
     order?: true
     isGenerated?: true
     levelId?: true
+    userId?: true
     _all?: true
   }
 
@@ -8938,6 +8981,7 @@ export namespace Prisma {
     order: number
     isGenerated: boolean
     levelId: string
+    userId: string | null
     _count: ModuleCountAggregateOutputType | null
     _avg: ModuleAvgAggregateOutputType | null
     _sum: ModuleSumAggregateOutputType | null
@@ -8966,7 +9010,9 @@ export namespace Prisma {
     order?: boolean
     isGenerated?: boolean
     levelId?: boolean
+    userId?: boolean
     level?: boolean | LevelDefaultArgs<ExtArgs>
+    user?: boolean | Module$userArgs<ExtArgs>
     lessons?: boolean | Module$lessonsArgs<ExtArgs>
     _count?: boolean | ModuleCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["module"]>
@@ -8978,7 +9024,9 @@ export namespace Prisma {
     order?: boolean
     isGenerated?: boolean
     levelId?: boolean
+    userId?: boolean
     level?: boolean | LevelDefaultArgs<ExtArgs>
+    user?: boolean | Module$userArgs<ExtArgs>
   }, ExtArgs["result"]["module"]>
 
   export type ModuleSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -8988,7 +9036,9 @@ export namespace Prisma {
     order?: boolean
     isGenerated?: boolean
     levelId?: boolean
+    userId?: boolean
     level?: boolean | LevelDefaultArgs<ExtArgs>
+    user?: boolean | Module$userArgs<ExtArgs>
   }, ExtArgs["result"]["module"]>
 
   export type ModuleSelectScalar = {
@@ -8998,25 +9048,30 @@ export namespace Prisma {
     order?: boolean
     isGenerated?: boolean
     levelId?: boolean
+    userId?: boolean
   }
 
-  export type ModuleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "order" | "isGenerated" | "levelId", ExtArgs["result"]["module"]>
+  export type ModuleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "order" | "isGenerated" | "levelId" | "userId", ExtArgs["result"]["module"]>
   export type ModuleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     level?: boolean | LevelDefaultArgs<ExtArgs>
+    user?: boolean | Module$userArgs<ExtArgs>
     lessons?: boolean | Module$lessonsArgs<ExtArgs>
     _count?: boolean | ModuleCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ModuleIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     level?: boolean | LevelDefaultArgs<ExtArgs>
+    user?: boolean | Module$userArgs<ExtArgs>
   }
   export type ModuleIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     level?: boolean | LevelDefaultArgs<ExtArgs>
+    user?: boolean | Module$userArgs<ExtArgs>
   }
 
   export type $ModulePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Module"
     objects: {
       level: Prisma.$LevelPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs> | null
       lessons: Prisma.$LessonPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -9026,6 +9081,7 @@ export namespace Prisma {
       order: number
       isGenerated: boolean
       levelId: string
+      userId: string | null
     }, ExtArgs["result"]["module"]>
     composites: {}
   }
@@ -9421,6 +9477,7 @@ export namespace Prisma {
   export interface Prisma__ModuleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     level<T extends LevelDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LevelDefaultArgs<ExtArgs>>): Prisma__LevelClient<$Result.GetResult<Prisma.$LevelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends Module$userArgs<ExtArgs> = {}>(args?: Subset<T, Module$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     lessons<T extends Module$lessonsArgs<ExtArgs> = {}>(args?: Subset<T, Module$lessonsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LessonPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -9457,6 +9514,7 @@ export namespace Prisma {
     readonly order: FieldRef<"Module", 'Int'>
     readonly isGenerated: FieldRef<"Module", 'Boolean'>
     readonly levelId: FieldRef<"Module", 'String'>
+    readonly userId: FieldRef<"Module", 'String'>
   }
     
 
@@ -9850,6 +9908,25 @@ export namespace Prisma {
      * Limit how many Modules to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Module.user
+   */
+  export type Module$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -14517,8 +14594,8 @@ export namespace Prisma {
     serialNumber: 'serialNumber',
     nickname: 'nickname',
     isActive: 'isActive',
-    lastSeen: 'lastSeen',
-    userId: 'userId'
+    userId: 'userId',
+    apiKey: 'apiKey'
   };
 
   export type DeviceScalarFieldEnum = (typeof DeviceScalarFieldEnum)[keyof typeof DeviceScalarFieldEnum]
@@ -14556,7 +14633,8 @@ export namespace Prisma {
     description: 'description',
     order: 'order',
     isGenerated: 'isGenerated',
-    levelId: 'levelId'
+    levelId: 'levelId',
+    userId: 'userId'
   };
 
   export type ModuleScalarFieldEnum = (typeof ModuleScalarFieldEnum)[keyof typeof ModuleScalarFieldEnum]
@@ -14842,6 +14920,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionListRelationFilter
     progress?: UserProgressListRelationFilter
     sessions?: ConversationSessionListRelationFilter
+    modules?: ModuleListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -14860,6 +14939,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionOrderByRelationAggregateInput
     progress?: UserProgressOrderByRelationAggregateInput
     sessions?: ConversationSessionOrderByRelationAggregateInput
+    modules?: ModuleOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -14881,6 +14961,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionListRelationFilter
     progress?: UserProgressListRelationFilter
     sessions?: ConversationSessionListRelationFilter
+    modules?: ModuleListRelationFilter
   }, "id" | "email" | "username">
 
   export type UserOrderByWithAggregationInput = {
@@ -14981,8 +15062,8 @@ export namespace Prisma {
     serialNumber?: StringFilter<"Device"> | string
     nickname?: StringNullableFilter<"Device"> | string | null
     isActive?: BoolFilter<"Device"> | boolean
-    lastSeen?: DateTimeFilter<"Device"> | Date | string
     userId?: StringFilter<"Device"> | string
+    apiKey?: StringNullableFilter<"Device"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
@@ -14991,31 +15072,31 @@ export namespace Prisma {
     serialNumber?: SortOrder
     nickname?: SortOrderInput | SortOrder
     isActive?: SortOrder
-    lastSeen?: SortOrder
     userId?: SortOrder
+    apiKey?: SortOrderInput | SortOrder
     user?: UserOrderByWithRelationInput
   }
 
   export type DeviceWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     serialNumber?: string
+    apiKey?: string
     AND?: DeviceWhereInput | DeviceWhereInput[]
     OR?: DeviceWhereInput[]
     NOT?: DeviceWhereInput | DeviceWhereInput[]
     nickname?: StringNullableFilter<"Device"> | string | null
     isActive?: BoolFilter<"Device"> | boolean
-    lastSeen?: DateTimeFilter<"Device"> | Date | string
     userId?: StringFilter<"Device"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id" | "serialNumber">
+  }, "id" | "serialNumber" | "apiKey">
 
   export type DeviceOrderByWithAggregationInput = {
     id?: SortOrder
     serialNumber?: SortOrder
     nickname?: SortOrderInput | SortOrder
     isActive?: SortOrder
-    lastSeen?: SortOrder
     userId?: SortOrder
+    apiKey?: SortOrderInput | SortOrder
     _count?: DeviceCountOrderByAggregateInput
     _max?: DeviceMaxOrderByAggregateInput
     _min?: DeviceMinOrderByAggregateInput
@@ -15029,8 +15110,8 @@ export namespace Prisma {
     serialNumber?: StringWithAggregatesFilter<"Device"> | string
     nickname?: StringNullableWithAggregatesFilter<"Device"> | string | null
     isActive?: BoolWithAggregatesFilter<"Device"> | boolean
-    lastSeen?: DateTimeWithAggregatesFilter<"Device"> | Date | string
     userId?: StringWithAggregatesFilter<"Device"> | string
+    apiKey?: StringNullableWithAggregatesFilter<"Device"> | string | null
   }
 
   export type UserProfileWhereInput = {
@@ -15177,7 +15258,9 @@ export namespace Prisma {
     order?: IntFilter<"Module"> | number
     isGenerated?: BoolFilter<"Module"> | boolean
     levelId?: StringFilter<"Module"> | string
+    userId?: StringNullableFilter<"Module"> | string | null
     level?: XOR<LevelScalarRelationFilter, LevelWhereInput>
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     lessons?: LessonListRelationFilter
   }
 
@@ -15188,7 +15271,9 @@ export namespace Prisma {
     order?: SortOrder
     isGenerated?: SortOrder
     levelId?: SortOrder
+    userId?: SortOrderInput | SortOrder
     level?: LevelOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
     lessons?: LessonOrderByRelationAggregateInput
   }
 
@@ -15202,7 +15287,9 @@ export namespace Prisma {
     order?: IntFilter<"Module"> | number
     isGenerated?: BoolFilter<"Module"> | boolean
     levelId?: StringFilter<"Module"> | string
+    userId?: StringNullableFilter<"Module"> | string | null
     level?: XOR<LevelScalarRelationFilter, LevelWhereInput>
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     lessons?: LessonListRelationFilter
   }, "id">
 
@@ -15213,6 +15300,7 @@ export namespace Prisma {
     order?: SortOrder
     isGenerated?: SortOrder
     levelId?: SortOrder
+    userId?: SortOrderInput | SortOrder
     _count?: ModuleCountOrderByAggregateInput
     _avg?: ModuleAvgOrderByAggregateInput
     _max?: ModuleMaxOrderByAggregateInput
@@ -15230,6 +15318,7 @@ export namespace Prisma {
     order?: IntWithAggregatesFilter<"Module"> | number
     isGenerated?: BoolWithAggregatesFilter<"Module"> | boolean
     levelId?: StringWithAggregatesFilter<"Module"> | string
+    userId?: StringNullableWithAggregatesFilter<"Module"> | string | null
   }
 
   export type LessonWhereInput = {
@@ -15593,6 +15682,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
     progress?: UserProgressCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    modules?: ModuleCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -15610,6 +15700,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
     progress?: UserProgressUncheckedCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    modules?: ModuleUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -15627,6 +15718,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
     progress?: UserProgressUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    modules?: ModuleUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -15644,6 +15736,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     progress?: UserProgressUncheckedUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    modules?: ModuleUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -15748,7 +15841,7 @@ export namespace Prisma {
     serialNumber: string
     nickname?: string | null
     isActive?: boolean
-    lastSeen?: Date | string
+    apiKey?: string | null
     user: UserCreateNestedOneWithoutDevicesInput
   }
 
@@ -15757,8 +15850,8 @@ export namespace Prisma {
     serialNumber: string
     nickname?: string | null
     isActive?: boolean
-    lastSeen?: Date | string
     userId: string
+    apiKey?: string | null
   }
 
   export type DeviceUpdateInput = {
@@ -15766,7 +15859,7 @@ export namespace Prisma {
     serialNumber?: StringFieldUpdateOperationsInput | string
     nickname?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
-    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    apiKey?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUpdateOneRequiredWithoutDevicesNestedInput
   }
 
@@ -15775,8 +15868,8 @@ export namespace Prisma {
     serialNumber?: StringFieldUpdateOperationsInput | string
     nickname?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
-    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
+    apiKey?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DeviceCreateManyInput = {
@@ -15784,8 +15877,8 @@ export namespace Prisma {
     serialNumber: string
     nickname?: string | null
     isActive?: boolean
-    lastSeen?: Date | string
     userId: string
+    apiKey?: string | null
   }
 
   export type DeviceUpdateManyMutationInput = {
@@ -15793,7 +15886,7 @@ export namespace Prisma {
     serialNumber?: StringFieldUpdateOperationsInput | string
     nickname?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
-    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    apiKey?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DeviceUncheckedUpdateManyInput = {
@@ -15801,8 +15894,8 @@ export namespace Prisma {
     serialNumber?: StringFieldUpdateOperationsInput | string
     nickname?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
-    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
+    apiKey?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserProfileCreateInput = {
@@ -15954,6 +16047,7 @@ export namespace Prisma {
     order: number
     isGenerated?: boolean
     level: LevelCreateNestedOneWithoutModulesInput
+    user?: UserCreateNestedOneWithoutModulesInput
     lessons?: LessonCreateNestedManyWithoutModuleInput
   }
 
@@ -15964,6 +16058,7 @@ export namespace Prisma {
     order: number
     isGenerated?: boolean
     levelId: string
+    userId?: string | null
     lessons?: LessonUncheckedCreateNestedManyWithoutModuleInput
   }
 
@@ -15974,6 +16069,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     isGenerated?: BoolFieldUpdateOperationsInput | boolean
     level?: LevelUpdateOneRequiredWithoutModulesNestedInput
+    user?: UserUpdateOneWithoutModulesNestedInput
     lessons?: LessonUpdateManyWithoutModuleNestedInput
   }
 
@@ -15984,6 +16080,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     isGenerated?: BoolFieldUpdateOperationsInput | boolean
     levelId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
     lessons?: LessonUncheckedUpdateManyWithoutModuleNestedInput
   }
 
@@ -15994,6 +16091,7 @@ export namespace Prisma {
     order: number
     isGenerated?: boolean
     levelId: string
+    userId?: string | null
   }
 
   export type ModuleUpdateManyMutationInput = {
@@ -16011,6 +16109,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     isGenerated?: BoolFieldUpdateOperationsInput | boolean
     levelId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type LessonCreateInput = {
@@ -16470,6 +16569,12 @@ export namespace Prisma {
     none?: ConversationSessionWhereInput
   }
 
+  export type ModuleListRelationFilter = {
+    every?: ModuleWhereInput
+    some?: ModuleWhereInput
+    none?: ModuleWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -16488,6 +16593,10 @@ export namespace Prisma {
   }
 
   export type ConversationSessionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ModuleOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -16609,8 +16718,8 @@ export namespace Prisma {
     serialNumber?: SortOrder
     nickname?: SortOrder
     isActive?: SortOrder
-    lastSeen?: SortOrder
     userId?: SortOrder
+    apiKey?: SortOrder
   }
 
   export type DeviceMaxOrderByAggregateInput = {
@@ -16618,8 +16727,8 @@ export namespace Prisma {
     serialNumber?: SortOrder
     nickname?: SortOrder
     isActive?: SortOrder
-    lastSeen?: SortOrder
     userId?: SortOrder
+    apiKey?: SortOrder
   }
 
   export type DeviceMinOrderByAggregateInput = {
@@ -16627,8 +16736,8 @@ export namespace Prisma {
     serialNumber?: SortOrder
     nickname?: SortOrder
     isActive?: SortOrder
-    lastSeen?: SortOrder
     userId?: SortOrder
+    apiKey?: SortOrder
   }
 
   export type StringNullableListFilter<$PrismaModel = never> = {
@@ -16679,16 +16788,6 @@ export namespace Prisma {
     isNot?: LanguageWhereInput
   }
 
-  export type ModuleListRelationFilter = {
-    every?: ModuleWhereInput
-    some?: ModuleWhereInput
-    none?: ModuleWhereInput
-  }
-
-  export type ModuleOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
   export type LevelCodeLanguageIdCompoundUniqueInput = {
     code: $Enums.UserLevel
     languageId: string
@@ -16731,6 +16830,11 @@ export namespace Prisma {
     isNot?: LevelWhereInput
   }
 
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
   export type LessonListRelationFilter = {
     every?: LessonWhereInput
     some?: LessonWhereInput
@@ -16748,6 +16852,7 @@ export namespace Prisma {
     order?: SortOrder
     isGenerated?: SortOrder
     levelId?: SortOrder
+    userId?: SortOrder
   }
 
   export type ModuleAvgOrderByAggregateInput = {
@@ -16761,6 +16866,7 @@ export namespace Prisma {
     order?: SortOrder
     isGenerated?: SortOrder
     levelId?: SortOrder
+    userId?: SortOrder
   }
 
   export type ModuleMinOrderByAggregateInput = {
@@ -16770,6 +16876,7 @@ export namespace Prisma {
     order?: SortOrder
     isGenerated?: SortOrder
     levelId?: SortOrder
+    userId?: SortOrder
   }
 
   export type ModuleSumOrderByAggregateInput = {
@@ -17195,6 +17302,13 @@ export namespace Prisma {
     connect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
   }
 
+  export type ModuleCreateNestedManyWithoutUserInput = {
+    create?: XOR<ModuleCreateWithoutUserInput, ModuleUncheckedCreateWithoutUserInput> | ModuleCreateWithoutUserInput[] | ModuleUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ModuleCreateOrConnectWithoutUserInput | ModuleCreateOrConnectWithoutUserInput[]
+    createMany?: ModuleCreateManyUserInputEnvelope
+    connect?: ModuleWhereUniqueInput | ModuleWhereUniqueInput[]
+  }
+
   export type UserProfileUncheckedCreateNestedOneWithoutUserInput = {
     create?: XOR<UserProfileCreateWithoutUserInput, UserProfileUncheckedCreateWithoutUserInput>
     connectOrCreate?: UserProfileCreateOrConnectWithoutUserInput
@@ -17227,6 +17341,13 @@ export namespace Prisma {
     connectOrCreate?: ConversationSessionCreateOrConnectWithoutUserInput | ConversationSessionCreateOrConnectWithoutUserInput[]
     createMany?: ConversationSessionCreateManyUserInputEnvelope
     connect?: ConversationSessionWhereUniqueInput | ConversationSessionWhereUniqueInput[]
+  }
+
+  export type ModuleUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<ModuleCreateWithoutUserInput, ModuleUncheckedCreateWithoutUserInput> | ModuleCreateWithoutUserInput[] | ModuleUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ModuleCreateOrConnectWithoutUserInput | ModuleCreateOrConnectWithoutUserInput[]
+    createMany?: ModuleCreateManyUserInputEnvelope
+    connect?: ModuleWhereUniqueInput | ModuleWhereUniqueInput[]
   }
 
   export type EnumUserLevelFieldUpdateOperationsInput = {
@@ -17309,6 +17430,20 @@ export namespace Prisma {
     deleteMany?: ConversationSessionScalarWhereInput | ConversationSessionScalarWhereInput[]
   }
 
+  export type ModuleUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ModuleCreateWithoutUserInput, ModuleUncheckedCreateWithoutUserInput> | ModuleCreateWithoutUserInput[] | ModuleUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ModuleCreateOrConnectWithoutUserInput | ModuleCreateOrConnectWithoutUserInput[]
+    upsert?: ModuleUpsertWithWhereUniqueWithoutUserInput | ModuleUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ModuleCreateManyUserInputEnvelope
+    set?: ModuleWhereUniqueInput | ModuleWhereUniqueInput[]
+    disconnect?: ModuleWhereUniqueInput | ModuleWhereUniqueInput[]
+    delete?: ModuleWhereUniqueInput | ModuleWhereUniqueInput[]
+    connect?: ModuleWhereUniqueInput | ModuleWhereUniqueInput[]
+    update?: ModuleUpdateWithWhereUniqueWithoutUserInput | ModuleUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ModuleUpdateManyWithWhereWithoutUserInput | ModuleUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ModuleScalarWhereInput | ModuleScalarWhereInput[]
+  }
+
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
   }
@@ -17377,6 +17512,20 @@ export namespace Prisma {
     update?: ConversationSessionUpdateWithWhereUniqueWithoutUserInput | ConversationSessionUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: ConversationSessionUpdateManyWithWhereWithoutUserInput | ConversationSessionUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: ConversationSessionScalarWhereInput | ConversationSessionScalarWhereInput[]
+  }
+
+  export type ModuleUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ModuleCreateWithoutUserInput, ModuleUncheckedCreateWithoutUserInput> | ModuleCreateWithoutUserInput[] | ModuleUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ModuleCreateOrConnectWithoutUserInput | ModuleCreateOrConnectWithoutUserInput[]
+    upsert?: ModuleUpsertWithWhereUniqueWithoutUserInput | ModuleUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ModuleCreateManyUserInputEnvelope
+    set?: ModuleWhereUniqueInput | ModuleWhereUniqueInput[]
+    disconnect?: ModuleWhereUniqueInput | ModuleWhereUniqueInput[]
+    delete?: ModuleWhereUniqueInput | ModuleWhereUniqueInput[]
+    connect?: ModuleWhereUniqueInput | ModuleWhereUniqueInput[]
+    update?: ModuleUpdateWithWhereUniqueWithoutUserInput | ModuleUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ModuleUpdateManyWithWhereWithoutUserInput | ModuleUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ModuleScalarWhereInput | ModuleScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutSubscriptionsInput = {
@@ -17505,6 +17654,12 @@ export namespace Prisma {
     connect?: LevelWhereUniqueInput
   }
 
+  export type UserCreateNestedOneWithoutModulesInput = {
+    create?: XOR<UserCreateWithoutModulesInput, UserUncheckedCreateWithoutModulesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutModulesInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type LessonCreateNestedManyWithoutModuleInput = {
     create?: XOR<LessonCreateWithoutModuleInput, LessonUncheckedCreateWithoutModuleInput> | LessonCreateWithoutModuleInput[] | LessonUncheckedCreateWithoutModuleInput[]
     connectOrCreate?: LessonCreateOrConnectWithoutModuleInput | LessonCreateOrConnectWithoutModuleInput[]
@@ -17533,6 +17688,16 @@ export namespace Prisma {
     upsert?: LevelUpsertWithoutModulesInput
     connect?: LevelWhereUniqueInput
     update?: XOR<XOR<LevelUpdateToOneWithWhereWithoutModulesInput, LevelUpdateWithoutModulesInput>, LevelUncheckedUpdateWithoutModulesInput>
+  }
+
+  export type UserUpdateOneWithoutModulesNestedInput = {
+    create?: XOR<UserCreateWithoutModulesInput, UserUncheckedCreateWithoutModulesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutModulesInput
+    upsert?: UserUpsertWithoutModulesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutModulesInput, UserUpdateWithoutModulesInput>, UserUncheckedUpdateWithoutModulesInput>
   }
 
   export type LessonUpdateManyWithoutModuleNestedInput = {
@@ -18102,6 +18267,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
     progress?: UserProgressCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    modules?: ModuleCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTargetLanguageInput = {
@@ -18118,6 +18284,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
     progress?: UserProgressUncheckedCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    modules?: ModuleUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTargetLanguageInput = {
@@ -18244,7 +18411,7 @@ export namespace Prisma {
     serialNumber: string
     nickname?: string | null
     isActive?: boolean
-    lastSeen?: Date | string
+    apiKey?: string | null
   }
 
   export type DeviceUncheckedCreateWithoutUserInput = {
@@ -18252,7 +18419,7 @@ export namespace Prisma {
     serialNumber: string
     nickname?: string | null
     isActive?: boolean
-    lastSeen?: Date | string
+    apiKey?: string | null
   }
 
   export type DeviceCreateOrConnectWithoutUserInput = {
@@ -18347,6 +18514,36 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ModuleCreateWithoutUserInput = {
+    id?: string
+    name: string
+    description?: string | null
+    order: number
+    isGenerated?: boolean
+    level: LevelCreateNestedOneWithoutModulesInput
+    lessons?: LessonCreateNestedManyWithoutModuleInput
+  }
+
+  export type ModuleUncheckedCreateWithoutUserInput = {
+    id?: string
+    name: string
+    description?: string | null
+    order: number
+    isGenerated?: boolean
+    levelId: string
+    lessons?: LessonUncheckedCreateNestedManyWithoutModuleInput
+  }
+
+  export type ModuleCreateOrConnectWithoutUserInput = {
+    where: ModuleWhereUniqueInput
+    create: XOR<ModuleCreateWithoutUserInput, ModuleUncheckedCreateWithoutUserInput>
+  }
+
+  export type ModuleCreateManyUserInputEnvelope = {
+    data: ModuleCreateManyUserInput | ModuleCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type LanguageUpsertWithoutUsersInput = {
     update: XOR<LanguageUpdateWithoutUsersInput, LanguageUncheckedUpdateWithoutUsersInput>
     create: XOR<LanguageCreateWithoutUsersInput, LanguageUncheckedCreateWithoutUsersInput>
@@ -18435,8 +18632,8 @@ export namespace Prisma {
     serialNumber?: StringFilter<"Device"> | string
     nickname?: StringNullableFilter<"Device"> | string | null
     isActive?: BoolFilter<"Device"> | boolean
-    lastSeen?: DateTimeFilter<"Device"> | Date | string
     userId?: StringFilter<"Device"> | string
+    apiKey?: StringNullableFilter<"Device"> | string | null
   }
 
   export type SubscriptionUpsertWithWhereUniqueWithoutUserInput = {
@@ -18524,6 +18721,35 @@ export namespace Prisma {
     endedAt?: DateTimeNullableFilter<"ConversationSession"> | Date | string | null
   }
 
+  export type ModuleUpsertWithWhereUniqueWithoutUserInput = {
+    where: ModuleWhereUniqueInput
+    update: XOR<ModuleUpdateWithoutUserInput, ModuleUncheckedUpdateWithoutUserInput>
+    create: XOR<ModuleCreateWithoutUserInput, ModuleUncheckedCreateWithoutUserInput>
+  }
+
+  export type ModuleUpdateWithWhereUniqueWithoutUserInput = {
+    where: ModuleWhereUniqueInput
+    data: XOR<ModuleUpdateWithoutUserInput, ModuleUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ModuleUpdateManyWithWhereWithoutUserInput = {
+    where: ModuleScalarWhereInput
+    data: XOR<ModuleUpdateManyMutationInput, ModuleUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type ModuleScalarWhereInput = {
+    AND?: ModuleScalarWhereInput | ModuleScalarWhereInput[]
+    OR?: ModuleScalarWhereInput[]
+    NOT?: ModuleScalarWhereInput | ModuleScalarWhereInput[]
+    id?: StringFilter<"Module"> | string
+    name?: StringFilter<"Module"> | string
+    description?: StringNullableFilter<"Module"> | string | null
+    order?: IntFilter<"Module"> | number
+    isGenerated?: BoolFilter<"Module"> | boolean
+    levelId?: StringFilter<"Module"> | string
+    userId?: StringNullableFilter<"Module"> | string | null
+  }
+
   export type UserCreateWithoutSubscriptionsInput = {
     id?: string
     email: string
@@ -18538,6 +18764,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     progress?: UserProgressCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    modules?: ModuleCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSubscriptionsInput = {
@@ -18554,6 +18781,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     progress?: UserProgressUncheckedCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    modules?: ModuleUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSubscriptionsInput = {
@@ -18586,6 +18814,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     progress?: UserProgressUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    modules?: ModuleUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubscriptionsInput = {
@@ -18602,6 +18831,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     progress?: UserProgressUncheckedUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    modules?: ModuleUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutDevicesInput = {
@@ -18618,6 +18848,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
     progress?: UserProgressCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    modules?: ModuleCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDevicesInput = {
@@ -18634,6 +18865,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
     progress?: UserProgressUncheckedCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    modules?: ModuleUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDevicesInput = {
@@ -18666,6 +18898,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
     progress?: UserProgressUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    modules?: ModuleUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDevicesInput = {
@@ -18682,6 +18915,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     progress?: UserProgressUncheckedUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    modules?: ModuleUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutProfileInput = {
@@ -18698,6 +18932,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
     progress?: UserProgressCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    modules?: ModuleCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProfileInput = {
@@ -18714,6 +18949,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
     progress?: UserProgressUncheckedCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    modules?: ModuleUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProfileInput = {
@@ -18746,6 +18982,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
     progress?: UserProgressUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    modules?: ModuleUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProfileInput = {
@@ -18762,6 +18999,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     progress?: UserProgressUncheckedUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    modules?: ModuleUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type LanguageCreateWithoutLevelsInput = {
@@ -18793,6 +19031,7 @@ export namespace Prisma {
     description?: string | null
     order: number
     isGenerated?: boolean
+    user?: UserCreateNestedOneWithoutModulesInput
     lessons?: LessonCreateNestedManyWithoutModuleInput
   }
 
@@ -18802,6 +19041,7 @@ export namespace Prisma {
     description?: string | null
     order: number
     isGenerated?: boolean
+    userId?: string | null
     lessons?: LessonUncheckedCreateNestedManyWithoutModuleInput
   }
 
@@ -18860,18 +19100,6 @@ export namespace Prisma {
     data: XOR<ModuleUpdateManyMutationInput, ModuleUncheckedUpdateManyWithoutLevelInput>
   }
 
-  export type ModuleScalarWhereInput = {
-    AND?: ModuleScalarWhereInput | ModuleScalarWhereInput[]
-    OR?: ModuleScalarWhereInput[]
-    NOT?: ModuleScalarWhereInput | ModuleScalarWhereInput[]
-    id?: StringFilter<"Module"> | string
-    name?: StringFilter<"Module"> | string
-    description?: StringNullableFilter<"Module"> | string | null
-    order?: IntFilter<"Module"> | number
-    isGenerated?: BoolFilter<"Module"> | boolean
-    levelId?: StringFilter<"Module"> | string
-  }
-
   export type LevelCreateWithoutModulesInput = {
     id?: string
     code: $Enums.UserLevel
@@ -18889,6 +19117,45 @@ export namespace Prisma {
   export type LevelCreateOrConnectWithoutModulesInput = {
     where: LevelWhereUniqueInput
     create: XOR<LevelCreateWithoutModulesInput, LevelUncheckedCreateWithoutModulesInput>
+  }
+
+  export type UserCreateWithoutModulesInput = {
+    id?: string
+    email: string
+    username: string
+    passwordHash: string
+    name: string
+    currentLevel?: $Enums.UserLevel
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    targetLanguage?: LanguageCreateNestedOneWithoutUsersInput
+    profile?: UserProfileCreateNestedOneWithoutUserInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    progress?: UserProgressCreateNestedManyWithoutUserInput
+    sessions?: ConversationSessionCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutModulesInput = {
+    id?: string
+    email: string
+    username: string
+    passwordHash: string
+    name: string
+    currentLevel?: $Enums.UserLevel
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    targetLanguageId?: string | null
+    profile?: UserProfileUncheckedCreateNestedOneWithoutUserInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    progress?: UserProgressUncheckedCreateNestedManyWithoutUserInput
+    sessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutModulesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutModulesInput, UserUncheckedCreateWithoutModulesInput>
   }
 
   export type LessonCreateWithoutModuleInput = {
@@ -18950,6 +19217,51 @@ export namespace Prisma {
     languageId?: StringFieldUpdateOperationsInput | string
   }
 
+  export type UserUpsertWithoutModulesInput = {
+    update: XOR<UserUpdateWithoutModulesInput, UserUncheckedUpdateWithoutModulesInput>
+    create: XOR<UserCreateWithoutModulesInput, UserUncheckedCreateWithoutModulesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutModulesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutModulesInput, UserUncheckedUpdateWithoutModulesInput>
+  }
+
+  export type UserUpdateWithoutModulesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    targetLanguage?: LanguageUpdateOneWithoutUsersNestedInput
+    profile?: UserProfileUpdateOneWithoutUserNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    progress?: UserProgressUpdateManyWithoutUserNestedInput
+    sessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutModulesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: UserProfileUncheckedUpdateOneWithoutUserNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    progress?: UserProgressUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+  }
+
   export type LessonUpsertWithWhereUniqueWithoutModuleInput = {
     where: LessonWhereUniqueInput
     update: XOR<LessonUpdateWithoutModuleInput, LessonUncheckedUpdateWithoutModuleInput>
@@ -18987,6 +19299,7 @@ export namespace Prisma {
     order: number
     isGenerated?: boolean
     level: LevelCreateNestedOneWithoutModulesInput
+    user?: UserCreateNestedOneWithoutModulesInput
   }
 
   export type ModuleUncheckedCreateWithoutLessonsInput = {
@@ -18996,6 +19309,7 @@ export namespace Prisma {
     order: number
     isGenerated?: boolean
     levelId: string
+    userId?: string | null
   }
 
   export type ModuleCreateOrConnectWithoutLessonsInput = {
@@ -19077,6 +19391,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     isGenerated?: BoolFieldUpdateOperationsInput | boolean
     level?: LevelUpdateOneRequiredWithoutModulesNestedInput
+    user?: UserUpdateOneWithoutModulesNestedInput
   }
 
   export type ModuleUncheckedUpdateWithoutLessonsInput = {
@@ -19086,6 +19401,7 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     isGenerated?: BoolFieldUpdateOperationsInput | boolean
     levelId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserProgressUpsertWithWhereUniqueWithoutLessonInput = {
@@ -19134,6 +19450,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionCreateNestedManyWithoutUserInput
+    modules?: ModuleCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProgressInput = {
@@ -19150,6 +19467,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
     sessions?: ConversationSessionUncheckedCreateNestedManyWithoutUserInput
+    modules?: ModuleUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProgressInput = {
@@ -19211,6 +19529,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    modules?: ModuleUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProgressInput = {
@@ -19227,6 +19546,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    modules?: ModuleUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type LessonUpsertWithoutUserProgressInput = {
@@ -19278,6 +19598,7 @@ export namespace Prisma {
     devices?: DeviceCreateNestedManyWithoutUserInput
     subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
     progress?: UserProgressCreateNestedManyWithoutUserInput
+    modules?: ModuleCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -19294,6 +19615,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
     subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
     progress?: UserProgressUncheckedCreateNestedManyWithoutUserInput
+    modules?: ModuleUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -19383,6 +19705,7 @@ export namespace Prisma {
     devices?: DeviceUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
     progress?: UserProgressUpdateManyWithoutUserNestedInput
+    modules?: ModuleUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -19399,6 +19722,7 @@ export namespace Prisma {
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     progress?: UserProgressUncheckedUpdateManyWithoutUserNestedInput
+    modules?: ModuleUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type LessonUpsertWithoutSessionsInput = {
@@ -19568,6 +19892,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
     progress?: UserProgressUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUpdateManyWithoutUserNestedInput
+    modules?: ModuleUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTargetLanguageInput = {
@@ -19584,6 +19909,7 @@ export namespace Prisma {
     subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
     progress?: UserProgressUncheckedUpdateManyWithoutUserNestedInput
     sessions?: ConversationSessionUncheckedUpdateManyWithoutUserNestedInput
+    modules?: ModuleUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutTargetLanguageInput = {
@@ -19602,7 +19928,7 @@ export namespace Prisma {
     serialNumber: string
     nickname?: string | null
     isActive?: boolean
-    lastSeen?: Date | string
+    apiKey?: string | null
   }
 
   export type SubscriptionCreateManyUserInput = {
@@ -19630,12 +19956,21 @@ export namespace Prisma {
     endedAt?: Date | string | null
   }
 
+  export type ModuleCreateManyUserInput = {
+    id?: string
+    name: string
+    description?: string | null
+    order: number
+    isGenerated?: boolean
+    levelId: string
+  }
+
   export type DeviceUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     serialNumber?: StringFieldUpdateOperationsInput | string
     nickname?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
-    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    apiKey?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DeviceUncheckedUpdateWithoutUserInput = {
@@ -19643,7 +19978,7 @@ export namespace Prisma {
     serialNumber?: StringFieldUpdateOperationsInput | string
     nickname?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
-    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    apiKey?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DeviceUncheckedUpdateManyWithoutUserInput = {
@@ -19651,7 +19986,7 @@ export namespace Prisma {
     serialNumber?: StringFieldUpdateOperationsInput | string
     nickname?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
-    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    apiKey?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type SubscriptionUpdateWithoutUserInput = {
@@ -19731,12 +20066,42 @@ export namespace Prisma {
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type ModuleUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    level?: LevelUpdateOneRequiredWithoutModulesNestedInput
+    lessons?: LessonUpdateManyWithoutModuleNestedInput
+  }
+
+  export type ModuleUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    levelId?: StringFieldUpdateOperationsInput | string
+    lessons?: LessonUncheckedUpdateManyWithoutModuleNestedInput
+  }
+
+  export type ModuleUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
+    isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    levelId?: StringFieldUpdateOperationsInput | string
+  }
+
   export type ModuleCreateManyLevelInput = {
     id?: string
     name: string
     description?: string | null
     order: number
     isGenerated?: boolean
+    userId?: string | null
   }
 
   export type ModuleUpdateWithoutLevelInput = {
@@ -19745,6 +20110,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    user?: UserUpdateOneWithoutModulesNestedInput
     lessons?: LessonUpdateManyWithoutModuleNestedInput
   }
 
@@ -19754,6 +20120,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
     lessons?: LessonUncheckedUpdateManyWithoutModuleNestedInput
   }
 
@@ -19763,6 +20130,7 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     isGenerated?: BoolFieldUpdateOperationsInput | boolean
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type LessonCreateManyModuleInput = {

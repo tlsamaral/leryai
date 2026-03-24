@@ -154,8 +154,8 @@ exports.Prisma.DeviceScalarFieldEnum = {
   serialNumber: 'serialNumber',
   nickname: 'nickname',
   isActive: 'isActive',
-  lastSeen: 'lastSeen',
-  userId: 'userId'
+  userId: 'userId',
+  apiKey: 'apiKey'
 };
 
 exports.Prisma.UserProfileScalarFieldEnum = {
@@ -184,7 +184,8 @@ exports.Prisma.ModuleScalarFieldEnum = {
   description: 'description',
   order: 'order',
   isGenerated: 'isGenerated',
-  levelId: 'levelId'
+  levelId: 'levelId',
+  userId: 'userId'
 };
 
 exports.Prisma.LessonScalarFieldEnum = {
