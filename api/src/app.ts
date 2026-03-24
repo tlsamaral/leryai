@@ -9,6 +9,7 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from 'fastify-type-provider-zod'
+import { prisma } from './lib/prisma.js'
 import { errorHandler } from './error-handler.js'
 import { appRoutes } from './http/routes.js'
 
@@ -26,10 +27,33 @@ app.register(fastifyCookie, {
   secret: process.env.JWT_SECRET ?? '12###12###',
 })
 
-// Add authenticate decorator to validate JWT on protected routes
+// Add authenticate decorator to validate JWT or Device API Key on protected routes
 app.decorate(
   'authenticate',
   async (request: FastifyRequest, reply: FastifyReply) => {
+    const authHeader = request.headers.authorization
+
+    if (authHeader?.startsWith('Bearer lery_')) {
+      const apiKey = authHeader.replace('Bearer ', '')
+
+      const device = await prisma.device.findUnique({
+        where: { apiKey },
+        select: { userId: true },
+      })
+
+      if (!device) {
+        return reply.status(401).send({ message: 'Invalid Device API Key' })
+      }
+
+      // Inject the user ID into the request for down-stream use
+      request.user = {
+        sub: device.userId,
+        id: device.userId,
+      } as any
+
+      return
+    }
+
     await request.jwtVerify()
   },
 )
