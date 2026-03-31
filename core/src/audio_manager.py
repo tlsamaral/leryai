@@ -6,8 +6,21 @@ import os
 import time
 
 class AudioManager:
-    def __init__(self, sample_rate=44100):
-        self.sample_rate = sample_rate
+    def __init__(self, sample_rate=None):
+        device = os.environ.get("LERY_AUDIO_DEVICE")
+        if device is not None:
+            try:
+                device = int(device)
+            except ValueError:
+                pass
+        self.device = device
+
+        if sample_rate is None:
+            info = sd.query_devices(self.device or sd.default.device[0], 'input')
+            self.sample_rate = int(info['default_samplerate'])
+        else:
+            self.sample_rate = sample_rate
+
         pygame.mixer.init()
 
     def record_audio(self, output_filename="data/audio/input.wav", threshold=30, silence_duration=2.0):
@@ -26,14 +39,7 @@ class AudioManager:
         
         has_spoken = False
         
-        device = os.environ.get("LERY_AUDIO_DEVICE")
-        if device is not None:
-            try:
-                device = int(device)
-            except ValueError:
-                pass # keep as string
-                
-        with sd.InputStream(samplerate=self.sample_rate, channels=1, dtype='int16', device=device) as stream:
+        with sd.InputStream(samplerate=self.sample_rate, channels=1, dtype='int16', device=self.device) as stream:
             while True:
                 data, overflow = stream.read(chunk_size)
                 recording.append(data)
