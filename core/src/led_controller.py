@@ -27,8 +27,14 @@ class LEDController:
         self.strip = None
 
         if HAS_NEOPIXEL:
-            self.strip = PixelStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
-            self.strip.begin()
+            try:
+                self.strip = PixelStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
+                self.strip.begin()
+            except (RuntimeError, OSError) as e:
+                print(f"[LED] Failed to initialize NeoPixel: {e}")
+                print("[LED] Running in debug mode (no hardware LED)")
+                self.strip = None
+                self.is_embedded = False
         elif HAS_GPIO:
             # Fallback for simple RPi.GPIO HIGH/LOW
             GPIO.setmode(GPIO.BCM)

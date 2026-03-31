@@ -26,7 +26,14 @@ class AudioManager:
         
         has_spoken = False
         
-        with sd.InputStream(samplerate=self.sample_rate, channels=1, dtype='int16') as stream:
+        device = os.environ.get("LERY_AUDIO_DEVICE")
+        if device is not None:
+            try:
+                device = int(device)
+            except ValueError:
+                pass # keep as string
+                
+        with sd.InputStream(samplerate=self.sample_rate, channels=1, dtype='int16', device=device) as stream:
             while True:
                 data, overflow = stream.read(chunk_size)
                 recording.append(data)
