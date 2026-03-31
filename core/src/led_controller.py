@@ -36,8 +36,8 @@ COLORS = {
 
 class LEDController:
     def __init__(self):
-        self.is_embedded = HAS_NEOPIXEL or HAS_GPIO
         self.strip = None
+        self.use_gpio = False
         self._animation_thread = None
         self._stop_animation = threading.Event()
 
@@ -49,11 +49,17 @@ class LEDController:
                 print(f"[LED] Failed to initialize NeoPixel: {e}")
                 print("[LED] Running in debug mode (no hardware LED)")
                 self.strip = None
-                self.is_embedded = False
-        elif HAS_GPIO:
-            GPIO.setmode(GPIO.BCM)
-            GPIO.setup(LED_PIN, GPIO.OUT)
-            GPIO.output(LED_PIN, GPIO.LOW)
+
+        if not self.strip and HAS_GPIO:
+            try:
+                GPIO.setmode(GPIO.BCM)
+                GPIO.setup(LED_PIN, GPIO.OUT)
+                GPIO.output(LED_PIN, GPIO.LOW)
+                self.use_gpio = True
+            except RuntimeError as e:
+                print(f"[LED] Failed to initialize GPIO: {e}")
+
+        self.is_embedded = self.strip is not None or self.use_gpio
 
     def _stop_current_animation(self):
         self._stop_animation.set()
@@ -101,18 +107,16 @@ class LEDController:
 
         if state == 'IDLE':
             self._set_all_pixels(0, 0, 0)
-            if HAS_GPIO:
+            if self.use_gpio:
                 GPIO.output(LED_PIN, GPIO.LOW)
 
         elif state == 'LISTENING':
-            # Pulsação amarela em thread separada
             self._animation_thread = threading.Thread(
                 target=self._pulse_loop, args=(r, g, b), daemon=True
             )
             self._animation_thread.start()
 
         else:
-            # THINKING, SPEAKING, ERROR — cor estática
             self._set_all_pixels(r, g, b)
-            if HAS_GPIO:
+            if self.use_gpio:
                 GPIO.output(LED_PIN, GPIO.HIGH)
