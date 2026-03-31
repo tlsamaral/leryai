@@ -1,30 +1,45 @@
+import threading
+import time
+import math
+
 try:
     from rpi_ws281x import PixelStrip, Color
     HAS_NEOPIXEL = True
 except ImportError:
     HAS_NEOPIXEL = False
-    # Fallback dummy function para não dar NameError no PC
     def Color(r, g, b): return (r << 16) | (g << 8) | b
-    
+
     try:
         import RPi.GPIO as GPIO
         HAS_GPIO = True
     except ImportError:
         HAS_GPIO = False
 
-# LED ring configuration:
-LED_COUNT      = 12      # Number of LED pixels. Adjust based on your ring
-LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
-LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
-LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
-LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
-LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
-LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
+# LED ring configuration
+LED_COUNT      = 12
+LED_PIN        = 18
+LED_FREQ_HZ    = 800000
+LED_DMA        = 10
+LED_BRIGHTNESS = 80       # Tom mais suave (max 255)
+LED_INVERT     = False
+LED_CHANNEL    = 0
+
+# Cores suaves (R, G, B)
+COLORS = {
+    'IDLE':      (0, 0, 0),         # Apagado
+    'LISTENING': (180, 160, 0),     # Amarelo suave — pulsante
+    'THINKING':  (0, 150, 60),      # Verde suave — estático
+    'SPEAKING':  (0, 60, 160),      # Azul suave — estático
+    'ERROR':     (160, 0, 0),       # Vermelho suave
+}
+
 
 class LEDController:
     def __init__(self):
         self.is_embedded = HAS_NEOPIXEL or HAS_GPIO
         self.strip = None
+        self._animation_thread = None
+        self._stop_animation = threading.Event()
 
         if HAS_NEOPIXEL:
             try:
@@ -36,51 +51,68 @@ class LEDController:
                 self.strip = None
                 self.is_embedded = False
         elif HAS_GPIO:
-            # Fallback for simple RPi.GPIO HIGH/LOW
             GPIO.setmode(GPIO.BCM)
             GPIO.setup(LED_PIN, GPIO.OUT)
             GPIO.output(LED_PIN, GPIO.LOW)
 
+    def _stop_current_animation(self):
+        self._stop_animation.set()
+        if self._animation_thread and self._animation_thread.is_alive():
+            self._animation_thread.join(timeout=1)
+        self._stop_animation.clear()
+
+    def _set_all_pixels(self, r, g, b):
+        if HAS_NEOPIXEL and self.strip:
+            color = Color(r, g, b)
+            for i in range(self.strip.numPixels()):
+                self.strip.setPixelColor(i, color)
+            self.strip.show()
+
+    def _pulse_loop(self, base_r, base_g, base_b):
+        """Pulsação suave usando seno. Varia o brilho de 20% a 100%."""
+        t = 0.0
+        while not self._stop_animation.is_set():
+            factor = 0.2 + 0.8 * (0.5 + 0.5 * math.sin(t))
+            r = int(base_r * factor)
+            g = int(base_g * factor)
+            b = int(base_b * factor)
+            self._set_all_pixels(r, g, b)
+            t += 0.1
+            time.sleep(0.03)
+
     def set_state(self, state):
-        """
-        Updates the LED status based on the system state.
-        States: IDLE, LISTENING, THINKING, SPEAKING
-        """
-        color_name = "UNKNOWN"
-        action = "Waiting"
-        # Color(r, g, b) - wait, WS2812 is usually GRB, but rpi_ws281x Color handles it usually as Color(R, G, B)
-        color_val = None
+        self._stop_current_animation()
 
-        if state == "IDLE":
-            color_name = "OFF"
-            color_val = Color(0, 0, 0)
-            action = "Idle"
-        elif state == "LISTENING":
-            color_name = "BLUE"
-            color_val = Color(0, 0, 255)
-            action = "Listening"
-        elif state == "THINKING":
-            color_name = "YELLOW"
-            color_val = Color(255, 255, 0)
-            action = "Thinking"
-        elif state == "SPEAKING":
-            color_name = "GREEN"
-            color_val = Color(0, 255, 0)
-            action = "Speaking"
+        color = COLORS.get(state, COLORS['IDLE'])
+        r, g, b = color
 
-        self._update_led(color_name, color_val, action)
+        state_labels = {
+            'IDLE': 'Idle',
+            'LISTENING': 'Listening',
+            'THINKING': 'Thinking',
+            'SPEAKING': 'Speaking',
+            'ERROR': 'Error',
+        }
+        label = state_labels.get(state, 'Unknown')
+        print(f"[LED: {state} - {label}]")
 
-    def _update_led(self, color_name, color_val, action):
-        if self.is_embedded:
-            if HAS_NEOPIXEL and self.strip:
-                for i in range(self.strip.numPixels()):
-                    self.strip.setPixelColor(i, color_val)
-                self.strip.show()
-            elif HAS_GPIO:
-                if color_name == "OFF":
-                    GPIO.output(LED_PIN, GPIO.LOW)
-                else:
-                    GPIO.output(LED_PIN, GPIO.HIGH)
-                    
-        # Debug Mode logging
-        print(f"[LED: {color_name} - {action}]")
+        if not self.is_embedded:
+            return
+
+        if state == 'IDLE':
+            self._set_all_pixels(0, 0, 0)
+            if HAS_GPIO:
+                GPIO.output(LED_PIN, GPIO.LOW)
+
+        elif state == 'LISTENING':
+            # Pulsação amarela em thread separada
+            self._animation_thread = threading.Thread(
+                target=self._pulse_loop, args=(r, g, b), daemon=True
+            )
+            self._animation_thread.start()
+
+        else:
+            # THINKING, SPEAKING, ERROR — cor estática
+            self._set_all_pixels(r, g, b)
+            if HAS_GPIO:
+                GPIO.output(LED_PIN, GPIO.HIGH)

@@ -20,6 +20,7 @@ class State(Enum):
     LISTENING = "LISTENING"
     THINKING = "THINKING"
     SPEAKING = "SPEAKING"
+    ERROR = "ERROR"
 
 class LeryAI:
     def __init__(self):
@@ -116,7 +117,13 @@ class LeryAI:
                     # 5. Get Brain Response
                     response_text = self.brain_manager.generate_response(user_text)
                     print(f"Lery: {response_text}")
-                    
+
+                    if response_text == "I'm sorry, I'm having trouble thinking right now.":
+                        self.set_state(State.ERROR)
+                        time.sleep(2)
+                        self.set_state(State.IDLE)
+                        continue
+
                     # 6. THINKING -> SPEAKING
                     self.set_state(State.SPEAKING)
                     
