@@ -1,4 +1,4 @@
-import google.generativeai as genai
+from google import genai
 import os
 from dotenv import load_dotenv
 
@@ -8,14 +8,13 @@ class BrainManager:
         api_key = os.getenv("GOOGLE_API_KEY")
         if not api_key:
             raise ValueError("GOOGLE_API_KEY not found in .env")
-        
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-flash-latest') # Back to the working version
-        self.chat = self.model.start_chat(history=[])
+
+        self.client = genai.Client(api_key=api_key)
         self.system_prompt = self._load_system_prompt()
-        
-        # Initial context setting
-        self.chat.send_message(self.system_prompt)
+        self.chat = self.client.chats.create(
+            model='gemini-2.0-flash',
+            config={'system_instruction': self.system_prompt}
+        )
 
     def _load_system_prompt(self):
         try:
@@ -30,7 +29,7 @@ class BrainManager:
         Sends user input to Gemini and returns the response text.
         """
         try:
-            response = self.chat.send_message(user_input)
+            response = self.chat.send_message(message=user_input)
             return response.text
         except Exception as e:
             print(f"Error generating response: {e}")

@@ -2,7 +2,7 @@ sounddevice
 scipy
 numpy
 pygame
-google-generativeai
+google-genai
 openai
 gTTS
 python-dotenv
