@@ -1,4 +1,5 @@
 from google import genai
+from google.genai import types
 import os
 from dotenv import load_dotenv
 
@@ -12,8 +13,10 @@ class BrainManager:
         self.client = genai.Client(api_key=api_key)
         self.system_prompt = self._load_system_prompt()
         self.chat = self.client.chats.create(
-            model='gemini-2.0-flash',
-            config={'system_instruction': self.system_prompt}
+            model='gemini-2.5-flash',
+            config=types.GenerateContentConfig(
+                system_instruction=self.system_prompt
+            )
         )
 
     def _load_system_prompt(self):
