@@ -9,11 +9,11 @@ except ImportError:
     HAS_NEOPIXEL = False
     def Color(r, g, b): return (r << 16) | (g << 8) | b
 
-    try:
-        import RPi.GPIO as GPIO
-        HAS_GPIO = True
-    except ImportError:
-        HAS_GPIO = False
+try:
+    import RPi.GPIO as GPIO
+    HAS_GPIO = True
+except ImportError:
+    HAS_GPIO = False
 
 # LED ring configuration
 LED_COUNT      = 12
