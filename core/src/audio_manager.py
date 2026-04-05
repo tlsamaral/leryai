@@ -7,7 +7,13 @@ import time
 
 class AudioManager:
     def __init__(self, sample_rate=None):
-        self.device = None
+        device = os.environ.get("LERY_AUDIO_DEVICE")
+        if device is not None:
+            try:
+                device = int(device)
+            except ValueError:
+                pass
+        self.device = device
 
         if sample_rate is None:
             info = sd.query_devices(self.device or sd.default.device[0], 'input')
@@ -15,7 +21,16 @@ class AudioManager:
         else:
             self.sample_rate = sample_rate
 
-        pygame.mixer.init()
+        output_device = os.environ.get("LERY_AUDIO_OUTPUT_DEVICE")
+        
+        try:
+            if output_device:
+                pygame.mixer.init(devicename=output_device)
+            else:
+                pygame.mixer.init()
+        except Exception as e:
+            print(f"Failed to init pygame mixer with device {output_device}: {e}, falling back to default")
+            pygame.mixer.init()
 
     def record_audio(self, output_filename="data/audio/input.wav", threshold=30, silence_duration=2.0):
         """
