@@ -38,8 +38,7 @@ class LEDController:
     def __init__(self):
         self.strip = None
         self.use_gpio = False
-        self._animation_thread = None
-        self._stop_animation = threading.Event()
+        self.current_state = 'IDLE'
 
         if HAS_NEOPIXEL:
             try:
@@ -61,11 +60,11 @@ class LEDController:
 
         self.is_embedded = self.strip is not None or self.use_gpio
 
-    def _stop_current_animation(self):
-        self._stop_animation.set()
-        if self._animation_thread and self._animation_thread.is_alive():
-            self._animation_thread.join(timeout=1)
-        self._stop_animation.clear()
+        # Start a single persistent background thread for LED animations
+        if self.is_embedded:
+            self._running = True
+            self._thread = threading.Thread(target=self._led_worker, daemon=True)
+            self._thread.start()
 
     def _set_all_pixels(self, r, g, b):
         if HAS_NEOPIXEL and self.strip:
@@ -74,24 +73,44 @@ class LEDController:
                 self.strip.setPixelColor(i, color)
             self.strip.show()
 
-    def _pulse_loop(self, base_r, base_g, base_b):
-        """Pulsação suave usando seno. Varia o brilho de 20% a 100%."""
+    def _led_worker(self):
         t = 0.0
-        while not self._stop_animation.is_set():
-            factor = 0.2 + 0.8 * (0.5 + 0.5 * math.sin(t))
-            r = int(base_r * factor)
-            g = int(base_g * factor)
-            b = int(base_b * factor)
-            self._set_all_pixels(r, g, b)
-            t += 0.1
-            time.sleep(0.03)
+        last_state = None
+        
+        while self._running:
+            state = self.current_state
+            r, g, b = COLORS.get(state, COLORS['IDLE'])
+            
+            if state == 'LISTENING':
+                # Pulsação suave
+                factor = 0.2 + 0.8 * (0.5 + 0.5 * math.sin(t))
+                cur_r = int(r * factor)
+                cur_g = int(g * factor)
+                cur_b = int(b * factor)
+                self._set_all_pixels(cur_r, cur_g, cur_b)
+                t += 0.1
+                time.sleep(0.03)
+            else:
+                # Estático (ou apagado)
+                # Só atualiza a fita se o estado mudou ou se voltamos ao estático
+                if state != last_state:
+                    if state == 'IDLE':
+                        self._set_all_pixels(0, 0, 0)
+                        if self.use_gpio:
+                            GPIO.output(LED_PIN, GPIO.LOW)
+                    else:
+                        self._set_all_pixels(r, g, b)
+                        if self.use_gpio:
+                            GPIO.output(LED_PIN, GPIO.HIGH)
+                
+                # Se não estiver animando, descansa um pouco mais pra não gastar CPU atoa
+                time.sleep(0.1)
+                
+            last_state = state
 
     def set_state(self, state):
-        self._stop_current_animation()
-
-        color = COLORS.get(state, COLORS['IDLE'])
-        r, g, b = color
-
+        self.current_state = state
+        
         state_labels = {
             'IDLE': 'Idle',
             'LISTENING': 'Listening',
@@ -102,21 +121,13 @@ class LEDController:
         label = state_labels.get(state, 'Unknown')
         print(f"[LED: {state} - {label}]")
 
-        if not self.is_embedded:
-            return
-
-        if state == 'IDLE':
+    def cleanup(self):
+        """Forcefully turns off the LED and stops the background worker thread."""
+        if self.is_embedded:
+            self._running = False
+            if hasattr(self, '_thread') and self._thread.is_alive():
+                self._thread.join(timeout=0.5)
             self._set_all_pixels(0, 0, 0)
             if self.use_gpio:
                 GPIO.output(LED_PIN, GPIO.LOW)
 
-        elif state == 'LISTENING':
-            self._animation_thread = threading.Thread(
-                target=self._pulse_loop, args=(r, g, b), daemon=True
-            )
-            self._animation_thread.start()
-
-        else:
-            self._set_all_pixels(r, g, b)
-            if self.use_gpio:
-                GPIO.output(LED_PIN, GPIO.HIGH)

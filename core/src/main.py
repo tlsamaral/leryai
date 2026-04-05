@@ -143,7 +143,7 @@ class LeryAI:
         except KeyboardInterrupt:
             print("\nExiting Lery AI...")
         finally:
-            self.led_controller.set_state("IDLE")
+            self.led_controller.cleanup()
 
 if __name__ == "__main__":
     app = LeryAI()
