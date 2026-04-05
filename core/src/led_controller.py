@@ -16,7 +16,7 @@ except ImportError:
     HAS_GPIO = False
 
 # LED ring configuration
-LED_COUNT      = 12
+LED_COUNT      = 16
 LED_PIN        = 10       # Usando GPIO 10 (SPI MOSI) p/ evitar chiado no P2!
 LED_FREQ_HZ    = 800000
 LED_DMA        = 10
