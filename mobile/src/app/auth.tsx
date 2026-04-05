@@ -1,25 +1,32 @@
+import { Ionicons } from '@expo/vector-icons'
+import { router } from 'expo-router'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useAuthViewModel } from '../features/auth/viewmodels/use-auth-view-model'
 import { ScreenContainer } from '../shared/components/screen-container'
-import { SectionTitle } from '../shared/components/section-title'
-import { theme } from '../shared/theme'
 
 export default function AuthPage() {
   const { signInWithGoogle, isLoading } = useAuthViewModel()
 
   return (
     <ScreenContainer>
-      <View style={styles.content}>
-        <SectionTitle
-          title="Lery AI"
-          subtitle="Converse em ingles sem ansiedade, com seu tutor de voz no hardware."
-        />
-        <View style={styles.panel}>
-          <Text style={styles.panelTitle}>Entrar no app</Text>
-          <Text style={styles.panelDescription}>
-            Acesso mobile via Google apenas.
+      <View style={styles.root}>
+        <Pressable
+          style={styles.backButton}
+          onPress={() => router.replace('/')}
+        >
+          <Ionicons name="arrow-back" size={20} color="#163D32" />
+        </Pressable>
+
+        <View style={styles.card}>
+          <Text style={styles.eyebrow}>Preview de login</Text>
+          <Text style={styles.title}>Acesso por Google</Text>
+          <Text style={styles.subtitle}>
+            Fluxo final de autenticacao unico com Google para sincronizar seu
+            progresso.
           </Text>
+
           <Pressable style={styles.googleButton} onPress={signInWithGoogle}>
+            <Ionicons name="logo-google" size={18} color="#F5FFFB" />
             <Text style={styles.googleButtonText}>
               {isLoading ? 'Conectando...' : 'Continuar com Google'}
             </Text>
@@ -31,39 +38,68 @@ export default function AuthPage() {
 }
 
 const styles = StyleSheet.create({
-  content: {
+  root: {
     flex: 1,
-    padding: theme.spacing.md,
-    justifyContent: 'center',
-    gap: theme.spacing.lg,
-    backgroundColor: theme.colors.bg,
+    backgroundColor: '#F5FAF8',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 28,
+    gap: 16,
   },
-  panel: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.xl,
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 999,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    padding: theme.spacing.lg,
-    gap: theme.spacing.md,
+    borderColor: '#D5E6DF',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  panelTitle: {
-    color: theme.colors.text,
-    fontSize: theme.typography.h1,
+  card: {
+    marginTop: 6,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: '#E0ECE7',
+    backgroundColor: '#FFFFFF',
+    padding: 18,
+    gap: 10,
+    shadowColor: '#102A22',
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 3,
+  },
+  eyebrow: {
+    color: '#2D8068',
+    fontSize: 11,
     fontWeight: '700',
+    textTransform: 'uppercase',
   },
-  panelDescription: {
-    color: theme.colors.muted,
-    fontSize: theme.typography.body,
+  title: {
+    color: '#102A22',
+    fontSize: 34,
+    lineHeight: 40,
+    fontWeight: '800',
+  },
+  subtitle: {
+    color: '#5F746C',
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 6,
   },
   googleButton: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radius.pill,
-    paddingVertical: theme.spacing.sm,
+    minHeight: 50,
+    borderRadius: 999,
+    backgroundColor: '#1F8A70',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
   googleButtonText: {
-    color: theme.colors.surface,
-    fontWeight: '700',
-    fontSize: theme.typography.body,
+    color: '#F5FFFB',
+    fontSize: 15,
+    fontWeight: '800',
   },
 })

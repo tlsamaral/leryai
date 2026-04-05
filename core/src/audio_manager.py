@@ -7,13 +7,7 @@ import time
 
 class AudioManager:
     def __init__(self, sample_rate=None):
-        device = os.environ.get("LERY_AUDIO_DEVICE")
-        if device is not None:
-            try:
-                device = int(device)
-            except ValueError:
-                pass
-        self.device = device
+        self.device = None
 
         if sample_rate is None:
             info = sd.query_devices(self.device or sd.default.device[0], 'input')

@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons'
+import { router } from 'expo-router'
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { ProfileMenuItem } from '../../features/profile/components/profile-menu-item'
 import { StreakHighlight } from '../../features/profile/components/streak-highlight'
@@ -70,6 +71,11 @@ export default function ProfileTab() {
         </View>
 
         <View style={styles.menuCard}>
+          <ProfileMenuItem
+            icon="eye-outline"
+            label="Preview tela inicial"
+            onPress={() => router.push('/?preview=1')}
+          />
           <ProfileMenuItem icon="heart-outline" label="Favoritos" />
           <ProfileMenuItem icon="language-outline" label="Idioma" />
           <ProfileMenuItem icon="card-outline" label="Assinatura" />
