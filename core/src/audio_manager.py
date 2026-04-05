@@ -74,6 +74,12 @@ class AudioManager:
                     break
 
         full_recording = np.concatenate(recording, axis=0)
+        
+        # Garante que as pastas da hierarquia do arquivo existam
+        output_dir = os.path.dirname(output_filename)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+            
         wav.write(output_filename, self.sample_rate, full_recording)
         print(f"Audio saved to {output_filename}")
         return output_filename

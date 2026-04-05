@@ -85,6 +85,12 @@ class LeryAI:
                     continue
                     
                 filename = f"data/audio/output_{i}.mp3"
+                
+                # Garante que as pastas da hierarquia do arquivo existam
+                output_dir = os.path.dirname(filename)
+                if output_dir:
+                    os.makedirs(output_dir, exist_ok=True)
+                    
                 tts = gTTS(text=clean_text, lang=lang)
                 tts.save(filename)
                 files.append(filename)
