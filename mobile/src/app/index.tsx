@@ -33,99 +33,129 @@ export default function IndexPage() {
   }
 
   return (
-    <ScreenContainer>
+    <View style={styles.root}>
       <StatusBar style="light" />
-      <View style={styles.root}>
-        <View style={styles.glowTop} />
-        <View style={styles.glowBottom} />
 
-        <View style={styles.logoTopWrap}>
-          <View style={styles.logoBadge}>
-            <Ionicons name="sparkles" size={24} color="#E8FBF3" />
-          </View>
-          <Text style={styles.logoLabel}>Lery AI</Text>
+      <View style={styles.glowTop} />
+      <View style={styles.glowMid} />
+      <View style={styles.glowBottom} />
+
+      <View style={styles.logoTopWrap}>
+        <View style={styles.logoBadge}>
+          <Ionicons name="radio-outline" size={26} color="#04D2FF" />
         </View>
+        <View style={styles.logoTextRow}>
+          <Text style={styles.logoLery}>Lery</Text>
+          <Text style={styles.logoAI}> AI</Text>
+        </View>
+        <Text style={styles.logoTagline}>Tutor de voz • Aprenda inglês</Text>
+      </View>
 
-        <View style={styles.spacer} />
+      <View style={styles.spacer} />
 
-        <View style={styles.bottomWrap}>
-          <BlurView
-            intensity={24}
-            tint="light"
-            style={StyleSheet.absoluteFill}
-          />
-          <View style={styles.bottomCard}>
-            <Text style={styles.title}>
-              Fluencia em ingles com tutor de voz
+      <View style={styles.bottomWrap}>
+        <BlurView intensity={20} tint="light" style={StyleSheet.absoluteFill} />
+        <View style={styles.bottomCard}>
+          <Text style={styles.title}>Fluência em inglês com tutor de voz</Text>
+          <Text style={styles.subtitle}>
+            Pratique conversação real, acompanhe progresso e controle seu Lery
+            físico.
+          </Text>
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.primaryButton,
+              pressed && styles.pressed,
+            ]}
+            onPress={signInWithGoogle}
+          >
+            <Ionicons name="logo-google" size={18} color="#040D12" />
+            <Text style={styles.primaryButtonText}>
+              {isLoading ? 'Conectando...' : 'Continuar com Google'}
             </Text>
-            <Text style={styles.subtitle}>
-              Pratique conversacao real, acompanhe progresso e controle seu Lery
-              fisico.
-            </Text>
+          </Pressable>
 
-            <Pressable style={styles.googleButton} onPress={signInWithGoogle}>
-              <Ionicons name="logo-google" size={18} color="#0D2A22" />
-              <Text style={styles.googleButtonText}>
-                {isLoading ? 'Conectando...' : 'Continuar com Google'}
-              </Text>
-            </Pressable>
-
-            <Pressable
-              style={styles.previewLink}
-              onPress={() => router.push('/auth')}
-            >
-              <Text style={styles.previewText}>Preview do layout de login</Text>
-            </Pressable>
-          </View>
+          <Pressable
+            style={styles.previewLink}
+            onPress={() => router.push('/auth')}
+          >
+            <Text style={styles.previewText}>Entrar com e-mail e senha</Text>
+          </Pressable>
         </View>
       </View>
-    </ScreenContainer>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#031824',
+    backgroundColor: '#040D12',
   },
   glowTop: {
     position: 'absolute',
-    top: -80,
-    right: -60,
-    width: 220,
-    height: 220,
+    top: -100,
+    right: -80,
+    width: 280,
+    height: 280,
     borderRadius: 999,
-    backgroundColor: 'rgba(30, 127, 255, 0.26)',
+    backgroundColor: 'rgba(4, 210, 255, 0.22)',
+  },
+  glowMid: {
+    position: 'absolute',
+    top: '38%',
+    left: '30%',
+    width: 180,
+    height: 180,
+    borderRadius: 999,
+    backgroundColor: 'rgba(4, 210, 255, 0.08)',
   },
   glowBottom: {
     position: 'absolute',
-    bottom: 120,
-    left: -90,
-    width: 250,
-    height: 250,
+    bottom: 180,
+    left: -100,
+    width: 240,
+    height: 240,
     borderRadius: 999,
-    backgroundColor: 'rgba(31, 138, 112, 0.2)',
+    backgroundColor: 'rgba(0, 145, 184, 0.16)',
   },
   logoTopWrap: {
-    marginTop: 48,
+    marginTop: 72,
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   logoBadge: {
-    width: 52,
-    height: 52,
+    width: 64,
+    height: 64,
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.09)',
-    borderWidth: 1,
-    borderColor: 'rgba(231,249,242,0.24)',
+    backgroundColor: 'rgba(4, 210, 255, 0.12)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(4, 210, 255, 0.36)',
   },
-  logoLabel: {
-    color: '#E7F7F0',
-    fontSize: 14,
-    fontWeight: '700',
+  logoTextRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginTop: 4,
+  },
+  logoLery: {
+    color: '#EAFAFF',
+    fontSize: 22,
+    fontWeight: '800',
     letterSpacing: 0.4,
+  },
+  logoAI: {
+    color: '#04D2FF',
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
+  logoTagline: {
+    color: 'rgba(4, 210, 255, 0.55)',
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.6,
   },
   spacer: {
     flex: 1,
@@ -134,8 +164,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 34,
     borderTopRightRadius: 34,
     overflow: 'hidden',
-    borderWidth: 0,
-    borderBottomWidth: 0,
     backgroundColor: 'transparent',
   },
   bottomCard: {
@@ -144,41 +172,51 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 28,
     borderWidth: 1,
-    borderColor: '#E2ECE7',
+    borderColor: '#E0EBF1',
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
     paddingTop: 24,
-    paddingBottom: 30,
+    paddingBottom: 32,
     gap: 12,
-    shadowColor: '#102A22',
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    shadowColor: '#04D2FF',
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: -4 },
+    elevation: 6,
   },
   title: {
-    color: '#102A22',
-    fontSize: 31,
-    lineHeight: 37,
+    color: '#0A1B23',
+    fontSize: 30,
+    lineHeight: 36,
     fontWeight: '800',
+    letterSpacing: -0.4,
   },
   subtitle: {
-    color: '#5F746C',
+    color: '#5A6E78',
     fontSize: 15,
     lineHeight: 22,
   },
-  googleButton: {
+  primaryButton: {
     marginTop: 4,
     minHeight: 52,
     borderRadius: 999,
-    backgroundColor: '#F5FFF9',
+    backgroundColor: '#04D2FF',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+    shadowColor: '#04D2FF',
+    shadowOpacity: 0.32,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
   },
-  googleButtonText: {
-    color: '#0D2A22',
+  pressed: {
+    opacity: 0.84,
+    transform: [{ scale: 0.97 }],
+  },
+  primaryButtonText: {
+    color: '#040D12',
     fontSize: 16,
     fontWeight: '800',
   },
@@ -187,8 +225,8 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   previewText: {
-    color: '#4F6C62',
-    fontSize: 12,
-    fontWeight: '700',
+    color: '#5A6E78',
+    fontSize: 13,
+    fontWeight: '600',
   },
 })
