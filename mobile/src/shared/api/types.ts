@@ -33,4 +33,13 @@ export interface LeryApi {
   getResults(): Promise<ResultsListResponse>
   getLessonResult(lessonId: string): Promise<LessonResultDetailResponse>
   getProfile(): Promise<ProfileResponse>
+  disputeLog(logId: string, reason: string): Promise<{ id: string; disputeStatus: 'PENDING' }>
+  upsertProfile(input: {
+    nativeLanguage?: string
+    interests?: string[]
+    hobbies?: string[]
+    occupation?: string
+    ageGroup?: string
+    learningGoal?: string
+  }): Promise<void>
 }
