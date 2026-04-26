@@ -33,6 +33,12 @@
         {
           "root": "./src/app"
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permitir acesso à câmera para escanear o QR Code do dispositivo Lery."
+        }
       ]
     ]
   }

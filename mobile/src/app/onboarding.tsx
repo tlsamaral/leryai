@@ -34,25 +34,26 @@ const STEPS: StepDef[] = [
     question:
       'Oi! Eu sou o Lery, seu tutor de inglês 👋\n\nO que você faz da vida? Me conta sua profissão ou área de estudo.',
     label: 'Fale sua profissão',
-    mockAnswer: 'Sou designer de produto',
+    mockAnswer: 'Sou Engenheiro de Software',
   },
   {
     id: 'age_group',
     question: 'Legal! E qual é a sua faixa etária?',
     label: 'Fale sua idade ou faixa',
-    mockAnswer: 'Tenho 27 anos, sou adulto',
+    mockAnswer: 'Tenho 23 anos, sou adulto',
   },
   {
     id: 'interests',
     question: 'Quais assuntos te interessam? Pode citar vários, à vontade!',
     label: 'Fale seus interesses',
-    mockAnswer: 'Gosto de tecnologia, música e viagens',
+    mockAnswer: 'Gosto de tecnologia, música e futebol',
   },
   {
     id: 'hobbies',
     question: 'No seu tempo livre, o que você gosta de fazer?',
     label: 'Fale seus hobbies',
-    mockAnswer: 'Leio bastante e gosto de programar nos fins de semana',
+    mockAnswer:
+      'Gosto muito de programar, assistir jogos e de vez em quando jogar Fortnite',
   },
   {
     id: 'learning_goal',

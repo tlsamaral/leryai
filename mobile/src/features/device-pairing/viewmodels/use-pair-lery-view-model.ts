@@ -44,6 +44,10 @@ export function usePairLeryViewModel() {
     pairingCode,
     setPairingCode,
     submitCode: () => mutation.mutate(pairingCode),
+    handleQRScan: (code: string) => {
+      setPairingCode(code)
+      mutation.mutate(code)
+    },
     devices: profileQuery.data?.devices ?? [],
     selectedDeviceId,
     setSelectedDeviceId,

@@ -9,13 +9,17 @@ import { useHaptics } from '../hooks/use-haptics'
 import { theme } from '../theme'
 
 const tabConfig = {
-  home:    { icon: 'radio-outline',    iconFocused: 'radio' },
-  journey: { icon: 'map-outline',      iconFocused: 'map' },
+  home: { icon: 'radio-outline', iconFocused: 'radio' },
+  journey: { icon: 'map-outline', iconFocused: 'map' },
   results: { icon: 'bar-chart-outline', iconFocused: 'bar-chart' },
-  profile: { icon: 'person-outline',   iconFocused: 'person' },
+  profile: { icon: 'person-outline', iconFocused: 'person' },
 } as const
 
-export function PillTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+export function PillTabBar({
+  state,
+  descriptors,
+  navigation,
+}: BottomTabBarProps) {
   const insets = useSafeAreaInsets()
   const haptics = useHaptics()
 
@@ -25,10 +29,16 @@ export function PillTabBar({ state, descriptors, navigation }: BottomTabBarProps
   )
 
   return (
-    <View style={[styles.shell, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+    <View
+      style={[styles.shell, { paddingBottom: Math.max(insets.bottom, 12) }]}
+    >
       <View style={styles.row}>
         <View style={styles.pillWrap}>
-          <BlurView intensity={55} tint="light" style={StyleSheet.absoluteFill} />
+          <BlurView
+            intensity={55}
+            tint="light"
+            style={StyleSheet.absoluteFill}
+          />
 
           {tabs.map((route) => {
             const isFocused =
@@ -96,7 +106,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.pill,
     borderWidth: 1,
     borderColor: `${theme.colors.primary}22`,
-    backgroundColor: 'rgba(246,250,254,0.88)',
+    backgroundColor: 'transparent',
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center',

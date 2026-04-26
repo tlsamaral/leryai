@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons'
 import { Redirect } from 'expo-router'
+import { useEffect, useState } from 'react'
 import {
   Pressable,
   ScrollView,
@@ -11,6 +12,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSessionStore } from '../features/auth/store/session-store'
 import { DeviceSettingsPanel } from '../features/device-pairing/components/device-settings-panel'
+import { PairingSuccessOverlay } from '../features/device-pairing/components/pairing-success-overlay'
+import { QRScannerModal } from '../features/device-pairing/components/qr-scanner-modal'
 import { useDeviceSettingsViewModel } from '../features/device-pairing/viewmodels/use-device-settings-view-model'
 import { usePairLeryViewModel } from '../features/device-pairing/viewmodels/use-pair-lery-view-model'
 import { LoadingState } from '../shared/components/loading-state'
@@ -23,10 +26,14 @@ export default function PairLeryPage() {
   const isBootstrapped = useSessionStore((state) => state.isBootstrapped)
   const insets = useSafeAreaInsets()
 
+  const [showQRScanner, setShowQRScanner] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+
   const {
     pairingCode,
     setPairingCode,
     submitCode,
+    handleQRScan,
     status,
     errorMessage,
     isLoading,
@@ -35,6 +42,10 @@ export default function PairLeryPage() {
     setSelectedDeviceId,
     isLoadingDevices,
   } = usePairLeryViewModel()
+
+  useEffect(() => {
+    if (status === 'paired') setShowSuccess(true)
+  }, [status])
 
   const { settings, isSavingSettings, updateSettings, voiceToneOptions, isLoadingSettings } =
     useDeviceSettingsViewModel(selectedDeviceId)
@@ -93,6 +104,28 @@ export default function PairLeryPage() {
             <Text style={styles.cardTitle}>Pareamento rápido</Text>
             <Text style={styles.cardSub}>Use o código exibido no dispositivo</Text>
           </View>
+        </View>
+
+        {/* QR scan button */}
+        <Pressable
+          style={({ pressed }) => [styles.qrBtn, pressed && styles.qrBtnPressed]}
+          onPress={() => setShowQRScanner(true)}
+          disabled={isLoading}
+        >
+          <View style={styles.qrBtnIcon}>
+            <Ionicons name="qr-code" size={20} color={theme.colors.primary} />
+          </View>
+          <View style={styles.qrBtnTexts}>
+            <Text style={styles.qrBtnTitle}>Escanear QR Code</Text>
+            <Text style={styles.qrBtnSub}>Use a câmera para parear</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color={theme.colors.muted} />
+        </Pressable>
+
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>ou digite o código</Text>
+          <View style={styles.dividerLine} />
         </View>
 
         <View style={styles.inputWrap}>
@@ -201,6 +234,17 @@ export default function PairLeryPage() {
           onUpdate={updateSettings}
         />
       ) : null}
+
+      <QRScannerModal
+        visible={showQRScanner}
+        onClose={() => setShowQRScanner(false)}
+        onScan={handleQRScan}
+      />
+
+      <PairingSuccessOverlay
+        visible={showSuccess}
+        onDismiss={() => setShowSuccess(false)}
+      />
     </ScrollView>
   )
 }
@@ -302,6 +346,59 @@ const styles = StyleSheet.create({
   errorRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   errorText: { color: theme.colors.danger, fontSize: 13, fontWeight: '600' },
   hint: { color: theme.colors.dim, fontSize: 11, fontWeight: '500' },
+
+  // QR button
+  qrBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1.5,
+    borderColor: `${theme.colors.primary}44`,
+    borderRadius: 16,
+    padding: 14,
+    backgroundColor: theme.colors.primarySoft,
+  },
+  qrBtnPressed: { opacity: 0.82, transform: [{ scale: 0.985 }] },
+  qrBtnIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: `${theme.colors.primary}22`,
+    borderWidth: 1,
+    borderColor: `${theme.colors.primary}44`,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  qrBtnTexts: { flex: 1, gap: 2 },
+  qrBtnTitle: {
+    color: theme.colors.text,
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+  qrBtnSub: {
+    color: theme.colors.muted,
+    fontSize: 12,
+    fontWeight: '500',
+  },
+
+  // Divider
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: theme.colors.border,
+  },
+  dividerText: {
+    color: theme.colors.dim,
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
 
   // Devices
   emptyDevices: { alignItems: 'center', gap: 8, paddingVertical: 16 },
