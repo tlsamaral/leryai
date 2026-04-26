@@ -252,4 +252,20 @@ export class MockLeryApi implements LeryApi {
     await wait()
     return JSON.parse(JSON.stringify(mockProfile)) as ProfileResponse
   }
+
+  async disputeLog(logId: string, _reason: string): Promise<{ id: string; disputeStatus: 'PENDING' }> {
+    await wait()
+    return { id: logId, disputeStatus: 'PENDING' }
+  }
+
+  async upsertProfile(_input: {
+    nativeLanguage?: string
+    interests?: string[]
+    hobbies?: string[]
+    occupation?: string
+    ageGroup?: string
+    learningGoal?: string
+  }): Promise<void> {
+    await wait()
+  }
 }
