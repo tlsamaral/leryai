@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.caption,
   },
   success: {
-    color: theme.colors.success,
+    color: theme.colors.mint,
     fontWeight: '600',
     fontSize: theme.typography.caption,
   },
