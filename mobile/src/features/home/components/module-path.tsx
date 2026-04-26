@@ -13,14 +13,14 @@ interface ModulePathProps {
 function cardVisual(lesson: LearningMapLesson) {
   if (lesson.status === 'IN_PROGRESS') {
     return {
-      bg: '#1F8A70',
-      border: '#156B55',
-      title: '#F5FFFB',
-      subtitle: '#D6F3E9',
-      iconColor: '#F6FFFB',
+      bg: '#040D12',
+      border: '#0091B8',
+      title: '#E5FAFF',
+      subtitle: 'rgba(4,210,255,0.7)',
+      iconColor: '#04D2FF',
       icon: 'play' as const,
-      rail: '#7CC7AF',
-      dot: '#1F8A70',
+      rail: 'rgba(4,210,255,0.4)',
+      dot: '#04D2FF',
       disabled: false,
       badge: 'Agora',
     }
@@ -29,42 +29,42 @@ function cardVisual(lesson: LearningMapLesson) {
   if (lesson.status === 'COMPLETED') {
     return {
       bg: '#FFFFFF',
-      border: '#DCEAE4',
-      title: '#1E5134',
-      subtitle: '#5B7E6F',
-      iconColor: '#2E9E5B',
+      border: '#D1F0E8',
+      title: '#0A1B23',
+      subtitle: '#5A6E78',
+      iconColor: '#2BC48A',
       icon: 'checkmark-circle' as const,
-      rail: '#B8DCCA',
-      dot: '#2E9E5B',
+      rail: '#A8E8D0',
+      dot: '#2BC48A',
       disabled: false,
-      badge: 'Concluida',
+      badge: 'Concluída',
     }
   }
 
   if (lesson.status === 'REVIEW_REQUIRED') {
     return {
-      bg: '#FFF8E8',
-      border: '#F0D79C',
-      title: '#775A20',
-      subtitle: '#927748',
-      iconColor: '#C28A1A',
+      bg: '#FFF8EE',
+      border: '#FFD899',
+      title: '#7A4A10',
+      subtitle: '#AA7020',
+      iconColor: '#FFB547',
       icon: 'refresh' as const,
-      rail: '#E5D2A5',
-      dot: '#F4B942',
+      rail: '#FFD899',
+      dot: '#FFB547',
       disabled: false,
-      badge: 'Revisao',
+      badge: 'Revisão',
     }
   }
 
   return {
-    bg: '#F4F6F5',
-    border: '#DFE5E2',
-    title: '#7A8982',
-    subtitle: '#9BA8A2',
-    iconColor: '#9BA8A2',
+    bg: '#F6FAFE',
+    border: '#E0EBF1',
+    title: '#92A2AB',
+    subtitle: '#B0BEC5',
+    iconColor: '#B0BEC5',
     icon: 'lock-closed' as const,
-    rail: '#E2E8E5',
-    dot: '#CDD8D3',
+    rail: '#E0EBF1',
+    dot: '#C8D8E4',
     disabled: true,
     badge: 'Bloqueada',
   }
@@ -249,11 +249,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   moduleBadge: {
-    color: '#2E7F67',
+    color: theme.colors.primaryDeep,
     fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
-    backgroundColor: '#E7F4EE',
+    backgroundColor: theme.colors.primarySoft,
     borderRadius: 999,
     paddingHorizontal: 9,
     paddingVertical: 4,
@@ -316,11 +316,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   lessonCardCurrent: {
-    shadowColor: '#1F8A70',
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
+    shadowColor: '#04D2FF',
+    shadowOpacity: 0.28,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
-    elevation: 5,
+    elevation: 6,
   },
   cardTopRow: {
     flexDirection: 'row',
@@ -380,8 +380,8 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#A7D6C6',
-    backgroundColor: '#EAF8F2',
+    borderColor: `${theme.colors.primary}55`,
+    backgroundColor: theme.colors.primarySoft,
     padding: 10,
   },
   moduleNextCardLocked: {
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   moduleCardStatus: {
-    color: '#1F8A70',
+    color: theme.colors.primaryDeep,
     fontSize: 12,
     marginTop: 4,
     fontWeight: '600',
