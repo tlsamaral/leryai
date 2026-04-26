@@ -9,16 +9,13 @@ import { useHaptics } from '../hooks/use-haptics'
 import { theme } from '../theme'
 
 const tabConfig = {
-  home: { icon: 'home' },
-  results: { icon: 'bar-chart' },
-  profile: { icon: 'person' },
+  home:    { icon: 'radio-outline',    iconFocused: 'radio' },
+  journey: { icon: 'map-outline',      iconFocused: 'map' },
+  results: { icon: 'bar-chart-outline', iconFocused: 'bar-chart' },
+  profile: { icon: 'person-outline',   iconFocused: 'person' },
 } as const
 
-export function PillTabBar({
-  state,
-  descriptors,
-  navigation,
-}: BottomTabBarProps) {
+export function PillTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets()
   const haptics = useHaptics()
 
@@ -28,21 +25,16 @@ export function PillTabBar({
   )
 
   return (
-    <View
-      style={[styles.shell, { paddingBottom: Math.max(insets.bottom, 12) }]}
-    >
+    <View style={[styles.shell, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       <View style={styles.row}>
         <View style={styles.pillWrap}>
-          <BlurView
-            intensity={55}
-            tint="light"
-            style={StyleSheet.absoluteFill}
-          />
+          <BlurView intensity={55} tint="light" style={StyleSheet.absoluteFill} />
 
           {tabs.map((route) => {
             const isFocused =
               state.index === state.routes.findIndex((r) => r.key === route.key)
             const key = route.name as keyof typeof tabConfig
+            const cfg = tabConfig[key]
             const { options } = descriptors[route.key]
 
             return (
@@ -56,7 +48,6 @@ export function PillTabBar({
                     target: route.key,
                     canPreventDefault: true,
                   })
-
                   if (!isFocused && !event.defaultPrevented) {
                     haptics.tap()
                     navigation.navigate(route.name, route.params)
@@ -65,9 +56,9 @@ export function PillTabBar({
                 style={[styles.item, isFocused && styles.itemFocused]}
               >
                 <Ionicons
-                  name={tabConfig[key].icon}
-                  size={21}
-                  color={isFocused ? theme.colors.primary : '#6E837B'}
+                  name={isFocused ? cfg.iconFocused : cfg.icon}
+                  size={22}
+                  color={isFocused ? theme.colors.primary : theme.colors.dim}
                 />
               </Pressable>
             )
@@ -81,7 +72,7 @@ export function PillTabBar({
             router.push('/pair-lery')
           }}
         >
-          <Ionicons name="add" size={24} color="#F6FFFA" />
+          <Ionicons name="hardware-chip-outline" size={22} color="#040D12" />
         </Pressable>
       </View>
     </View>
@@ -102,41 +93,41 @@ const styles = StyleSheet.create({
   pillWrap: {
     flex: 1,
     minHeight: 64,
-    borderRadius: 999,
+    borderRadius: theme.radius.pill,
     borderWidth: 1,
-    borderColor: 'rgba(31, 138, 112, 0.18)',
-    backgroundColor: 'rgba(249, 255, 252, 0.8)',
+    borderColor: `${theme.colors.primary}22`,
+    backgroundColor: 'rgba(246,250,254,0.88)',
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center',
     overflow: 'hidden',
-    shadowColor: '#0D2D24',
-    shadowOpacity: 0.14,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 7,
+    shadowColor: theme.colors.primary,
+    shadowOpacity: 0.1,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
   },
   item: {
-    width: 56,
+    width: 54,
     height: 48,
-    borderRadius: 999,
+    borderRadius: theme.radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   itemFocused: {
-    backgroundColor: 'rgba(176, 235, 216, 0.34)',
+    backgroundColor: theme.colors.primarySoft,
   },
   plusButton: {
     width: 56,
     height: 56,
-    borderRadius: 999,
-    borderWidth: 3,
-    borderColor: '#EBF8F2',
+    borderRadius: theme.radius.pill,
+    borderWidth: 2.5,
+    borderColor: theme.colors.primarySoft,
     backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: theme.colors.primary,
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.32,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
     elevation: 8,
