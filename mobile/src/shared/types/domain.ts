@@ -50,6 +50,8 @@ export interface ConversationSession {
   endedAt: string | null
 }
 
+export type DisputeStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED'
+
 export interface InteractionLog {
   id: string
   sessionId: string
@@ -57,6 +59,14 @@ export interface InteractionLog {
   leryResponse: string | null
   grammaticalFixes: string | null
   sentimentScore: number | null
+  taskAchievement: number | null
+  grammar: number | null
+  vocabulary: number | null
+  fluency: number | null
+  totalScore: number | null
+  evaluationReasoning: string | null
+  isDisputed: boolean
+  disputeStatus: DisputeStatus | null
   createdAt: string
 }
 
