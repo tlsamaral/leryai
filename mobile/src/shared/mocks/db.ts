@@ -129,6 +129,15 @@ export const resultsByLesson: Record<string, LessonResultDetailResponse> = {
               'Great sentence! You can also say: May I have a cappuccino and a cookie?',
             grammaticalFixes: 'Use "a cookie" for singular countable noun.',
             sentimentScore: 0.9,
+            taskAchievement: 22,
+            grammar: 18,
+            vocabulary: 20,
+            fluency: 19,
+            totalScore: 79,
+            evaluationReasoning:
+              'User successfully ordered (task achieved). Minor article error with singular noun. Good vocabulary for A2. Fluency is natural.',
+            isDisputed: false,
+            disputeStatus: null,
             createdAt: new Date(
               now.getTime() - 1000 * 60 * 60 * 24 * 3,
             ).toISOString(),
@@ -158,6 +167,15 @@ export const resultsByLesson: Record<string, LessonResultDetailResponse> = {
             leryResponse: 'Perfect! Natural and polite.',
             grammaticalFixes: 'No fixes needed.',
             sentimentScore: 0.95,
+            taskAchievement: 25,
+            grammar: 22,
+            vocabulary: 21,
+            fluency: 16,
+            totalScore: 84,
+            evaluationReasoning:
+              'Perfect polite request structure. All grammar correct. Vocabulary appropriate for B1. Slight hesitation noted before "please".',
+            isDisputed: false,
+            disputeStatus: null,
             createdAt: new Date(
               now.getTime() - 1000 * 60 * 60 * 24 * 2,
             ).toISOString(),
@@ -195,6 +213,15 @@ export const resultsByLesson: Record<string, LessonResultDetailResponse> = {
               'Very good! Try adding one hobby to sound more natural.',
             grammaticalFixes: 'Use "work in design" or "work as a designer".',
             sentimentScore: 0.88,
+            taskAchievement: 18,
+            grammar: 15,
+            vocabulary: 17,
+            fluency: 18,
+            totalScore: 68,
+            evaluationReasoning:
+              'Good communication of origin and job. Preposition error with "work with design". Vocabulary adequate. Fluency shows confidence.',
+            isDisputed: false,
+            disputeStatus: null,
             createdAt: new Date(
               now.getTime() - 1000 * 60 * 60 * 10,
             ).toISOString(),
