@@ -134,4 +134,27 @@ export class HttpLeryApi implements LeryApi {
       accessToken: this.getAccessToken(),
     })
   }
+
+  disputeLog(logId: string, reason: string): Promise<{ id: string; disputeStatus: 'PENDING' }> {
+    return request<{ id: string; disputeStatus: 'PENDING' }>(`/logs/${logId}/dispute`, {
+      method: 'POST',
+      body: { reason },
+      accessToken: this.getAccessToken(),
+    })
+  }
+
+  upsertProfile(input: {
+    nativeLanguage?: string
+    interests?: string[]
+    hobbies?: string[]
+    occupation?: string
+    ageGroup?: string
+    learningGoal?: string
+  }): Promise<void> {
+    return request<void>('/profile', {
+      method: 'PUT',
+      body: input,
+      accessToken: this.getAccessToken(),
+    })
+  }
 }
