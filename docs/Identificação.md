@@ -1,3 +1,5 @@
+> 🧠 **Voltar para o MOC Principal:** [[Lery AI Brain]]
+
 ## 🎯 O Conceito: "Hey Lery"
 
 O nome **Lery** foi concebido para ser o identificador único do assistente, servindo tanto como marca do projeto quanto como a *Wake Word* (palavra de ativação) do sistema.

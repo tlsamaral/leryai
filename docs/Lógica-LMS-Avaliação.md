@@ -5,6 +5,8 @@ documento: System Prompt, Progressão de Nível e Regras de Avaliação
 tags: [LMS, Progressao, CEFR, EngenhariaSoftware]
 ---
 
+> 🧠 **Voltar para o MOC Principal:** [[Lery AI Brain]]
+
 # 🧠 Configuração de Inteligência e Lógica de Progressão
 
 Este documento detalha o "cérebro" da Lery, integrando a inteligência conversacional com um sistema de gestão de aprendizado (LMS) baseado em performance.

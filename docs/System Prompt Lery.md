@@ -9,6 +9,8 @@ tags:
   - Python
 ---
 
+> 🧠 **Voltar para o MOC Principal:** [[Lery AI Brain]]
+
 # 🧠 Configuração de Inteligência: System Prompt Lery
 
 Este documento define as diretrizes de comportamento, personalidade e os modos pedagógicos da Lery. Este texto deve ser injetado na inicialização da API do Gemini para garantir que a IA atue estritamente como um tutor de idiomas.

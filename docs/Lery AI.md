@@ -1,3 +1,5 @@
+> 🧠 **Voltar para o MOC Principal:** [[Lery AI Brain]]
+
 # PROPOSTA DE TCC: SMART SPEAKER PARA ENSINO DE INGLÊS (IA EMBARCADA)
 
 ## 1. IDENTIFICAÇÃO DO PROJETO
