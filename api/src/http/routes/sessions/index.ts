@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify'
+import { completeSession } from './complete.js'
 import { createSession } from './create.js'
 import { deleteSession } from './delete.js'
 import { getSession } from './get.js'
@@ -11,4 +12,5 @@ export async function sessionsIndex(app: FastifyInstance) {
   app.register(createSession)
   app.register(updateSession)
   app.register(deleteSession)
+  app.register(completeSession)
 }
