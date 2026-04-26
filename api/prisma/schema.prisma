@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output = "../src/lib/prisma-client"
+  output   = "../src/lib/prisma-client"
 }
 
 datasource db {
@@ -36,6 +36,12 @@ enum InteractionMode {
   FREE_TALK
   GUIDED_LESSON
   DIAGNOSIS
+}
+
+enum DisputeStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
 
 // --- MODELOS DE NEGÓCIO ---
@@ -92,13 +98,13 @@ model Subscription {
 }
 
 model Device {
-  id           String   @id @default(uuid())
-  serialNumber String   @unique // Identificação única física (HWID da Raspberry Pi)
+  id           String  @id @default(uuid())
+  serialNumber String  @unique // Identificação única física (HWID da Raspberry Pi)
   nickname     String? // Nome dado pelo utilizador
-  isActive     Boolean  @default(true)
+  isActive     Boolean @default(true)
   userId       String
-  user         User     @relation(fields: [userId], references: [id])
-  apiKey       String?  @unique // Token imutável longo para IoT
+  user         User    @relation(fields: [userId], references: [id])
+  apiKey       String? @unique // Token imutável longo para IoT
 
   @@index([serialNumber, isActive])
   @@index([apiKey])
@@ -111,9 +117,9 @@ model UserProfile {
   nativeLanguage String   @default("pt-BR") // Idioma nativo do aluno
   interests      String[] // ex: ["music", "travel", "technology"]
   hobbies        String[] // ex: ["gaming", "cooking"]
-  occupation     String?  // Profissão — ajuda a contextualizar cenários
-  ageGroup       String?  // ex: "teen", "adult", "senior"
-  learningGoal   String?  // ex: "travel", "work", "academic"
+  occupation     String? // Profissão — ajuda a contextualizar cenários
+  ageGroup       String? // ex: "teen", "adult", "senior"
+  learningGoal   String? // ex: "travel", "work", "academic"
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
@@ -147,15 +153,15 @@ model Module {
 }
 
 model Lesson {
-  id           String         @id @default(uuid())
+  id           String                @id @default(uuid())
   title        String
   scenario     String // Ex: "At the Airport"
-  systemPrompt String         @db.Text // Contexto específico para o Gemini
-  objectives   String?        @db.Text // Objetivos pedagógicos da lição
+  systemPrompt String                @db.Text // Contexto específico para o Gemini
+  objectives   String?               @db.Text // Objetivos pedagógicos da lição
   order        Int // Ordem dentro do módulo
-  isGenerated  Boolean        @default(false) // Gerada automaticamente pela IA
+  isGenerated  Boolean               @default(false) // Gerada automaticamente pela IA
   moduleId     String
-  module       Module         @relation(fields: [moduleId], references: [id])
+  module       Module                @relation(fields: [moduleId], references: [id])
   userProgress UserProgress[]
   sessions     ConversationSession[]
 }
@@ -194,9 +200,17 @@ model InteractionLog {
   id               String              @id @default(uuid())
   sessionId        String
   session          ConversationSession @relation(fields: [sessionId], references: [id])
-  userAudioTrans   String?             @db.Text
-  leryResponse     String?             @db.Text
-  grammaticalFixes String?             @db.Text // Feedback detalhado da IA
-  sentimentScore   Float? // Análise de engajamento
-  createdAt        DateTime            @default(now())
+  userAudioTrans      String?       @db.Text
+  leryResponse        String?       @db.Text
+  grammaticalFixes    String?       @db.Text
+  sentimentScore      Float?
+  taskAchievement     Int?
+  grammar             Int?
+  vocabulary          Int?
+  fluency             Int?
+  totalScore          Int?
+  evaluationReasoning String?       @db.Text
+  isDisputed          Boolean       @default(false)
+  disputeStatus       DisputeStatus?
+  createdAt           DateTime      @default(now())
 }
