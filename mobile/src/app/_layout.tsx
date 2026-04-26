@@ -4,6 +4,13 @@ import { StatusBar } from 'expo-status-bar'
 import { useState } from 'react'
 import { theme } from '../shared/theme'
 
+const headerDefaults = {
+  headerBackTitle: 'Voltar',
+  headerTintColor: theme.colors.primary,
+  headerStyle: { backgroundColor: theme.colors.bg },
+  headerShadowVisible: false,
+}
+
 export default function RootLayout() {
   const [queryClient] = useState(() => new QueryClient())
 
@@ -16,31 +23,17 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
           name="pair-lery"
-          options={{
-            title: 'Configurar Lery',
-            headerBackTitle: 'Voltar',
-            headerTintColor: theme.colors.text,
-            headerStyle: { backgroundColor: theme.colors.bg },
-          }}
+          options={{ ...headerDefaults, title: 'Configurar Lery' }}
         />
         <Stack.Screen
           name="lesson/[lessonId]"
-          options={{
-            title: 'Lesson',
-            headerBackTitle: 'Voltar',
-            headerTintColor: theme.colors.text,
-            headerStyle: { backgroundColor: theme.colors.bg },
-          }}
+          options={{ ...headerDefaults, title: 'Lição' }}
         />
         <Stack.Screen
           name="results/[lessonId]"
-          options={{
-            title: 'Resultado detalhado',
-            headerBackTitle: 'Voltar',
-            headerTintColor: theme.colors.text,
-            headerStyle: { backgroundColor: theme.colors.bg },
-          }}
+          options={{ ...headerDefaults, title: 'Resultado' }}
         />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
       </Stack>
     </QueryClientProvider>
   )
