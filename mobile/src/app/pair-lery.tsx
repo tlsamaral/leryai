@@ -8,17 +8,20 @@ import {
   TextInput,
   View,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSessionStore } from '../features/auth/store/session-store'
 import { DeviceSettingsPanel } from '../features/device-pairing/components/device-settings-panel'
 import { useDeviceSettingsViewModel } from '../features/device-pairing/viewmodels/use-device-settings-view-model'
 import { usePairLeryViewModel } from '../features/device-pairing/viewmodels/use-pair-lery-view-model'
 import { LoadingState } from '../shared/components/loading-state'
 import { ScreenContainer } from '../shared/components/screen-container'
+import { WaveformBars } from '../shared/components/waveform-bars'
 import { theme } from '../shared/theme'
 
 export default function PairLeryPage() {
   const isAuthenticated = useSessionStore((state) => state.isAuthenticated)
   const isBootstrapped = useSessionStore((state) => state.isBootstrapped)
+  const insets = useSafeAreaInsets()
 
   const {
     pairingCode,
@@ -33,303 +36,304 @@ export default function PairLeryPage() {
     isLoadingDevices,
   } = usePairLeryViewModel()
 
-  const {
-    settings,
-    isSavingSettings,
-    updateSettings,
-    voiceToneOptions,
-    isLoadingSettings,
-  } = useDeviceSettingsViewModel(selectedDeviceId)
+  const { settings, isSavingSettings, updateSettings, voiceToneOptions, isLoadingSettings } =
+    useDeviceSettingsViewModel(selectedDeviceId)
 
   if (!isBootstrapped) {
-    return (
-      <ScreenContainer>
-        <LoadingState />
-      </ScreenContainer>
-    )
+    return <ScreenContainer><LoadingState /></ScreenContainer>
   }
 
-  if (!isAuthenticated) {
-    return <Redirect href="/auth" />
-  }
+  if (!isAuthenticated) return <Redirect href="/auth" />
+
+  const paired = devices.length > 0
 
   return (
-    <ScreenContainer>
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.heroCard}>
-          <View style={styles.heroTop}>
-            <Text style={styles.badge}>Lery Device Control</Text>
-            <View style={styles.statusChip}>
-              <Ionicons
-                name={
-                  devices.length > 0 ? 'checkmark-circle' : 'radio-button-off'
-                }
-                size={14}
-                color={devices.length > 0 ? '#C7FFDF' : '#E2F2EA'}
-              />
-              <Text style={styles.statusChipText}>
-                {devices.length > 0 ? 'Conectado' : 'Sem dispositivo'}
-              </Text>
-            </View>
-          </View>
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={[styles.content, { paddingBottom: 100 + insets.bottom }]}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Dark hero */}
+      <View style={styles.hero}>
+        <View style={styles.heroGlowTop} />
+        <View style={styles.heroGlowBottom} />
 
-          <Text style={styles.heroTitle}>Configurar Lery fisico</Text>
-          <Text style={styles.heroSubtitle}>
-            Pareie o hardware e personalize voz, velocidade e escuta com
-            controle total.
+        <View style={styles.heroTopRow}>
+          <View style={styles.statusDot}>
+            <View style={[styles.statusInner, paired && styles.statusInnerActive]} />
+          </View>
+          <Text style={styles.statusLabel}>
+            {paired ? 'Dispositivo conectado' : 'Sem dispositivo'}
           </Text>
+          <View style={styles.flex1} />
+          <Ionicons name="hardware-chip-outline" size={16} color={theme.colors.primary} />
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Pareamento rapido</Text>
-          <Text style={styles.cardSubtitle}>
-            Escaneie o QR do dispositivo ou use o codigo manual.
-          </Text>
+        <WaveformBars active={paired} bars={9} height={52} />
 
+        <View style={styles.heroTexts}>
+          <Text style={styles.heroTitle}>
+            {paired ? (devices[0]?.nickname ?? 'Lery') : 'Configurar Lery'}
+          </Text>
+          <Text style={styles.heroSub}>
+            {paired
+              ? `Pareado · ${devices[0]?.serialNumber ?? ''}`
+              : 'Pareie o hardware e personalize voz, velocidade e sensibilidade de escuta.'}
+          </Text>
+        </View>
+      </View>
+
+      {/* Pairing card */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <View style={styles.cardIconWrap}>
+            <Ionicons name="qr-code-outline" size={18} color={theme.colors.primary} />
+          </View>
+          <View style={styles.cardHeaderTexts}>
+            <Text style={styles.cardTitle}>Pareamento rápido</Text>
+            <Text style={styles.cardSub}>Use o código exibido no dispositivo</Text>
+          </View>
+        </View>
+
+        <View style={styles.inputWrap}>
+          <Ionicons name="key-outline" size={16} color={theme.colors.muted} style={styles.inputIcon} />
           <TextInput
             style={styles.input}
             value={pairingCode}
             onChangeText={setPairingCode}
             placeholder="Ex.: LERY-PAIR-001"
             autoCapitalize="characters"
-            placeholderTextColor={theme.colors.muted}
+            placeholderTextColor={theme.colors.dim}
           />
-
-          <Pressable
-            style={styles.button}
-            onPress={submitCode}
-            disabled={isLoading}
-          >
-            <Text style={styles.buttonText}>
-              {isLoading ? 'Pareando...' : 'Parear dispositivo'}
-            </Text>
-          </Pressable>
-
-          <Text style={styles.hint}>Mock de pareamento: LERY-PAIR-001</Text>
-          {status === 'paired' ? (
-            <Text style={styles.success}>Dispositivo pareado com sucesso.</Text>
-          ) : null}
-          {status === 'error' ? (
-            <Text style={styles.error}>{errorMessage}</Text>
-          ) : null}
         </View>
 
-        <View style={styles.card}>
-          <View style={styles.deviceHeader}>
-            <Text style={styles.cardTitle}>Seus Lerys</Text>
-            {isLoadingDevices ? (
-              <Text style={styles.inlineHint}>Carregando...</Text>
-            ) : null}
+        <Pressable
+          style={({ pressed }) => [styles.pairBtn, isLoading && styles.pairBtnDisabled, pressed && styles.pairBtnPressed]}
+          onPress={submitCode}
+          disabled={isLoading}
+        >
+          <Ionicons name={isLoading ? 'hourglass-outline' : 'bluetooth-outline'} size={17} color="#040D12" />
+          <Text style={styles.pairBtnText}>{isLoading ? 'Pareando...' : 'Parear dispositivo'}</Text>
+        </Pressable>
+
+        {status === 'paired' ? (
+          <View style={styles.successRow}>
+            <Ionicons name="checkmark-circle" size={15} color={theme.colors.mint} />
+            <Text style={styles.successText}>Dispositivo pareado com sucesso!</Text>
           </View>
+        ) : null}
+        {status === 'error' ? (
+          <View style={styles.errorRow}>
+            <Ionicons name="close-circle" size={15} color={theme.colors.danger} />
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          </View>
+        ) : null}
 
-          {devices.length === 0 ? (
-            <Text style={styles.emptyText}>Nenhum Lery conectado ainda.</Text>
-          ) : (
-            <View style={styles.deviceList}>
-              {devices.map((device) => {
-                const selected = selectedDeviceId === device.id
-                return (
-                  <Pressable
-                    key={device.id}
-                    style={[
-                      styles.deviceItem,
-                      selected && styles.deviceItemSelected,
-                    ]}
-                    onPress={() => setSelectedDeviceId(device.id)}
-                  >
-                    <View>
-                      <Text
-                        style={[
-                          styles.deviceTitle,
-                          selected && styles.deviceTitleSelected,
-                        ]}
-                      >
-                        {device.nickname ?? 'Lery Device'}
-                      </Text>
-                      <Text style={styles.deviceMeta}>
-                        {device.serialNumber}
-                      </Text>
-                    </View>
-                    <Ionicons
-                      name={selected ? 'radio-button-on' : 'radio-button-off'}
-                      size={20}
-                      color={selected ? theme.colors.primary : '#9AB1A8'}
-                    />
-                  </Pressable>
-                )
-              })}
-            </View>
-          )}
+        <Text style={styles.hint}>Código de teste: LERY-PAIR-001</Text>
+      </View>
+
+      {/* Devices list */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <View style={styles.cardIconWrap}>
+            <Ionicons name="radio-outline" size={18} color={theme.colors.primary} />
+          </View>
+          <View style={styles.cardHeaderTexts}>
+            <Text style={styles.cardTitle}>Meus Lerys</Text>
+            {isLoadingDevices ? (
+              <Text style={styles.cardSub}>Carregando...</Text>
+            ) : (
+              <Text style={styles.cardSub}>{devices.length} dispositivo(s)</Text>
+            )}
+          </View>
         </View>
 
-        {selectedDeviceId ? (
-          <DeviceSettingsPanel
-            settings={settings}
-            isSaving={isSavingSettings || isLoadingSettings}
-            voiceToneOptions={voiceToneOptions}
-            onUpdate={updateSettings}
-          />
-        ) : null}
-      </ScrollView>
-    </ScreenContainer>
+        {devices.length === 0 ? (
+          <View style={styles.emptyDevices}>
+            <Ionicons name="hardware-chip-outline" size={28} color={theme.colors.dim} />
+            <Text style={styles.emptyText}>Nenhum Lery conectado ainda.</Text>
+          </View>
+        ) : (
+          <View style={styles.deviceList}>
+            {devices.map((device) => {
+              const selected = selectedDeviceId === device.id
+              return (
+                <Pressable
+                  key={device.id}
+                  style={({ pressed }) => [
+                    styles.deviceItem,
+                    selected && styles.deviceItemSelected,
+                    pressed && { opacity: 0.85 },
+                  ]}
+                  onPress={() => setSelectedDeviceId(device.id)}
+                >
+                  <View style={[styles.deviceIcon, selected && styles.deviceIconSelected]}>
+                    <Ionicons
+                      name="hardware-chip"
+                      size={18}
+                      color={selected ? theme.colors.primaryDeep : theme.colors.muted}
+                    />
+                  </View>
+                  <View style={styles.deviceTexts}>
+                    <Text style={[styles.deviceName, selected && styles.deviceNameSelected]}>
+                      {device.nickname ?? 'Lery Device'}
+                    </Text>
+                    <Text style={styles.deviceSerial}>{device.serialNumber}</Text>
+                  </View>
+                  <View style={[styles.deviceRadio, selected && styles.deviceRadioSelected]}>
+                    {selected ? (
+                      <View style={styles.deviceRadioInner} />
+                    ) : null}
+                  </View>
+                </Pressable>
+              )
+            })}
+          </View>
+        )}
+      </View>
+
+      {/* Settings panel */}
+      {selectedDeviceId ? (
+        <DeviceSettingsPanel
+          settings={settings}
+          isSaving={isSavingSettings || isLoadingSettings}
+          voiceToneOptions={voiceToneOptions}
+          onUpdate={updateSettings}
+        />
+      ) : null}
+    </ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
-  content: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 120,
-    gap: 12,
+  scroll: { flex: 1, backgroundColor: theme.colors.bg },
+  content: { gap: 14 },
+  flex1: { flex: 1 },
+
+  // Hero
+  hero: {
+    backgroundColor: '#040D12',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 22,
+    overflow: 'hidden',
+    gap: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(4,210,255,0.10)',
   },
-  heroCard: {
-    borderRadius: 28,
-    backgroundColor: '#1C8A6F',
-    borderWidth: 1,
-    borderColor: '#146B55',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    shadowColor: '#1C8A6F',
-    shadowOpacity: 0.24,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 7 },
-    elevation: 8,
+  heroGlowTop: {
+    position: 'absolute', top: -90, right: -50,
+    width: 210, height: 210, borderRadius: 999,
+    backgroundColor: 'rgba(4,210,255,0.18)',
   },
-  heroTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  heroGlowBottom: {
+    position: 'absolute', bottom: -80, left: -40,
+    width: 180, height: 180, borderRadius: 999,
+    backgroundColor: 'rgba(4,210,255,0.09)',
   },
-  badge: {
-    color: '#D7F5EA',
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+  heroTopRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  statusDot: {
+    width: 10, height: 10, borderRadius: 999,
+    backgroundColor: 'rgba(4,210,255,0.15)',
+    alignItems: 'center', justifyContent: 'center',
   },
-  statusChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    borderRadius: 999,
-    paddingHorizontal: 9,
-    paddingVertical: 5,
+  statusInner: { width: 6, height: 6, borderRadius: 999, backgroundColor: '#5A6E78' },
+  statusInnerActive: {
+    backgroundColor: '#04D2FF',
+    shadowColor: '#04D2FF', shadowOpacity: 1, shadowRadius: 4, elevation: 2,
   },
-  statusChipText: {
-    color: '#F3FFFA',
-    fontSize: 11,
-    fontWeight: '700',
+  statusLabel: {
+    color: theme.colors.primary,
+    fontSize: 11, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase',
   },
-  heroTitle: {
-    color: '#F5FFFB',
-    fontSize: 27,
-    fontWeight: '800',
-    marginTop: 10,
-    lineHeight: 33,
-  },
-  heroSubtitle: {
-    color: '#D6F3E9',
-    marginTop: 4,
-    fontSize: 14,
-    lineHeight: 20,
-  },
+  heroTexts: { gap: 4 },
+  heroTitle: { color: '#F6FAFE', fontSize: 24, fontWeight: '800', letterSpacing: -0.5 },
+  heroSub: { color: 'rgba(229,250,255,0.55)', fontSize: 13, lineHeight: 18 },
+
+  // Cards
   card: {
+    marginHorizontal: 16,
     backgroundColor: theme.colors.surface,
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    borderRadius: 22,
-    padding: 14,
-    gap: 9,
+    padding: 16,
+    gap: 12,
+    ...theme.shadow.soft,
   },
-  cardTitle: {
-    color: theme.colors.text,
-    fontSize: 18,
-    fontWeight: '800',
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  cardIconWrap: {
+    width: 38, height: 38, borderRadius: 12,
+    backgroundColor: theme.colors.primarySoft,
+    borderWidth: 1, borderColor: `${theme.colors.primary}33`,
+    alignItems: 'center', justifyContent: 'center',
   },
-  cardSubtitle: {
-    color: theme.colors.muted,
-    fontSize: 13,
-    lineHeight: 18,
+  cardHeaderTexts: { flex: 1, gap: 2 },
+  cardTitle: { color: theme.colors.text, fontSize: 15, fontWeight: '800', letterSpacing: -0.2 },
+  cardSub: { color: theme.colors.muted, fontSize: 12, fontWeight: '500' },
+
+  // Input
+  inputWrap: {
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1.5, borderColor: theme.colors.border,
+    borderRadius: 14, backgroundColor: theme.colors.bg,
+    paddingHorizontal: 12,
   },
+  inputIcon: { marginRight: 6 },
   input: {
-    borderWidth: 1,
-    borderColor: '#DDE9E3',
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
-    color: theme.colors.text,
-    fontSize: 15,
-    backgroundColor: '#FAFDFC',
+    flex: 1, minHeight: 46, fontSize: 15,
+    color: theme.colors.text, letterSpacing: 0.5,
   },
-  button: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: 999,
-    alignItems: 'center',
-    paddingVertical: 11,
+
+  // Pair button
+  pairBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, backgroundColor: theme.colors.primary,
+    borderRadius: 999, paddingVertical: 13,
+    shadowColor: theme.colors.primary, shadowOpacity: 0.3,
+    shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 5,
   },
-  buttonText: {
-    color: '#F4FFFA',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  hint: {
-    color: theme.colors.muted,
-    fontSize: 12,
-  },
-  success: {
-    color: theme.colors.success,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  error: {
-    color: theme.colors.danger,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  deviceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  inlineHint: {
-    color: theme.colors.muted,
-    fontSize: 12,
-  },
-  emptyText: {
-    color: theme.colors.muted,
-    fontSize: 13,
-  },
-  deviceList: {
-    gap: 8,
-  },
+  pairBtnDisabled: { opacity: 0.55 },
+  pairBtnPressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
+  pairBtnText: { color: '#040D12', fontSize: 15, fontWeight: '800', letterSpacing: -0.2 },
+
+  successRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  successText: { color: theme.colors.mint, fontSize: 13, fontWeight: '600' },
+  errorRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  errorText: { color: theme.colors.danger, fontSize: 13, fontWeight: '600' },
+  hint: { color: theme.colors.dim, fontSize: 11, fontWeight: '500' },
+
+  // Devices
+  emptyDevices: { alignItems: 'center', gap: 8, paddingVertical: 16 },
+  emptyText: { color: theme.colors.muted, fontSize: 13 },
+  deviceList: { gap: 8 },
   deviceItem: {
-    borderWidth: 1,
-    borderColor: '#DEE9E4',
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    borderWidth: 1, borderColor: theme.colors.border,
+    borderRadius: 16, padding: 12,
   },
   deviceItemSelected: {
-    borderColor: '#8ACBB7',
-    backgroundColor: '#ECF8F3',
+    borderColor: `${theme.colors.primary}55`,
+    backgroundColor: theme.colors.primarySoft,
   },
-  deviceTitle: {
-    color: theme.colors.text,
-    fontSize: 14,
-    fontWeight: '700',
+  deviceIcon: {
+    width: 38, height: 38, borderRadius: 12,
+    backgroundColor: theme.colors.surfaceAlt,
+    alignItems: 'center', justifyContent: 'center',
   },
-  deviceTitleSelected: {
-    color: '#0F664F',
+  deviceIconSelected: { backgroundColor: `${theme.colors.primary}22` },
+  deviceTexts: { flex: 1, gap: 2 },
+  deviceName: { color: theme.colors.text, fontSize: 14, fontWeight: '700' },
+  deviceNameSelected: { color: theme.colors.primaryDeep },
+  deviceSerial: { color: theme.colors.muted, fontSize: 11, fontWeight: '500' },
+  deviceRadio: {
+    width: 20, height: 20, borderRadius: 999,
+    borderWidth: 2, borderColor: theme.colors.border,
+    alignItems: 'center', justifyContent: 'center',
   },
-  deviceMeta: {
-    color: theme.colors.muted,
-    fontSize: 12,
-    marginTop: 1,
+  deviceRadioSelected: { borderColor: theme.colors.primary },
+  deviceRadioInner: {
+    width: 10, height: 10, borderRadius: 999,
+    backgroundColor: theme.colors.primary,
   },
 })
