@@ -38,6 +38,12 @@ enum InteractionMode {
   DIAGNOSIS
 }
 
+enum DisputeStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 // --- MODELOS DE NEGÓCIO ---
 
 model Language {
@@ -191,12 +197,20 @@ model ConversationSession {
 }
 
 model InteractionLog {
-  id               String              @id @default(uuid())
-  sessionId        String
-  session          ConversationSession @relation(fields: [sessionId], references: [id])
-  userAudioTrans   String?             @db.Text
-  leryResponse     String?             @db.Text
-  grammaticalFixes String?             @db.Text // Feedback detalhado da IA
-  sentimentScore   Float? // Análise de engajamento
-  createdAt        DateTime            @default(now())
+  id                  String              @id @default(uuid())
+  sessionId           String
+  session             ConversationSession @relation(fields: [sessionId], references: [id])
+  userAudioTrans      String?             @db.Text
+  leryResponse        String?             @db.Text
+  grammaticalFixes    String?             @db.Text
+  sentimentScore      Float?
+  taskAchievement     Int?
+  grammar             Int?
+  vocabulary          Int?
+  fluency             Int?
+  totalScore          Int?
+  evaluationReasoning String?             @db.Text
+  isDisputed          Boolean             @default(false)
+  disputeStatus       DisputeStatus?
+  createdAt           DateTime            @default(now())
 }

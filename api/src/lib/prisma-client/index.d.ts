@@ -113,6 +113,15 @@ export const InteractionMode: {
 
 export type InteractionMode = (typeof InteractionMode)[keyof typeof InteractionMode]
 
+
+export const DisputeStatus: {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED'
+};
+
+export type DisputeStatus = (typeof DisputeStatus)[keyof typeof DisputeStatus]
+
 }
 
 export type UserLevel = $Enums.UserLevel
@@ -130,6 +139,10 @@ export const LessonStatus: typeof $Enums.LessonStatus
 export type InteractionMode = $Enums.InteractionMode
 
 export const InteractionMode: typeof $Enums.InteractionMode
+
+export type DisputeStatus = $Enums.DisputeStatus
+
+export const DisputeStatus: typeof $Enums.DisputeStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -13433,10 +13446,20 @@ export namespace Prisma {
 
   export type InteractionLogAvgAggregateOutputType = {
     sentimentScore: number | null
+    taskAchievement: number | null
+    grammar: number | null
+    vocabulary: number | null
+    fluency: number | null
+    totalScore: number | null
   }
 
   export type InteractionLogSumAggregateOutputType = {
     sentimentScore: number | null
+    taskAchievement: number | null
+    grammar: number | null
+    vocabulary: number | null
+    fluency: number | null
+    totalScore: number | null
   }
 
   export type InteractionLogMinAggregateOutputType = {
@@ -13446,6 +13469,14 @@ export namespace Prisma {
     leryResponse: string | null
     grammaticalFixes: string | null
     sentimentScore: number | null
+    taskAchievement: number | null
+    grammar: number | null
+    vocabulary: number | null
+    fluency: number | null
+    totalScore: number | null
+    evaluationReasoning: string | null
+    isDisputed: boolean | null
+    disputeStatus: $Enums.DisputeStatus | null
     createdAt: Date | null
   }
 
@@ -13456,6 +13487,14 @@ export namespace Prisma {
     leryResponse: string | null
     grammaticalFixes: string | null
     sentimentScore: number | null
+    taskAchievement: number | null
+    grammar: number | null
+    vocabulary: number | null
+    fluency: number | null
+    totalScore: number | null
+    evaluationReasoning: string | null
+    isDisputed: boolean | null
+    disputeStatus: $Enums.DisputeStatus | null
     createdAt: Date | null
   }
 
@@ -13466,6 +13505,14 @@ export namespace Prisma {
     leryResponse: number
     grammaticalFixes: number
     sentimentScore: number
+    taskAchievement: number
+    grammar: number
+    vocabulary: number
+    fluency: number
+    totalScore: number
+    evaluationReasoning: number
+    isDisputed: number
+    disputeStatus: number
     createdAt: number
     _all: number
   }
@@ -13473,10 +13520,20 @@ export namespace Prisma {
 
   export type InteractionLogAvgAggregateInputType = {
     sentimentScore?: true
+    taskAchievement?: true
+    grammar?: true
+    vocabulary?: true
+    fluency?: true
+    totalScore?: true
   }
 
   export type InteractionLogSumAggregateInputType = {
     sentimentScore?: true
+    taskAchievement?: true
+    grammar?: true
+    vocabulary?: true
+    fluency?: true
+    totalScore?: true
   }
 
   export type InteractionLogMinAggregateInputType = {
@@ -13486,6 +13543,14 @@ export namespace Prisma {
     leryResponse?: true
     grammaticalFixes?: true
     sentimentScore?: true
+    taskAchievement?: true
+    grammar?: true
+    vocabulary?: true
+    fluency?: true
+    totalScore?: true
+    evaluationReasoning?: true
+    isDisputed?: true
+    disputeStatus?: true
     createdAt?: true
   }
 
@@ -13496,6 +13561,14 @@ export namespace Prisma {
     leryResponse?: true
     grammaticalFixes?: true
     sentimentScore?: true
+    taskAchievement?: true
+    grammar?: true
+    vocabulary?: true
+    fluency?: true
+    totalScore?: true
+    evaluationReasoning?: true
+    isDisputed?: true
+    disputeStatus?: true
     createdAt?: true
   }
 
@@ -13506,6 +13579,14 @@ export namespace Prisma {
     leryResponse?: true
     grammaticalFixes?: true
     sentimentScore?: true
+    taskAchievement?: true
+    grammar?: true
+    vocabulary?: true
+    fluency?: true
+    totalScore?: true
+    evaluationReasoning?: true
+    isDisputed?: true
+    disputeStatus?: true
     createdAt?: true
     _all?: true
   }
@@ -13603,6 +13684,14 @@ export namespace Prisma {
     leryResponse: string | null
     grammaticalFixes: string | null
     sentimentScore: number | null
+    taskAchievement: number | null
+    grammar: number | null
+    vocabulary: number | null
+    fluency: number | null
+    totalScore: number | null
+    evaluationReasoning: string | null
+    isDisputed: boolean
+    disputeStatus: $Enums.DisputeStatus | null
     createdAt: Date
     _count: InteractionLogCountAggregateOutputType | null
     _avg: InteractionLogAvgAggregateOutputType | null
@@ -13632,6 +13721,14 @@ export namespace Prisma {
     leryResponse?: boolean
     grammaticalFixes?: boolean
     sentimentScore?: boolean
+    taskAchievement?: boolean
+    grammar?: boolean
+    vocabulary?: boolean
+    fluency?: boolean
+    totalScore?: boolean
+    evaluationReasoning?: boolean
+    isDisputed?: boolean
+    disputeStatus?: boolean
     createdAt?: boolean
     session?: boolean | ConversationSessionDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["interactionLog"]>
@@ -13643,6 +13740,14 @@ export namespace Prisma {
     leryResponse?: boolean
     grammaticalFixes?: boolean
     sentimentScore?: boolean
+    taskAchievement?: boolean
+    grammar?: boolean
+    vocabulary?: boolean
+    fluency?: boolean
+    totalScore?: boolean
+    evaluationReasoning?: boolean
+    isDisputed?: boolean
+    disputeStatus?: boolean
     createdAt?: boolean
     session?: boolean | ConversationSessionDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["interactionLog"]>
@@ -13654,6 +13759,14 @@ export namespace Prisma {
     leryResponse?: boolean
     grammaticalFixes?: boolean
     sentimentScore?: boolean
+    taskAchievement?: boolean
+    grammar?: boolean
+    vocabulary?: boolean
+    fluency?: boolean
+    totalScore?: boolean
+    evaluationReasoning?: boolean
+    isDisputed?: boolean
+    disputeStatus?: boolean
     createdAt?: boolean
     session?: boolean | ConversationSessionDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["interactionLog"]>
@@ -13665,10 +13778,18 @@ export namespace Prisma {
     leryResponse?: boolean
     grammaticalFixes?: boolean
     sentimentScore?: boolean
+    taskAchievement?: boolean
+    grammar?: boolean
+    vocabulary?: boolean
+    fluency?: boolean
+    totalScore?: boolean
+    evaluationReasoning?: boolean
+    isDisputed?: boolean
+    disputeStatus?: boolean
     createdAt?: boolean
   }
 
-  export type InteractionLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sessionId" | "userAudioTrans" | "leryResponse" | "grammaticalFixes" | "sentimentScore" | "createdAt", ExtArgs["result"]["interactionLog"]>
+  export type InteractionLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sessionId" | "userAudioTrans" | "leryResponse" | "grammaticalFixes" | "sentimentScore" | "taskAchievement" | "grammar" | "vocabulary" | "fluency" | "totalScore" | "evaluationReasoning" | "isDisputed" | "disputeStatus" | "createdAt", ExtArgs["result"]["interactionLog"]>
   export type InteractionLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     session?: boolean | ConversationSessionDefaultArgs<ExtArgs>
   }
@@ -13691,6 +13812,14 @@ export namespace Prisma {
       leryResponse: string | null
       grammaticalFixes: string | null
       sentimentScore: number | null
+      taskAchievement: number | null
+      grammar: number | null
+      vocabulary: number | null
+      fluency: number | null
+      totalScore: number | null
+      evaluationReasoning: string | null
+      isDisputed: boolean
+      disputeStatus: $Enums.DisputeStatus | null
       createdAt: Date
     }, ExtArgs["result"]["interactionLog"]>
     composites: {}
@@ -14122,6 +14251,14 @@ export namespace Prisma {
     readonly leryResponse: FieldRef<"InteractionLog", 'String'>
     readonly grammaticalFixes: FieldRef<"InteractionLog", 'String'>
     readonly sentimentScore: FieldRef<"InteractionLog", 'Float'>
+    readonly taskAchievement: FieldRef<"InteractionLog", 'Int'>
+    readonly grammar: FieldRef<"InteractionLog", 'Int'>
+    readonly vocabulary: FieldRef<"InteractionLog", 'Int'>
+    readonly fluency: FieldRef<"InteractionLog", 'Int'>
+    readonly totalScore: FieldRef<"InteractionLog", 'Int'>
+    readonly evaluationReasoning: FieldRef<"InteractionLog", 'String'>
+    readonly isDisputed: FieldRef<"InteractionLog", 'Boolean'>
+    readonly disputeStatus: FieldRef<"InteractionLog", 'DisputeStatus'>
     readonly createdAt: FieldRef<"InteractionLog", 'DateTime'>
   }
     
@@ -14686,6 +14823,14 @@ export namespace Prisma {
     leryResponse: 'leryResponse',
     grammaticalFixes: 'grammaticalFixes',
     sentimentScore: 'sentimentScore',
+    taskAchievement: 'taskAchievement',
+    grammar: 'grammar',
+    vocabulary: 'vocabulary',
+    fluency: 'fluency',
+    totalScore: 'totalScore',
+    evaluationReasoning: 'evaluationReasoning',
+    isDisputed: 'isDisputed',
+    disputeStatus: 'disputeStatus',
     createdAt: 'createdAt'
   };
 
@@ -14837,6 +14982,20 @@ export namespace Prisma {
    * Reference to a field of type 'Float[]'
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'DisputeStatus'
+   */
+  export type EnumDisputeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DisputeStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'DisputeStatus[]'
+   */
+  export type ListEnumDisputeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DisputeStatus[]'>
     
   /**
    * Deep Input Types
@@ -15546,6 +15705,14 @@ export namespace Prisma {
     leryResponse?: StringNullableFilter<"InteractionLog"> | string | null
     grammaticalFixes?: StringNullableFilter<"InteractionLog"> | string | null
     sentimentScore?: FloatNullableFilter<"InteractionLog"> | number | null
+    taskAchievement?: IntNullableFilter<"InteractionLog"> | number | null
+    grammar?: IntNullableFilter<"InteractionLog"> | number | null
+    vocabulary?: IntNullableFilter<"InteractionLog"> | number | null
+    fluency?: IntNullableFilter<"InteractionLog"> | number | null
+    totalScore?: IntNullableFilter<"InteractionLog"> | number | null
+    evaluationReasoning?: StringNullableFilter<"InteractionLog"> | string | null
+    isDisputed?: BoolFilter<"InteractionLog"> | boolean
+    disputeStatus?: EnumDisputeStatusNullableFilter<"InteractionLog"> | $Enums.DisputeStatus | null
     createdAt?: DateTimeFilter<"InteractionLog"> | Date | string
     session?: XOR<ConversationSessionScalarRelationFilter, ConversationSessionWhereInput>
   }
@@ -15557,6 +15724,14 @@ export namespace Prisma {
     leryResponse?: SortOrderInput | SortOrder
     grammaticalFixes?: SortOrderInput | SortOrder
     sentimentScore?: SortOrderInput | SortOrder
+    taskAchievement?: SortOrderInput | SortOrder
+    grammar?: SortOrderInput | SortOrder
+    vocabulary?: SortOrderInput | SortOrder
+    fluency?: SortOrderInput | SortOrder
+    totalScore?: SortOrderInput | SortOrder
+    evaluationReasoning?: SortOrderInput | SortOrder
+    isDisputed?: SortOrder
+    disputeStatus?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     session?: ConversationSessionOrderByWithRelationInput
   }
@@ -15571,6 +15746,14 @@ export namespace Prisma {
     leryResponse?: StringNullableFilter<"InteractionLog"> | string | null
     grammaticalFixes?: StringNullableFilter<"InteractionLog"> | string | null
     sentimentScore?: FloatNullableFilter<"InteractionLog"> | number | null
+    taskAchievement?: IntNullableFilter<"InteractionLog"> | number | null
+    grammar?: IntNullableFilter<"InteractionLog"> | number | null
+    vocabulary?: IntNullableFilter<"InteractionLog"> | number | null
+    fluency?: IntNullableFilter<"InteractionLog"> | number | null
+    totalScore?: IntNullableFilter<"InteractionLog"> | number | null
+    evaluationReasoning?: StringNullableFilter<"InteractionLog"> | string | null
+    isDisputed?: BoolFilter<"InteractionLog"> | boolean
+    disputeStatus?: EnumDisputeStatusNullableFilter<"InteractionLog"> | $Enums.DisputeStatus | null
     createdAt?: DateTimeFilter<"InteractionLog"> | Date | string
     session?: XOR<ConversationSessionScalarRelationFilter, ConversationSessionWhereInput>
   }, "id">
@@ -15582,6 +15765,14 @@ export namespace Prisma {
     leryResponse?: SortOrderInput | SortOrder
     grammaticalFixes?: SortOrderInput | SortOrder
     sentimentScore?: SortOrderInput | SortOrder
+    taskAchievement?: SortOrderInput | SortOrder
+    grammar?: SortOrderInput | SortOrder
+    vocabulary?: SortOrderInput | SortOrder
+    fluency?: SortOrderInput | SortOrder
+    totalScore?: SortOrderInput | SortOrder
+    evaluationReasoning?: SortOrderInput | SortOrder
+    isDisputed?: SortOrder
+    disputeStatus?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: InteractionLogCountOrderByAggregateInput
     _avg?: InteractionLogAvgOrderByAggregateInput
@@ -15600,6 +15791,14 @@ export namespace Prisma {
     leryResponse?: StringNullableWithAggregatesFilter<"InteractionLog"> | string | null
     grammaticalFixes?: StringNullableWithAggregatesFilter<"InteractionLog"> | string | null
     sentimentScore?: FloatNullableWithAggregatesFilter<"InteractionLog"> | number | null
+    taskAchievement?: IntNullableWithAggregatesFilter<"InteractionLog"> | number | null
+    grammar?: IntNullableWithAggregatesFilter<"InteractionLog"> | number | null
+    vocabulary?: IntNullableWithAggregatesFilter<"InteractionLog"> | number | null
+    fluency?: IntNullableWithAggregatesFilter<"InteractionLog"> | number | null
+    totalScore?: IntNullableWithAggregatesFilter<"InteractionLog"> | number | null
+    evaluationReasoning?: StringNullableWithAggregatesFilter<"InteractionLog"> | string | null
+    isDisputed?: BoolWithAggregatesFilter<"InteractionLog"> | boolean
+    disputeStatus?: EnumDisputeStatusNullableWithAggregatesFilter<"InteractionLog"> | $Enums.DisputeStatus | null
     createdAt?: DateTimeWithAggregatesFilter<"InteractionLog"> | Date | string
   }
 
@@ -16335,6 +16534,14 @@ export namespace Prisma {
     leryResponse?: string | null
     grammaticalFixes?: string | null
     sentimentScore?: number | null
+    taskAchievement?: number | null
+    grammar?: number | null
+    vocabulary?: number | null
+    fluency?: number | null
+    totalScore?: number | null
+    evaluationReasoning?: string | null
+    isDisputed?: boolean
+    disputeStatus?: $Enums.DisputeStatus | null
     createdAt?: Date | string
     session: ConversationSessionCreateNestedOneWithoutInteractionsInput
   }
@@ -16346,6 +16553,14 @@ export namespace Prisma {
     leryResponse?: string | null
     grammaticalFixes?: string | null
     sentimentScore?: number | null
+    taskAchievement?: number | null
+    grammar?: number | null
+    vocabulary?: number | null
+    fluency?: number | null
+    totalScore?: number | null
+    evaluationReasoning?: string | null
+    isDisputed?: boolean
+    disputeStatus?: $Enums.DisputeStatus | null
     createdAt?: Date | string
   }
 
@@ -16355,6 +16570,14 @@ export namespace Prisma {
     leryResponse?: NullableStringFieldUpdateOperationsInput | string | null
     grammaticalFixes?: NullableStringFieldUpdateOperationsInput | string | null
     sentimentScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    taskAchievement?: NullableIntFieldUpdateOperationsInput | number | null
+    grammar?: NullableIntFieldUpdateOperationsInput | number | null
+    vocabulary?: NullableIntFieldUpdateOperationsInput | number | null
+    fluency?: NullableIntFieldUpdateOperationsInput | number | null
+    totalScore?: NullableIntFieldUpdateOperationsInput | number | null
+    evaluationReasoning?: NullableStringFieldUpdateOperationsInput | string | null
+    isDisputed?: BoolFieldUpdateOperationsInput | boolean
+    disputeStatus?: NullableEnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     session?: ConversationSessionUpdateOneRequiredWithoutInteractionsNestedInput
   }
@@ -16366,6 +16589,14 @@ export namespace Prisma {
     leryResponse?: NullableStringFieldUpdateOperationsInput | string | null
     grammaticalFixes?: NullableStringFieldUpdateOperationsInput | string | null
     sentimentScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    taskAchievement?: NullableIntFieldUpdateOperationsInput | number | null
+    grammar?: NullableIntFieldUpdateOperationsInput | number | null
+    vocabulary?: NullableIntFieldUpdateOperationsInput | number | null
+    fluency?: NullableIntFieldUpdateOperationsInput | number | null
+    totalScore?: NullableIntFieldUpdateOperationsInput | number | null
+    evaluationReasoning?: NullableStringFieldUpdateOperationsInput | string | null
+    isDisputed?: BoolFieldUpdateOperationsInput | boolean
+    disputeStatus?: NullableEnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -16376,6 +16607,14 @@ export namespace Prisma {
     leryResponse?: string | null
     grammaticalFixes?: string | null
     sentimentScore?: number | null
+    taskAchievement?: number | null
+    grammar?: number | null
+    vocabulary?: number | null
+    fluency?: number | null
+    totalScore?: number | null
+    evaluationReasoning?: string | null
+    isDisputed?: boolean
+    disputeStatus?: $Enums.DisputeStatus | null
     createdAt?: Date | string
   }
 
@@ -16385,6 +16624,14 @@ export namespace Prisma {
     leryResponse?: NullableStringFieldUpdateOperationsInput | string | null
     grammaticalFixes?: NullableStringFieldUpdateOperationsInput | string | null
     sentimentScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    taskAchievement?: NullableIntFieldUpdateOperationsInput | number | null
+    grammar?: NullableIntFieldUpdateOperationsInput | number | null
+    vocabulary?: NullableIntFieldUpdateOperationsInput | number | null
+    fluency?: NullableIntFieldUpdateOperationsInput | number | null
+    totalScore?: NullableIntFieldUpdateOperationsInput | number | null
+    evaluationReasoning?: NullableStringFieldUpdateOperationsInput | string | null
+    isDisputed?: BoolFieldUpdateOperationsInput | boolean
+    disputeStatus?: NullableEnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -16395,6 +16642,14 @@ export namespace Prisma {
     leryResponse?: NullableStringFieldUpdateOperationsInput | string | null
     grammaticalFixes?: NullableStringFieldUpdateOperationsInput | string | null
     sentimentScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    taskAchievement?: NullableIntFieldUpdateOperationsInput | number | null
+    grammar?: NullableIntFieldUpdateOperationsInput | number | null
+    vocabulary?: NullableIntFieldUpdateOperationsInput | number | null
+    fluency?: NullableIntFieldUpdateOperationsInput | number | null
+    totalScore?: NullableIntFieldUpdateOperationsInput | number | null
+    evaluationReasoning?: NullableStringFieldUpdateOperationsInput | string | null
+    isDisputed?: BoolFieldUpdateOperationsInput | boolean
+    disputeStatus?: NullableEnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -17107,6 +17362,24 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type EnumDisputeStatusNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.DisputeStatus | EnumDisputeStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumDisputeStatusNullableFilter<$PrismaModel> | $Enums.DisputeStatus | null
+  }
+
   export type ConversationSessionScalarRelationFilter = {
     is?: ConversationSessionWhereInput
     isNot?: ConversationSessionWhereInput
@@ -17119,11 +17392,24 @@ export namespace Prisma {
     leryResponse?: SortOrder
     grammaticalFixes?: SortOrder
     sentimentScore?: SortOrder
+    taskAchievement?: SortOrder
+    grammar?: SortOrder
+    vocabulary?: SortOrder
+    fluency?: SortOrder
+    totalScore?: SortOrder
+    evaluationReasoning?: SortOrder
+    isDisputed?: SortOrder
+    disputeStatus?: SortOrder
     createdAt?: SortOrder
   }
 
   export type InteractionLogAvgOrderByAggregateInput = {
     sentimentScore?: SortOrder
+    taskAchievement?: SortOrder
+    grammar?: SortOrder
+    vocabulary?: SortOrder
+    fluency?: SortOrder
+    totalScore?: SortOrder
   }
 
   export type InteractionLogMaxOrderByAggregateInput = {
@@ -17133,6 +17419,14 @@ export namespace Prisma {
     leryResponse?: SortOrder
     grammaticalFixes?: SortOrder
     sentimentScore?: SortOrder
+    taskAchievement?: SortOrder
+    grammar?: SortOrder
+    vocabulary?: SortOrder
+    fluency?: SortOrder
+    totalScore?: SortOrder
+    evaluationReasoning?: SortOrder
+    isDisputed?: SortOrder
+    disputeStatus?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -17143,11 +17437,24 @@ export namespace Prisma {
     leryResponse?: SortOrder
     grammaticalFixes?: SortOrder
     sentimentScore?: SortOrder
+    taskAchievement?: SortOrder
+    grammar?: SortOrder
+    vocabulary?: SortOrder
+    fluency?: SortOrder
+    totalScore?: SortOrder
+    evaluationReasoning?: SortOrder
+    isDisputed?: SortOrder
+    disputeStatus?: SortOrder
     createdAt?: SortOrder
   }
 
   export type InteractionLogSumOrderByAggregateInput = {
     sentimentScore?: SortOrder
+    taskAchievement?: SortOrder
+    grammar?: SortOrder
+    vocabulary?: SortOrder
+    fluency?: SortOrder
+    totalScore?: SortOrder
   }
 
   export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -17164,6 +17471,32 @@ export namespace Prisma {
     _sum?: NestedFloatNullableFilter<$PrismaModel>
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type EnumDisputeStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DisputeStatus | EnumDisputeStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumDisputeStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.DisputeStatus | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumDisputeStatusNullableFilter<$PrismaModel>
+    _max?: NestedEnumDisputeStatusNullableFilter<$PrismaModel>
   }
 
   export type LevelCreateNestedManyWithoutLanguageInput = {
@@ -17952,6 +18285,18 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type NullableEnumDisputeStatusFieldUpdateOperationsInput = {
+    set?: $Enums.DisputeStatus | null
+  }
+
   export type ConversationSessionUpdateOneRequiredWithoutInteractionsNestedInput = {
     create?: XOR<ConversationSessionCreateWithoutInteractionsInput, ConversationSessionUncheckedCreateWithoutInteractionsInput>
     connectOrCreate?: ConversationSessionCreateOrConnectWithoutInteractionsInput
@@ -18213,6 +18558,13 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
+  export type NestedEnumDisputeStatusNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.DisputeStatus | EnumDisputeStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumDisputeStatusNullableFilter<$PrismaModel> | $Enums.DisputeStatus | null
+  }
+
   export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel> | null
     in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
@@ -18227,6 +18579,32 @@ export namespace Prisma {
     _sum?: NestedFloatNullableFilter<$PrismaModel>
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumDisputeStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DisputeStatus | EnumDisputeStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.DisputeStatus[] | ListEnumDisputeStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumDisputeStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.DisputeStatus | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumDisputeStatusNullableFilter<$PrismaModel>
+    _max?: NestedEnumDisputeStatusNullableFilter<$PrismaModel>
   }
 
   export type LevelCreateWithoutLanguageInput = {
@@ -19658,6 +20036,14 @@ export namespace Prisma {
     leryResponse?: string | null
     grammaticalFixes?: string | null
     sentimentScore?: number | null
+    taskAchievement?: number | null
+    grammar?: number | null
+    vocabulary?: number | null
+    fluency?: number | null
+    totalScore?: number | null
+    evaluationReasoning?: string | null
+    isDisputed?: boolean
+    disputeStatus?: $Enums.DisputeStatus | null
     createdAt?: Date | string
   }
 
@@ -19667,6 +20053,14 @@ export namespace Prisma {
     leryResponse?: string | null
     grammaticalFixes?: string | null
     sentimentScore?: number | null
+    taskAchievement?: number | null
+    grammar?: number | null
+    vocabulary?: number | null
+    fluency?: number | null
+    totalScore?: number | null
+    evaluationReasoning?: string | null
+    isDisputed?: boolean
+    disputeStatus?: $Enums.DisputeStatus | null
     createdAt?: Date | string
   }
 
@@ -19786,6 +20180,14 @@ export namespace Prisma {
     leryResponse?: StringNullableFilter<"InteractionLog"> | string | null
     grammaticalFixes?: StringNullableFilter<"InteractionLog"> | string | null
     sentimentScore?: FloatNullableFilter<"InteractionLog"> | number | null
+    taskAchievement?: IntNullableFilter<"InteractionLog"> | number | null
+    grammar?: IntNullableFilter<"InteractionLog"> | number | null
+    vocabulary?: IntNullableFilter<"InteractionLog"> | number | null
+    fluency?: IntNullableFilter<"InteractionLog"> | number | null
+    totalScore?: IntNullableFilter<"InteractionLog"> | number | null
+    evaluationReasoning?: StringNullableFilter<"InteractionLog"> | string | null
+    isDisputed?: BoolFilter<"InteractionLog"> | boolean
+    disputeStatus?: EnumDisputeStatusNullableFilter<"InteractionLog"> | $Enums.DisputeStatus | null
     createdAt?: DateTimeFilter<"InteractionLog"> | Date | string
   }
 
@@ -20253,6 +20655,14 @@ export namespace Prisma {
     leryResponse?: string | null
     grammaticalFixes?: string | null
     sentimentScore?: number | null
+    taskAchievement?: number | null
+    grammar?: number | null
+    vocabulary?: number | null
+    fluency?: number | null
+    totalScore?: number | null
+    evaluationReasoning?: string | null
+    isDisputed?: boolean
+    disputeStatus?: $Enums.DisputeStatus | null
     createdAt?: Date | string
   }
 
@@ -20262,6 +20672,14 @@ export namespace Prisma {
     leryResponse?: NullableStringFieldUpdateOperationsInput | string | null
     grammaticalFixes?: NullableStringFieldUpdateOperationsInput | string | null
     sentimentScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    taskAchievement?: NullableIntFieldUpdateOperationsInput | number | null
+    grammar?: NullableIntFieldUpdateOperationsInput | number | null
+    vocabulary?: NullableIntFieldUpdateOperationsInput | number | null
+    fluency?: NullableIntFieldUpdateOperationsInput | number | null
+    totalScore?: NullableIntFieldUpdateOperationsInput | number | null
+    evaluationReasoning?: NullableStringFieldUpdateOperationsInput | string | null
+    isDisputed?: BoolFieldUpdateOperationsInput | boolean
+    disputeStatus?: NullableEnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -20271,6 +20689,14 @@ export namespace Prisma {
     leryResponse?: NullableStringFieldUpdateOperationsInput | string | null
     grammaticalFixes?: NullableStringFieldUpdateOperationsInput | string | null
     sentimentScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    taskAchievement?: NullableIntFieldUpdateOperationsInput | number | null
+    grammar?: NullableIntFieldUpdateOperationsInput | number | null
+    vocabulary?: NullableIntFieldUpdateOperationsInput | number | null
+    fluency?: NullableIntFieldUpdateOperationsInput | number | null
+    totalScore?: NullableIntFieldUpdateOperationsInput | number | null
+    evaluationReasoning?: NullableStringFieldUpdateOperationsInput | string | null
+    isDisputed?: BoolFieldUpdateOperationsInput | boolean
+    disputeStatus?: NullableEnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -20280,6 +20706,14 @@ export namespace Prisma {
     leryResponse?: NullableStringFieldUpdateOperationsInput | string | null
     grammaticalFixes?: NullableStringFieldUpdateOperationsInput | string | null
     sentimentScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    taskAchievement?: NullableIntFieldUpdateOperationsInput | number | null
+    grammar?: NullableIntFieldUpdateOperationsInput | number | null
+    vocabulary?: NullableIntFieldUpdateOperationsInput | number | null
+    fluency?: NullableIntFieldUpdateOperationsInput | number | null
+    totalScore?: NullableIntFieldUpdateOperationsInput | number | null
+    evaluationReasoning?: NullableStringFieldUpdateOperationsInput | string | null
+    isDisputed?: BoolFieldUpdateOperationsInput | boolean
+    disputeStatus?: NullableEnumDisputeStatusFieldUpdateOperationsInput | $Enums.DisputeStatus | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

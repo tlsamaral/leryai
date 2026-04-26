@@ -225,6 +225,14 @@ exports.Prisma.InteractionLogScalarFieldEnum = {
   leryResponse: 'leryResponse',
   grammaticalFixes: 'grammaticalFixes',
   sentimentScore: 'sentimentScore',
+  taskAchievement: 'taskAchievement',
+  grammar: 'grammar',
+  vocabulary: 'vocabulary',
+  fluency: 'fluency',
+  totalScore: 'totalScore',
+  evaluationReasoning: 'evaluationReasoning',
+  isDisputed: 'isDisputed',
+  disputeStatus: 'disputeStatus',
   createdAt: 'createdAt'
 };
 
@@ -269,6 +277,12 @@ exports.InteractionMode = exports.$Enums.InteractionMode = {
   FREE_TALK: 'FREE_TALK',
   GUIDED_LESSON: 'GUIDED_LESSON',
   DIAGNOSIS: 'DIAGNOSIS'
+};
+
+exports.DisputeStatus = exports.$Enums.DisputeStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED'
 };
 
 exports.Prisma.ModelName = {
