@@ -1,105 +1,179 @@
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAuthViewModel } from '../features/auth/viewmodels/use-auth-view-model'
-import { ScreenContainer } from '../shared/components/screen-container'
+import { theme } from '../shared/theme'
 
 export default function AuthPage() {
   const { signInWithGoogle, isLoading } = useAuthViewModel()
+  const insets = useSafeAreaInsets()
 
   return (
-    <ScreenContainer>
-      <View style={styles.root}>
+    <View style={[styles.root, { paddingTop: insets.top + 12 }]}>
+      <Pressable style={styles.backButton} onPress={() => router.replace('/')}>
+        <Ionicons name="arrow-back" size={20} color={theme.colors.text} />
+      </Pressable>
+
+      <View style={styles.card}>
+        <Text style={styles.eyebrow}>Login</Text>
+        <Text style={styles.title}>Bem-vindo de volta</Text>
+        <Text style={styles.subtitle}>
+          Entre para continuar praticando com o Lery.
+        </Text>
+
+        <View style={styles.fieldGroup}>
+          <TextInput
+            style={styles.input}
+            placeholder="E-mail"
+            placeholderTextColor={theme.colors.dim}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Senha"
+            placeholderTextColor={theme.colors.dim}
+            secureTextEntry
+          />
+        </View>
+
         <Pressable
-          style={styles.backButton}
-          onPress={() => router.replace('/')}
+          style={({ pressed }) => [
+            styles.primaryButton,
+            pressed && styles.pressed,
+          ]}
+          onPress={signInWithGoogle}
         >
-          <Ionicons name="arrow-back" size={20} color="#163D32" />
+          <Ionicons name="logo-google" size={18} color="#040D12" />
+          <Text style={styles.primaryButtonText}>
+            {isLoading ? 'Conectando...' : 'Continuar com Google'}
+          </Text>
         </Pressable>
 
-        <View style={styles.card}>
-          <Text style={styles.eyebrow}>Preview de login</Text>
-          <Text style={styles.title}>Acesso por Google</Text>
-          <Text style={styles.subtitle}>
-            Fluxo final de autenticacao unico com Google para sincronizar seu
-            progresso.
-          </Text>
-
-          <Pressable style={styles.googleButton} onPress={signInWithGoogle}>
-            <Ionicons name="logo-google" size={18} color="#F5FFFB" />
-            <Text style={styles.googleButtonText}>
-              {isLoading ? 'Conectando...' : 'Continuar com Google'}
-            </Text>
-          </Pressable>
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>ou entre com e-mail</Text>
+          <View style={styles.dividerLine} />
         </View>
+
+        <Pressable style={styles.emailButton}>
+          <Text style={styles.emailButtonText}>Entrar</Text>
+        </Pressable>
       </View>
-    </ScreenContainer>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#F5FAF8',
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    backgroundColor: theme.colors.bg,
+    paddingHorizontal: 16,
     paddingBottom: 28,
-    gap: 16,
+    gap: 14,
   },
   backButton: {
     width: 42,
     height: 42,
-    borderRadius: 999,
+    borderRadius: theme.radius.pill,
     borderWidth: 1,
-    borderColor: '#D5E6DF',
-    backgroundColor: '#FFFFFF',
+    borderColor: '#D0E8F0',
+    backgroundColor: theme.colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
   card: {
-    marginTop: 6,
     borderRadius: 26,
     borderWidth: 1,
-    borderColor: '#E0ECE7',
-    backgroundColor: '#FFFFFF',
-    padding: 18,
-    gap: 10,
-    shadowColor: '#102A22',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 3,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    padding: 20,
+    gap: 12,
+    ...theme.shadow.soft,
   },
   eyebrow: {
-    color: '#2D8068',
-    fontSize: 11,
-    fontWeight: '700',
+    color: theme.colors.primary,
+    fontSize: theme.typography.caption,
+    fontWeight: theme.fontWeights.bold,
     textTransform: 'uppercase',
+    letterSpacing: theme.tracking.wider,
   },
   title: {
-    color: '#102A22',
-    fontSize: 34,
-    lineHeight: 40,
-    fontWeight: '800',
+    color: theme.colors.text,
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: theme.fontWeights.bold,
+    letterSpacing: theme.tracking.tight,
   },
   subtitle: {
-    color: '#5F746C',
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 6,
+    color: theme.colors.muted,
+    fontSize: theme.typography.body,
+    lineHeight: theme.lineHeights.body,
+    marginBottom: 4,
   },
-  googleButton: {
-    minHeight: 50,
-    borderRadius: 999,
-    backgroundColor: '#1F8A70',
+  fieldGroup: {
+    gap: 10,
+  },
+  input: {
+    minHeight: 48,
+    borderRadius: theme.radius.md,
+    borderWidth: 1.5,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.bg,
+    paddingHorizontal: 14,
+    fontSize: theme.typography.body,
+    color: theme.colors.text,
+  },
+  primaryButton: {
+    minHeight: 52,
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+    shadowColor: theme.colors.primary,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 5,
   },
-  googleButtonText: {
-    color: '#F5FFFB',
+  pressed: {
+    opacity: 0.84,
+    transform: [{ scale: 0.97 }],
+  },
+  primaryButtonText: {
+    color: '#040D12',
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: theme.fontWeights.bold,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: theme.colors.border,
+  },
+  dividerText: {
+    color: theme.colors.dim,
+    fontSize: theme.typography.caption,
+    fontWeight: theme.fontWeights.medium,
+  },
+  emailButton: {
+    minHeight: 48,
+    borderRadius: theme.radius.pill,
+    borderWidth: 1.5,
+    borderColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emailButtonText: {
+    color: theme.colors.primary,
+    fontSize: 15,
+    fontWeight: theme.fontWeights.bold,
   },
 })
