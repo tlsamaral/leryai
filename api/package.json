@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsup src/server.ts --format esm --clean",
+    "build": "tsup src/server.ts --format esm --clean --external @prisma/client-runtime-utils",
     "start": "node dist/server.js",
     "db:push": "prisma db push",
     "db:studio": "prisma studio "
