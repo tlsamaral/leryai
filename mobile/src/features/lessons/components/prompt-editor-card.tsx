@@ -9,23 +9,20 @@ interface PromptEditorCardProps {
   onSave: () => void
 }
 
-export function PromptEditorCard({
-  value,
-  isSaving,
-  onChange,
-  onSave,
-}: PromptEditorCardProps) {
+export function PromptEditorCard({ value, isSaving, onChange, onSave }: PromptEditorCardProps) {
   return (
     <View style={styles.card}>
       <View style={styles.headerRow}>
-        <View>
+        <View style={styles.iconWrap}>
+          <Ionicons name="sparkles" size={16} color={theme.colors.primary} />
+        </View>
+        <View style={styles.headerTexts}>
           <Text style={styles.title}>Prompt do tutor</Text>
           <Text style={styles.subtitle}>
-            Personalize a personalidade do Lery nesta lesson.
+            Personalize como o Lery se comporta nesta lição
           </Text>
         </View>
         <View style={styles.badge}>
-          <Ionicons name="sparkles" size={12} color="#0D5E4A" />
           <Text style={styles.badgeText}>Custom</Text>
         </View>
       </View>
@@ -34,14 +31,20 @@ export function PromptEditorCard({
         multiline
         value={value}
         onChangeText={onChange}
-        placeholder="Ex.: Seja encorajador, corrija com exemplos curtos e mantenha ritmo natural"
-        placeholderTextColor={theme.colors.muted}
+        placeholder="Ex.: Seja encorajador, corrija com exemplos curtos e mantenha ritmo natural..."
+        placeholderTextColor={theme.colors.dim}
         style={styles.input}
+        textAlignVertical="top"
       />
 
-      <Pressable style={styles.button} onPress={onSave} disabled={isSaving}>
-        <Text style={styles.buttonText}>
-          {isSaving ? 'Salvando...' : 'Salvar configuracao'}
+      <Pressable
+        style={({ pressed }) => [styles.saveBtn, isSaving && styles.saveBtnDisabled, pressed && styles.saveBtnPressed]}
+        onPress={onSave}
+        disabled={isSaving}
+      >
+        <Ionicons name={isSaving ? 'hourglass-outline' : 'checkmark'} size={16} color="#040D12" />
+        <Text style={styles.saveBtnText}>
+          {isSaving ? 'Salvando...' : 'Salvar configuração'}
         </Text>
       </Pressable>
     </View>
@@ -50,67 +53,88 @@ export function PromptEditorCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: '#E2ECE7',
-    padding: 14,
-    gap: 10,
+    borderColor: theme.colors.border,
+    padding: 16,
+    gap: 12,
+    ...theme.shadow.soft,
   },
   headerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 8,
+    alignItems: 'center',
+    gap: 10,
   },
+  iconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primarySoft,
+    borderWidth: 1,
+    borderColor: `${theme.colors.primary}33`,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTexts: { flex: 1, gap: 2 },
   title: {
     color: theme.colors.text,
+    fontSize: 15,
     fontWeight: '800',
-    fontSize: 18,
+    letterSpacing: -0.2,
   },
   subtitle: {
     color: theme.colors.muted,
     fontSize: 12,
-    marginTop: 1,
-    maxWidth: 240,
+    lineHeight: 16,
   },
   badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#E8F7F0',
-    borderRadius: 999,
     paddingHorizontal: 9,
     paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: theme.colors.primarySoft,
+    borderWidth: 1,
+    borderColor: `${theme.colors.primary}33`,
   },
   badgeText: {
-    color: '#0D5E4A',
-    fontSize: 11,
-    fontWeight: '700',
+    color: theme.colors.primaryDeep,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
   },
   input: {
-    minHeight: 128,
-    borderWidth: 1,
-    borderColor: '#DCE9E3',
+    minHeight: 120,
+    borderWidth: 1.5,
+    borderColor: theme.colors.border,
     borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    textAlignVertical: 'top',
-    fontSize: 15,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
     color: theme.colors.text,
-    backgroundColor: '#FAFDFC',
-    lineHeight: 22,
+    backgroundColor: theme.colors.bg,
+    lineHeight: 21,
   },
-  button: {
-    minHeight: 42,
-    backgroundColor: theme.colors.primary,
-    borderRadius: 999,
+  saveBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
+    backgroundColor: theme.colors.primary,
+    borderRadius: 999,
+    paddingVertical: 13,
+    shadowColor: theme.colors.primary,
+    shadowOpacity: 0.28,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
-  buttonText: {
-    color: '#F6FFFA',
-    fontWeight: '700',
+  saveBtnDisabled: { opacity: 0.5 },
+  saveBtnPressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
+  saveBtnText: {
+    color: '#040D12',
     fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: -0.2,
   },
 })
