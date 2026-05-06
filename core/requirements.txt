@@ -5,6 +5,7 @@ pygame
 google-genai
 openai
 gTTS
+elevenlabs
 python-dotenv
 urllib3<2
 rpi_ws281x; sys_platform == 'linux'
