@@ -27,7 +27,7 @@ app.register(fastifyCookie, {
   secret: process.env.JWT_SECRET ?? '12###12###',
 })
 
-// Add authenticate decorator to validate JWT or Device API Key on protected routes
+// Accepts JWT or Device API Key
 app.decorate(
   'authenticate',
   async (request: FastifyRequest, reply: FastifyReply) => {
@@ -38,23 +38,45 @@ app.decorate(
 
       const device = await prisma.device.findUnique({
         where: { apiKey },
-        select: { userId: true },
+        select: { id: true, userId: true, isActive: true },
       })
 
-      if (!device) {
+      if (!device || !device.isActive) {
         return reply.status(401).send({ message: 'Invalid Device API Key' })
       }
 
-      // Inject the user ID into the request for down-stream use
-      request.user = {
-        sub: device.userId,
-        id: device.userId,
-      } as any
-
+      request.user = { sub: device.userId, id: device.userId } as any
+      ;(request as any).deviceId = device.id
       return
     }
 
     await request.jwtVerify()
+  },
+)
+
+// Device-only — rejects JWT tokens; for IoT-exclusive routes
+app.decorate(
+  'authenticateDevice',
+  async (request: FastifyRequest, reply: FastifyReply) => {
+    const authHeader = request.headers.authorization
+
+    if (!authHeader?.startsWith('Bearer lery_')) {
+      return reply.status(401).send({ message: 'Device API key required. Use Bearer lery_<key>' })
+    }
+
+    const apiKey = authHeader.replace('Bearer ', '')
+
+    const device = await prisma.device.findUnique({
+      where: { apiKey },
+      select: { id: true, userId: true, isActive: true },
+    })
+
+    if (!device || !device.isActive) {
+      return reply.status(401).send({ message: 'Invalid or inactive Device API Key' })
+    }
+
+    request.user = { sub: device.userId, id: device.userId } as any
+    ;(request as any).deviceId = device.id
   },
 )
 
