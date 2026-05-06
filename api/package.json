@@ -8,6 +8,7 @@
     "build": "tsup src/server.ts --format esm --clean --external @prisma/client-runtime-utils",
     "start": "node dist/server.js",
     "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio "
   },
   "keywords": [],
