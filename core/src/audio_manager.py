@@ -32,54 +32,72 @@ class AudioManager:
             print(f"Failed to init pygame mixer with device {output_device}: {e}, falling back to default")
             pygame.mixer.init()
 
-    def record_audio(self, output_filename="data/audio/input.wav", threshold=30, silence_duration=2.0):
+    def record_audio(
+        self,
+        output_filename="data/audio/input.wav",
+        threshold=30,
+        silence_duration=2.0,
+        max_wait_seconds=8,
+        max_duration_seconds=30,
+    ):
         """
-        Records audio until silence is detected.
+        Records audio until post-speech silence is detected.
+
+        Returns output_filename on success.
+        Returns None if user never spoke within max_wait_seconds — caller
+        should treat this as a silence/no-input event.
         """
         print("Listening... (Speak now)")
-        
+
         recording = []
         silent_chunks = 0
         chunk_size = 1024
-        
-        # Calculate chunks needed for silence duration
+
         chunks_per_second = self.sample_rate / chunk_size
         silence_chunks_limit = int(chunks_per_second * silence_duration)
-        
+        max_wait_chunks = int(chunks_per_second * max_wait_seconds)
+        max_duration_chunks = int(chunks_per_second * max_duration_seconds)
+
         has_spoken = False
-        
+        pre_speech_chunks = 0
+
         with sd.InputStream(samplerate=self.sample_rate, channels=1, dtype='int16', device=self.device) as stream:
             while True:
-                data, overflow = stream.read(chunk_size)
+                data, _ = stream.read(chunk_size)
                 recording.append(data)
-                
-                # Calculate volume
+
                 volume = np.linalg.norm(data) / chunk_size
-                
+
                 if volume > threshold:
                     silent_chunks = 0
                     has_spoken = True
                 else:
                     if has_spoken:
                         silent_chunks += 1
-                
-                # Stop if silence limit reached and we have spoken
+                    else:
+                        pre_speech_chunks += 1
+
+                # User spoke then went silent → stop cleanly
                 if has_spoken and silent_chunks > silence_chunks_limit:
                     print("Silence detected, stopping...")
                     break
-                    
-                # Timeout safety (e.g. 30 seconds max)
-                if len(recording) > chunks_per_second * 30:
+
+                # User never spoke within the wait window → no input
+                if not has_spoken and pre_speech_chunks > max_wait_chunks:
+                    print("No speech detected.")
+                    return None
+
+                # Hard cap
+                if len(recording) > max_duration_chunks:
                     print("Max duration reached.")
                     break
 
         full_recording = np.concatenate(recording, axis=0)
-        
-        # Garante que as pastas da hierarquia do arquivo existam
+
         output_dir = os.path.dirname(output_filename)
         if output_dir:
             os.makedirs(output_dir, exist_ok=True)
-            
+
         wav.write(output_filename, self.sample_rate, full_recording)
         print(f"Audio saved to {output_filename}")
         return output_filename
