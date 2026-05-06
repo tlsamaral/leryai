@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { authRoutes } from './routes/auth/index.js'
 import { devicesIndex } from './routes/devices/index.js'
+import { iotIndex } from './routes/iot/index.js'
 import { languagesIndex } from './routes/languages/index.js'
 import { lessonsIndex } from './routes/lessons/index.js'
 import { levelsIndex } from './routes/levels/index.js'
@@ -25,4 +26,5 @@ export async function appRoutes(app: FastifyInstance) {
   app.register(progressIndex, { prefix: '/progress' })
   app.register(sessionsIndex, { prefix: '/sessions' })
   app.register(logsIndex, { prefix: '/logs' })
+  app.register(iotIndex, { prefix: '/core' })
 }
