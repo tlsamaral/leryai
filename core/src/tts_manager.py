@@ -1,5 +1,6 @@
 import os
 import re
+import time
 from abc import ABC, abstractmethod
 from typing import List
 
@@ -20,11 +21,53 @@ class TTSProvider(ABC):
         """
 
 
+class Pyttsx3Provider(TTSProvider):
+    """
+    Offline TTS via pyttsx3 — no network, no rate limits.
+    Saves to WAV. Used as fallback when gTTS is rate-limited.
+    Does not support per-segment language switching (uses system voice).
+    """
+
+    def synthesize(self, text: str, output_dir: str = "data/audio") -> List[str]:
+        import pyttsx3
+        import subprocess
+
+        clean = _strip_pt_tags(text)
+        if not clean:
+            return []
+
+        os.makedirs(output_dir, exist_ok=True)
+        raw_path = os.path.join(output_dir, "output_offline_raw.wav")
+        final_path = os.path.join(output_dir, "output_offline.wav")
+
+        engine = pyttsx3.init()
+        engine.setProperty("rate", 165)
+        engine.setProperty("volume", 1.0)
+        engine.save_to_file(clean, raw_path)
+        engine.runAndWait()
+
+        # macOS pyttsx3 saves AIFF — convert to 16-bit PCM WAV via ffmpeg
+        proc = subprocess.run(
+            ["ffmpeg", "-y", "-i", raw_path,
+             "-ar", "44100", "-ac", "1", "-sample_fmt", "s16", final_path],
+            capture_output=True,
+        )
+        if proc.returncode != 0:
+            print(f"[pyttsx3] ffmpeg convert failed: {proc.stderr.decode()[:100]}")
+            return [raw_path]  # try raw as fallback
+
+        return [final_path]
+
+
 class GTTSProvider(TTSProvider):
     """
-    Google Text-to-Speech (free, offline-friendly).
+    Google Text-to-Speech (online).
     Splits [PT] segments and renders each in the correct language.
+    Falls back to Pyttsx3Provider on rate-limit (429).
     """
+
+    def __init__(self):
+        self._offline = Pyttsx3Provider()
 
     def synthesize(self, text: str, output_dir: str = "data/audio") -> List[str]:
         from gtts import gTTS
@@ -49,7 +92,18 @@ class GTTSProvider(TTSProvider):
                 continue
 
             path = os.path.join(output_dir, f"output_{i}.mp3")
-            gTTS(text=clean, lang=lang).save(path)
+            waits = [5, 15, 30]
+            for attempt in range(len(waits) + 1):
+                try:
+                    gTTS(text=clean, lang=lang).save(path)
+                    break
+                except Exception as e:
+                    if attempt == len(waits):
+                        print(f"[gTTS] All retries failed — switching to offline TTS")
+                        return self._offline.synthesize(text, output_dir)
+                    wait = waits[attempt]
+                    print(f"[gTTS] Rate limited, retrying in {wait}s...")
+                    time.sleep(wait)
             files.append(path)
 
         return files
@@ -66,6 +120,7 @@ class ElevenLabsProvider(TTSProvider):
         self.api_key = api_key
         self.voice_id = voice_id
         self._fallback = GTTSProvider()
+        self._offline = Pyttsx3Provider()
 
     def synthesize(self, text: str, output_dir: str = "data/audio") -> List[str]:
         try:

@@ -1,10 +1,12 @@
 sounddevice
+openwakeword
 scipy
 numpy
 pygame
 google-genai
 openai
 gTTS
+pyttsx3
 elevenlabs
 python-dotenv
 urllib3<2
