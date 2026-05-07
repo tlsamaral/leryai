@@ -166,6 +166,20 @@ class ApiClient:
             )
         return result
 
+    def complete_diagnosis(self, session_id: str, estimated_level: str) -> Optional[dict]:
+        """
+        PATCH /core/sessions/:id/diagnose
+        Finalizes a DIAGNOSIS session and updates the user's CEFR level.
+        Returns { id, endedAt, previousLevel, updatedLevel } or None on failure.
+        """
+        result = self._patch(f'/core/sessions/{session_id}/diagnose', {'estimatedLevel': estimated_level})
+        if result:
+            print(
+                f'[ApiClient] Diagnosis complete — '
+                f'{result.get("previousLevel")} → {result.get("updatedLevel")}'
+            )
+        return result
+
 
 def create_api_client() -> Optional['ApiClient']:
     """

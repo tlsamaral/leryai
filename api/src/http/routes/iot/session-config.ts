@@ -10,7 +10,8 @@ export async function iotSessionConfig(app: FastifyInstance) {
       onRequest: [app.authenticateDevice],
       schema: {
         tags: ['IoT / Core'],
-        summary: 'Get current lesson config and user context for the device session',
+        summary:
+          'Get current lesson config and user context for the device session',
         description:
           'Called by the Raspberry Pi at boot. Returns the active lesson system prompt, user level, and profile data needed to initialize the Gemini conversation.',
         security: [{ bearerAuth: [] }],
@@ -19,6 +20,7 @@ export async function iotSessionConfig(app: FastifyInstance) {
             deviceId: z.string(),
             userId: z.string(),
             level: z.string(),
+            diagnosisCompleted: z.boolean(),
             lesson: z
               .object({
                 id: z.string(),
@@ -59,6 +61,7 @@ export async function iotSessionConfig(app: FastifyInstance) {
         where: { id: userId },
         select: {
           currentLevel: true,
+          diagnosisCompleted: true,
           targetLanguageId: true,
           profile: {
             select: {
@@ -85,6 +88,7 @@ export async function iotSessionConfig(app: FastifyInstance) {
           deviceId,
           userId,
           level: user.currentLevel,
+          diagnosisCompleted: user.diagnosisCompleted,
           lesson: {
             id: inProgress.lesson.id,
             title: inProgress.lesson.title,
@@ -109,7 +113,9 @@ export async function iotSessionConfig(app: FastifyInstance) {
           module: {
             level: {
               code: user.currentLevel,
-              ...(user.targetLanguageId ? { languageId: user.targetLanguageId } : {}),
+              ...(user.targetLanguageId
+                ? { languageId: user.targetLanguageId }
+                : {}),
             },
           },
           userProgress: {
@@ -124,6 +130,7 @@ export async function iotSessionConfig(app: FastifyInstance) {
         deviceId,
         userId,
         level: user.currentLevel,
+        diagnosisCompleted: user.diagnosisCompleted,
         lesson: nextLesson
           ? {
               id: nextLesson.id,

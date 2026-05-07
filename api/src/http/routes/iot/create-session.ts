@@ -4,7 +4,11 @@ import { z } from 'zod'
 import { NotFoundError } from '@/core/errors/not-found-error.js'
 import { prisma } from '@/lib/prisma.js'
 
-const interactionModeSchema = z.enum(['FREE_TALK', 'GUIDED_LESSON', 'DIAGNOSIS'])
+const interactionModeSchema = z.enum([
+  'FREE_TALK',
+  'GUIDED_LESSON',
+  'DIAGNOSIS',
+])
 
 export async function iotCreateSession(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
@@ -29,8 +33,11 @@ export async function iotCreateSession(app: FastifyInstance) {
       const { mode, lessonId } = request.body
 
       if (mode === 'GUIDED_LESSON') {
-        if (!lessonId) throw new NotFoundError('lessonId is required for GUIDED_LESSON mode')
-        const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } })
+        if (!lessonId)
+          throw new NotFoundError('lessonId is required for GUIDED_LESSON mode')
+        const lesson = await prisma.lesson.findUnique({
+          where: { id: lessonId },
+        })
         if (!lesson) throw new NotFoundError('Lesson not found')
       }
 

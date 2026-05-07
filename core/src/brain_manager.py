@@ -1,4 +1,6 @@
+import json
 import os
+import re
 import time
 from dotenv import load_dotenv
 from google import genai
@@ -59,3 +61,60 @@ class BrainManager:
 
         print(f"[BrainManager] Failed after {_MAX_RETRIES} attempts: {last_exc}")
         return "I'm sorry, I'm having trouble thinking right now."
+
+    def rate_cefr(self, transcript: str) -> str:
+        """
+        Evaluates a conversation transcript and returns an estimated CEFR level.
+        Uses a one-shot generate_content call (not the chat session) to avoid
+        polluting the conversation history.
+        Returns one of: 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'.
+        Falls back to 'A2' on any error.
+        """
+        _VALID_LEVELS = {'A1', 'A2', 'B1', 'B2', 'C1', 'C2'}
+        _FALLBACK = 'A2'
+
+        rater_prompt = f"""You are an expert language evaluator certified in the CEFR framework.
+Analyze the student's speech excerpts below and determine their English proficiency level.
+
+Evaluate based on:
+1. Lexical complexity — range and sophistication of vocabulary
+2. Syntactic complexity — variety and correctness of grammar structures
+3. Sentence length and fluency — ability to form complete, connected ideas
+4. Error patterns — types and frequency of grammatical mistakes
+
+STUDENT TRANSCRIPT (only the student's lines):
+---
+{transcript}
+---
+
+Respond ONLY with a valid JSON object, no extra text, no markdown:
+{{"estimated_cefr": "<A1|A2|B1|B2|C1|C2>", "justification": "<one sentence>"}}"""
+
+        last_exc = None
+        for attempt in range(_MAX_RETRIES):
+            try:
+                response = self.client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=rater_prompt,
+                )
+                raw = response.text.strip()
+                # Strip markdown code fences if present
+                raw = re.sub(r'^```(?:json)?\s*|\s*```$', '', raw, flags=re.MULTILINE).strip()
+                data = json.loads(raw)
+                level = data.get('estimated_cefr', '').upper()
+                if level in _VALID_LEVELS:
+                    print(f'[BrainManager] CEFR rating: {level} — {data.get("justification", "")}')
+                    return level
+                print(f'[BrainManager] Unexpected CEFR value "{level}", falling back to {_FALLBACK}')
+                return _FALLBACK
+            except Exception as e:
+                last_exc = e
+                if self._is_retryable(e) and attempt < _MAX_RETRIES - 1:
+                    wait = _BACKOFF_BASE ** attempt
+                    print(f'[BrainManager] CEFR rating failed (attempt {attempt + 1}/{_MAX_RETRIES}), retrying in {wait}s...')
+                    time.sleep(wait)
+                else:
+                    break
+
+        print(f'[BrainManager] CEFR rating failed after {_MAX_RETRIES} attempts: {last_exc}. Falling back to {_FALLBACK}')
+        return _FALLBACK

@@ -41,10 +41,14 @@ export async function iotCompleteSession(app: FastifyInstance) {
 
       if (!session) throw new NotFoundError('Session not found')
       if (session.userId !== userId) throw new BadRequestError('Access denied')
-      if (session.endedAt) throw new BadRequestError('Session already completed')
+      if (session.endedAt)
+        throw new BadRequestError('Session already completed')
 
       const endedAt = new Date()
-      await prisma.conversationSession.update({ where: { id }, data: { endedAt } })
+      await prisma.conversationSession.update({
+        where: { id },
+        data: { endedAt },
+      })
 
       let finalScore: number | null = null
       let progressStatus = null
@@ -55,8 +59,14 @@ export async function iotCompleteSession(app: FastifyInstance) {
           .filter((s): s is number => s !== null)
 
         if (scores.length > 0) {
-          finalScore = Math.round(scores.reduce((a, s) => a + s, 0) / scores.length)
-          const result = await applyProgressRule(userId, session.lessonId, finalScore)
+          finalScore = Math.round(
+            scores.reduce((a, s) => a + s, 0) / scores.length,
+          )
+          const result = await applyProgressRule(
+            userId,
+            session.lessonId,
+            finalScore,
+          )
           progressStatus = result.status
         }
       }

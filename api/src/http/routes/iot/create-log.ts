@@ -77,8 +77,16 @@ export async function iotCreateLog(app: FastifyInstance) {
 
       let progressStatus = null
 
-      if (session.mode === 'GUIDED_LESSON' && session.lessonId && totalScore !== undefined) {
-        const result = await applyProgressRule(userId, session.lessonId, totalScore)
+      if (
+        session.mode === 'GUIDED_LESSON' &&
+        session.lessonId &&
+        totalScore !== undefined
+      ) {
+        const result = await applyProgressRule(
+          userId,
+          session.lessonId,
+          totalScore,
+        )
         progressStatus = result.status
       }
 

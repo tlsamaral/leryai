@@ -51,6 +51,32 @@ def _matches_lesson_intent(text: str) -> bool:
     return has_lesson and has_action
 
 
+def _build_diagnosis_prompt() -> str:
+    """
+    System prompt for the icebreaker/diagnosis session.
+    Designed to elicit natural speech across a range of complexity so the
+    CEFR rater has enough signal to work with.
+    """
+    return """You are "Lery", a warm and friendly English tutor in a smart speaker device.
+This is your FIRST conversation with the student — your goal is to get them talking naturally.
+
+CURRENT MODE: DIAGNOSIS (icebreaker)
+You do NOT know the student's level yet. Start simple, then gently escalate complexity
+based on how the student responds. This lets you gauge their real proficiency.
+
+CONVERSATION FLOW:
+1. Greet warmly and introduce yourself. Ask their name and one simple question about their life.
+2. React to their answer, then ask a slightly more open question (hobby, job, travel, goals).
+3. Keep the conversation going naturally for 5–8 exchanges.
+4. Do NOT correct errors — you are observing, not teaching, in this session.
+5. Do NOT mention levels, CEFR, or that you are evaluating them.
+
+CONSTRAINTS:
+- Max 2 sentences per response (keep it conversational, not lecture-like).
+- Be genuinely curious and warm — the student should feel welcome, not tested.
+- Speak naturally — mix simple and slightly richer vocabulary to see how they respond."""
+
+
 def _build_free_talk_prompt(config: Optional[dict]) -> Optional[str]:
     """
     Build a FREE_TALK system prompt enriched with the user's CEFR level and
@@ -187,6 +213,13 @@ class LeryAI:
         free_talk_prompt = _build_free_talk_prompt(self._config)
         self.brain_manager = BrainManager(system_prompt=free_talk_prompt)
 
+        # Flag: diagnosis needed on first wake word
+        self._needs_diagnosis = (
+            self.api is not None
+            and self._config is not None
+            and not self._config.get('diagnosisCompleted', True)
+        )
+
     def set_state(self, new_state: State):
         self.state = new_state
         print(f"State: {self.state.value}")
@@ -199,6 +232,91 @@ class LeryAI:
             mode=self._session_mode,
             lesson_id=self._lesson_id if self._session_mode == "GUIDED_LESSON" else None,
         )
+
+    def _run_diagnosis_session(self) -> None:
+        """
+        Runs the one-time DIAGNOSIS icebreaker session.
+        Collects the student's speech, rates it with Gemini, and calls the API
+        to update currentLevel + diagnosisCompleted.
+        After this returns, the caller should reload config.
+        """
+        print('\n[Lery] Starting DIAGNOSIS session (first-time level detection)...')
+
+        diagnosis_brain = BrainManager(system_prompt=_build_diagnosis_prompt())
+
+        session_id: Optional[str] = None
+        if self.api:
+            session_id = self.api.create_session(mode='DIAGNOSIS')
+
+        # Collect all student speech for the rater
+        student_lines: list[str] = []
+
+        # Opening line from Lery
+        opening = diagnosis_brain.generate_response(
+            'Start the icebreaker. Greet the student warmly and ask their first question.'
+        )
+        self._speak(opening)
+        self.set_state(State.LISTENING)
+
+        silence_strikes = 0
+        _MAX_DIAGNOSIS_TURNS = 8
+
+        for _ in range(_MAX_DIAGNOSIS_TURNS):
+            audio_file = self.audio_manager.record_audio(output_filename='data/audio/input.wav')
+
+            if audio_file is None:
+                silence_strikes += 1
+                if silence_strikes >= 2:
+                    break
+                nudge = diagnosis_brain.generate_response(
+                    'The student is silent. Gently encourage them to speak with a simple question.'
+                )
+                self._speak(nudge)
+                self.set_state(State.LISTENING)
+                continue
+
+            silence_strikes = 0
+            self.set_state(State.THINKING)
+            user_text = self.transcribe_audio(audio_file)
+            if not user_text:
+                self.set_state(State.LISTENING)
+                continue
+
+            print(f'[Diagnosis] Student: {user_text}')
+            student_lines.append(user_text)
+
+            # Exit keywords end diagnosis early
+            if _matches_keywords(user_text, _EXIT_KEYWORDS):
+                break
+
+            lery_reply = diagnosis_brain.generate_response(user_text)
+            print(f'[Diagnosis] Lery: {lery_reply}')
+
+            if self.api and session_id:
+                self.api.create_log(
+                    session_id=session_id,
+                    user_audio_trans=user_text,
+                    lery_response=lery_reply,
+                )
+
+            self._speak(lery_reply)
+            self.set_state(State.LISTENING)
+
+        # Rate the conversation
+        self.set_state(State.THINKING)
+        self._speak("Thank you for chatting with me! Give me just a moment to get everything ready for you.")
+
+        estimated_level = 'A2'  # safe fallback
+        if student_lines:
+            transcript = '\n'.join(student_lines)
+            estimated_level = diagnosis_brain.rate_cefr(transcript)
+
+        if self.api and session_id:
+            result = self.api.complete_diagnosis(session_id, estimated_level)
+            if result:
+                print(f'[Lery] Diagnosis complete: level set to {result.get("updatedLevel")}')
+
+        self._speak(f"Great news! I've set up your learning journey. Let's get started!")
 
     def _switch_to_guided_lesson(self):
         """
@@ -361,6 +479,22 @@ class LeryAI:
                 self.set_state(State.IDLE)
                 self.wake_detector.wait_for_wake_word()
                 self.audio_manager.play_chime()
+
+                # ── Diagnosis on first ever wake word ─────────────────
+                if self._needs_diagnosis:
+                    self._needs_diagnosis = False
+                    self._run_diagnosis_session()
+                    # Reload config so level + diagnosisCompleted are fresh
+                    if self.api:
+                        self._config = self.api.get_session_config()
+                        if self._config and self._config.get('lesson'):
+                            lesson = self._config['lesson']
+                            self._lesson_id = lesson['id']
+                            self._lesson_system_prompt = lesson['systemPrompt']
+                        free_talk_prompt = _build_free_talk_prompt(self._config)
+                        self.brain_manager = BrainManager(system_prompt=free_talk_prompt)
+                    # Go back to IDLE — next wake word starts the real session
+                    continue
 
                 # ── Session: LISTENING ↔ THINKING ↔ SPEAKING loop ─────
                 self._run_session()

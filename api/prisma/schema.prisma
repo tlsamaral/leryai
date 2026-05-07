@@ -66,9 +66,10 @@ model User {
   username     String    @unique
   passwordHash String
   name         String
-  currentLevel UserLevel @default(A1)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  currentLevel       UserLevel @default(A1)
+  diagnosisCompleted Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   // Idioma que o utilizador está a estudar no momento
   targetLanguageId String?
