@@ -1,0 +1,15 @@
+# Environment
+.env
+
+# Wake word training data (regenerate with scripts/train_hey_lery.py)
+config/wake_word/training_data/
+
+# Audio recordings
+data/audio/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
