@@ -102,6 +102,36 @@ class AudioManager:
         print(f"Audio saved to {output_filename}")
         return output_filename
 
+    def play_chime(self):
+        """
+        Plays a two-tone ascending chime on wake word activation.
+        Generated programmatically — no external file needed.
+        """
+        sr = 44100
+        duration = 0.12  # seconds per note
+        t = np.linspace(0, duration, int(sr * duration), endpoint=False)
+
+        def note(freq):
+            tone = np.sin(2 * np.pi * freq * t)
+            # Smooth envelope: quick attack, gentle decay
+            env = np.ones_like(t)
+            attack = int(0.01 * sr)
+            decay = int(0.04 * sr)
+            env[:attack] = np.linspace(0, 1, attack)
+            env[-decay:] = np.linspace(1, 0, decay)
+            return (tone * env * 0.4 * 32767).astype(np.int16)
+
+        # E5 → A5 — bright, friendly ascending interval
+        chime = np.concatenate([note(659), np.zeros(int(sr * 0.03), dtype=np.int16), note(880)])
+        stereo = np.column_stack([chime, chime])
+
+        try:
+            sound = pygame.sndarray.make_sound(stereo)
+            sound.play()
+            pygame.time.wait(int((duration * 2 + 0.03) * 1000) + 50)
+        except Exception as e:
+            print(f"[Chime] {e}")
+
     def play_audio(self, file_path):
         """
         Plays an audio file using pygame.

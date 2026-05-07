@@ -10,6 +10,7 @@ from audio_manager import AudioManager
 from brain_manager import BrainManager
 from led_controller import LEDController
 from tts_manager import create_tts_provider
+from wake_word import create_wake_word_detector
 
 load_dotenv()
 
@@ -160,6 +161,7 @@ class LeryAI:
         self.led_controller.set_state("IDLE")
 
         self.tts = create_tts_provider()
+        self.wake_detector = create_wake_word_detector()
         self.api = create_api_client()
 
         self._config = None
@@ -249,95 +251,129 @@ class LeryAI:
 
     def _speak(self, text: str):
         """Generate TTS and play — helper to avoid duplication."""
+        # Stay in THINKING while synthesizing (may involve retries/network)
+        try:
+            files = self.text_to_speech(text)
+        except Exception as e:
+            print(f"[TTS] Failed to synthesize — skipping audio: {e}")
+            return
+
+        # Switch to SPEAKING only when audio is ready
         self.set_state(State.SPEAKING)
-        for f in self.text_to_speech(text):
+        for f in files:
             self.audio_manager.play_audio(f)
             time.sleep(0.2)
-        self.set_state(State.IDLE)
+
+    def _run_session(self) -> None:
+        """
+        Runs one conversation session (from wake word to session end).
+        Returns when the session ends — caller re-enters IDLE and waits
+        for the next wake word.
+        """
+        self._silence_strikes = 0
+        self._session_id = None
+        self.set_state(State.LISTENING)
+
+        while True:
+            # ── Record ────────────────────────────────────────────────
+            audio_file = self.audio_manager.record_audio(
+                output_filename="data/audio/input.wav"
+            )
+
+            # ── No speech detected ────────────────────────────────────
+            if audio_file is None:
+                self._silence_strikes += 1
+
+                if self._silence_strikes >= _MAX_SILENCE_STRIKES:
+                    print("[Lery] No response — ending session.")
+                    self._speak("I haven't heard from you in a while. Let's continue next time. Goodbye!")
+                    return
+
+                prompt = (
+                    "The student has been silent. Gently check if they are still there "
+                    "with a short, encouraging question. Max 1 sentence."
+                )
+                self.set_state(State.THINKING)
+                nudge = self.brain_manager.generate_response(prompt)
+                self._speak(nudge)
+                self.set_state(State.LISTENING)
+                continue
+
+            # ── THINKING ──────────────────────────────────────────────
+            self._silence_strikes = 0
+            self.set_state(State.THINKING)
+            user_text = self.transcribe_audio(audio_file)
+            print(f"User: {user_text}")
+
+            if not user_text:
+                self.set_state(State.LISTENING)
+                continue
+
+            # ── Exit intent ───────────────────────────────────────────
+            if _matches_keywords(user_text, _EXIT_KEYWORDS):
+                self._speak("It was great talking with you! See you next time. Goodbye!")
+                return
+
+            # ── Lesson intent (FREE_TALK → GUIDED_LESSON) ─────────────
+            if self._session_mode == "FREE_TALK" and _matches_lesson_intent(user_text):
+                if self._switch_to_guided_lesson():
+                    intro = self.brain_manager.generate_response(
+                        "The student just asked to start the lesson. "
+                        "Greet them and set the scene for the lesson scenario."
+                    )
+                    self._speak(intro)
+                else:
+                    self._speak(
+                        "[PT]Ainda não há uma lição disponível para o seu nível.[/PT] "
+                        "No lesson is available yet. Let's keep practicing in free talk!"
+                    )
+                self.set_state(State.LISTENING)
+                continue
+
+            # ── Normal turn ───────────────────────────────────────────
+            self._ensure_session()
+            response_text = self.brain_manager.generate_response(user_text)
+            print(f"Lery: {response_text}")
+
+            if response_text == "I'm sorry, I'm having trouble thinking right now.":
+                self.set_state(State.ERROR)
+                time.sleep(2)
+                self.set_state(State.LISTENING)
+                continue
+
+            if self.api and self._session_id:
+                self.api.create_log(
+                    session_id=self._session_id,
+                    user_audio_trans=user_text,
+                    lery_response=response_text,
+                )
+
+            self._speak(response_text)
+            # ── SPEAKING done → back to LISTENING (no wake word needed) ──
+            self.set_state(State.LISTENING)
 
     def run(self):
         print("Lery AI Started. Press Ctrl+C to exit.")
 
         try:
             while True:
-                # ── IDLE → LISTENING ──────────────────────────────────────
-                input("Press Enter to start recording...")  # Wake word replaces this (P0)
-                self._silence_strikes = 0
-                self.set_state(State.LISTENING)
+                # ── IDLE: wait for wake word ───────────────────────────
+                self.set_state(State.IDLE)
+                self.wake_detector.wait_for_wake_word()
+                self.audio_manager.play_chime()
 
-                # ── Record ────────────────────────────────────────────────
-                audio_file = self.audio_manager.record_audio(
-                    output_filename="data/audio/input.wav"
-                )
+                # ── Session: LISTENING ↔ THINKING ↔ SPEAKING loop ─────
+                self._run_session()
 
-                # ── No speech detected ────────────────────────────────────
-                if audio_file is None:
-                    self._silence_strikes += 1
-                    remaining = _MAX_SILENCE_STRIKES - self._silence_strikes
-
-                    if self._silence_strikes >= _MAX_SILENCE_STRIKES:
-                        print("[Lery] No response — ending session.")
-                        self._speak("I haven't heard from you in a while. Let's continue next time. Goodbye!")
-                        break
-
-                    # Lery prompts student
-                    prompt = (
-                        "The student has been silent. Gently check if they are still there "
-                        "with a short, encouraging question. Max 1 sentence."
-                    )
-                    self.set_state(State.THINKING)
-                    nudge = self.brain_manager.generate_response(prompt)
-                    self._speak(nudge)
-                    continue
-
-                # ── THINKING ──────────────────────────────────────────────
-                self.set_state(State.THINKING)
-                user_text = self.transcribe_audio(audio_file)
-                print(f"User: {user_text}")
-
-                if not user_text:
-                    self.set_state(State.IDLE)
-                    continue
-
-                # ── Exit intent ───────────────────────────────────────────
-                if _matches_keywords(user_text, _EXIT_KEYWORDS):
-                    self._speak("It was great talking with you! See you next time. Goodbye!")
-                    break
-
-                # ── Lesson intent (FREE_TALK → GUIDED_LESSON) ─────────────
-                if self._session_mode == "FREE_TALK" and _matches_lesson_intent(user_text):
-                    if self._switch_to_guided_lesson():
-                        intro = self.brain_manager.generate_response(
-                            "The student just asked to start the lesson. "
-                            "Greet them and set the scene for the lesson scenario."
-                        )
-                        self._speak(intro)
-                    else:
-                        self._speak(
-                            "[PT]Ainda não há uma lição disponível para o seu nível.[/PT] "
-                            "No lesson is available yet. Let's keep practicing in free talk!"
-                        )
-                    continue
-
-                # ── Normal turn ───────────────────────────────────────────
-                self._ensure_session()
-                response_text = self.brain_manager.generate_response(user_text)
-                print(f"Lery: {response_text}")
-
-                if response_text == "I'm sorry, I'm having trouble thinking right now.":
-                    self.set_state(State.ERROR)
-                    time.sleep(2)
-                    self.set_state(State.IDLE)
-                    continue
-
+                # Session ended — complete API record and reset mode
                 if self.api and self._session_id:
-                    self.api.create_log(
-                        session_id=self._session_id,
-                        user_audio_trans=user_text,
-                        lery_response=response_text,
-                    )
+                    self.api.complete_session(self._session_id)
+                    self._session_id = None
 
-                self._speak(response_text)
+                # Reset to FREE_TALK for next session
+                self._session_mode = "FREE_TALK"
+                free_talk_prompt = _build_free_talk_prompt(self._config)
+                self.brain_manager = BrainManager(system_prompt=free_talk_prompt)
 
         except KeyboardInterrupt:
             print("\nExiting Lery AI...")
