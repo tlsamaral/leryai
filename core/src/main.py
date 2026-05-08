@@ -29,6 +29,38 @@ _EXIT_KEYWORDS = {
 _LESSON_TRIGGER_WORDS = {"lesson", "lição", "aula"}
 _LESSON_ACTION_WORDS = {"start", "begin", "do", "let's", "lets", "vamos", "quero", "iniciar", "começa", "começar"}
 
+# How many sentences Lery may speak per turn, indexed by CEFR level.
+# Lower levels need shorter responses: less to process, less intimidating.
+_RESPONSE_LIMITS: dict[str, str] = {
+    "A1": (
+        "RESPONSE LENGTH — HARD LIMIT: 1 sentence only. "
+        "Maximum 8 words in that sentence. "
+        "Then ask ONE simple yes/no question. "
+        "If you write more than 1 sentence, delete everything after the first period."
+    ),
+    "A2": (
+        "RESPONSE LENGTH — HARD LIMIT: 2 short sentences maximum. "
+        "Each sentence must have at most 10 words. "
+        "End with ONE simple question."
+    ),
+    "B1": (
+        "RESPONSE LENGTH — HARD LIMIT: 2 sentences maximum. "
+        "Keep them clear and direct. End with a question or clear instruction."
+    ),
+    "B2": (
+        "RESPONSE LENGTH — HARD LIMIT: 3 sentences maximum. "
+        "Natural pace. End with a question or challenge."
+    ),
+    "C1": (
+        "RESPONSE LENGTH — HARD LIMIT: 3 sentences maximum. "
+        "Rich language welcome. End with a question or discussion prompt."
+    ),
+    "C2": (
+        "RESPONSE LENGTH — HARD LIMIT: 3 sentences maximum. "
+        "Speak naturally as with a native speaker."
+    ),
+}
+
 
 class State(Enum):
     IDLE = "IDLE"
@@ -174,7 +206,7 @@ LANGUAGE RULES:
 - If student is clearly lost or repeating the same error 3+ times, use [PT]...[/PT] tags for a brief Portuguese explanation, then return to English immediately.
 
 CONSTRAINTS:
-- Max 3 sentences per response (optimized for Text-to-Speech on speaker hardware).
+- {_RESPONSE_LIMITS.get(level, _RESPONSE_LIMITS["B1"])}
 - Never break character as a tutor.
 - Never use grammar structures above the student's level."""
 
@@ -336,8 +368,16 @@ class LeryAI:
         self._session_id = None
         self._session_mode = "GUIDED_LESSON"
 
+        # Inject level-specific response length limit into the lesson system prompt
+        level = (self._config or {}).get("level", "A1")
+        response_limit = _RESPONSE_LIMITS.get(level, _RESPONSE_LIMITS["B1"])
+        lesson_prompt_with_limit = (
+            f"{self._lesson_system_prompt}\n\n"
+            f"RESPONSE LENGTH CONSTRAINT (overrides everything else):\n{response_limit}"
+        )
+
         # Fresh conversation context with lesson prompt
-        self.brain_manager = BrainManager(system_prompt=self._lesson_system_prompt)
+        self.brain_manager = BrainManager(system_prompt=lesson_prompt_with_limit)
 
         if self.api:
             self._session_id = self.api.create_session(
