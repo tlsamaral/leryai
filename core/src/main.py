@@ -193,6 +193,7 @@ class LeryAI:
         self._config = None
         self._lesson_id = None
         self._lesson_system_prompt = None
+        self._lesson_objectives = None
         self._session_id = None
         self._silence_strikes = 0
 
@@ -205,6 +206,7 @@ class LeryAI:
                 lesson = self._config["lesson"]
                 self._lesson_id = lesson["id"]
                 self._lesson_system_prompt = lesson["systemPrompt"]
+                self._lesson_objectives = lesson.get("objectives") or ""
                 print(f"Lesson ready: [{lesson['title']}] — say 'start lesson' to begin")
             else:
                 print("No active lesson found — FREE_TALK only")
@@ -460,10 +462,25 @@ class LeryAI:
                 continue
 
             if self.api and self._session_id:
+                scores: dict | None = None
+                if self._session_mode == "GUIDED_LESSON":
+                    scores = self.brain_manager.evaluate_turn(
+                        user_input=user_text,
+                        lery_response=response_text,
+                        lesson_objectives=self._lesson_objectives or "",
+                    )
+
                 self.api.create_log(
                     session_id=self._session_id,
                     user_audio_trans=user_text,
                     lery_response=response_text,
+                    grammatical_fixes=scores.get("grammatical_fixes") if scores else None,
+                    task_achievement=scores.get("task_achievement") if scores else None,
+                    grammar=scores.get("grammar") if scores else None,
+                    vocabulary=scores.get("vocabulary") if scores else None,
+                    fluency=scores.get("fluency") if scores else None,
+                    total_score=scores.get("total_score") if scores else None,
+                    evaluation_reasoning=scores.get("reasoning") if scores else None,
                 )
 
             self._speak(response_text)
@@ -491,6 +508,7 @@ class LeryAI:
                             lesson = self._config['lesson']
                             self._lesson_id = lesson['id']
                             self._lesson_system_prompt = lesson['systemPrompt']
+                            self._lesson_objectives = lesson.get('objectives') or ""
                         free_talk_prompt = _build_free_talk_prompt(self._config)
                         self.brain_manager = BrainManager(system_prompt=free_talk_prompt)
                     # Go back to IDLE — next wake word starts the real session

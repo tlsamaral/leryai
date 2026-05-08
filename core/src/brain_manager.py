@@ -118,3 +118,84 @@ Respond ONLY with a valid JSON object, no extra text, no markdown:
 
         print(f'[BrainManager] CEFR rating failed after {_MAX_RETRIES} attempts: {last_exc}. Falling back to {_FALLBACK}')
         return _FALLBACK
+
+    def evaluate_turn(
+        self,
+        user_input: str,
+        lery_response: str,
+        lesson_objectives: str = '',
+    ) -> dict | None:
+        """
+        Evaluates one student turn against 4 CEFR pillars.
+        Uses a one-shot generate_content call — does NOT pollute chat history.
+
+        Scores: task_achievement, grammar, vocabulary, fluency — 0–25 each (total 100).
+        Also returns grammatical_fixes and reasoning.
+
+        Returns a dict on success, None on failure (caller skips scores gracefully).
+        """
+        objectives_section = (
+            f'LESSON OBJECTIVES:\n{lesson_objectives}\n\n'
+            if lesson_objectives
+            else ''
+        )
+
+        prompt = f"""You are an English language assessment specialist using the CEFR framework.
+Evaluate the student's response in this tutoring exchange.
+
+{objectives_section}STUDENT SAID:
+"{user_input}"
+
+TUTOR RESPONDED:
+"{lery_response}"
+
+Score the student's response on 4 pillars. Each pillar is worth 0–25 points (total 100):
+
+- task_achievement (0–25): Did the student complete the communicative task? Did they respond relevantly and fully?
+- grammar (0–25): Accuracy of grammar structures used. Penalize recurring errors, reward correct complex structures.
+- vocabulary (0–25): Range and appropriateness of word choice for the student's level.
+- fluency (0–25): Naturalness, sentence length, coherence, and absence of excessive hesitation.
+
+Also provide:
+- grammatical_fixes: Rewrite the student's sentence with all errors corrected. If no errors, write "No corrections needed."
+- reasoning: One sentence summarizing the key strength and main area to improve.
+
+Respond ONLY with valid JSON, no extra text, no markdown fences:
+{{"task_achievement": <int>, "grammar": <int>, "vocabulary": <int>, "fluency": <int>, "total_score": <int>, "grammatical_fixes": "<str>", "reasoning": "<str>"}}"""
+
+        last_exc = None
+        for attempt in range(_MAX_RETRIES):
+            try:
+                response = self.client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=prompt,
+                )
+                raw = response.text.strip()
+                raw = re.sub(r'^```(?:json)?\s*|\s*```$', '', raw, flags=re.MULTILINE).strip()
+                data = json.loads(raw)
+
+                # Clamp all scores to valid range and compute total
+                pillars = ['task_achievement', 'grammar', 'vocabulary', 'fluency']
+                for key in pillars:
+                    data[key] = max(0, min(25, int(data.get(key, 0))))
+                data['total_score'] = sum(data[p] for p in pillars)
+
+                print(
+                    f'[BrainManager] Evaluation — '
+                    f'task={data["task_achievement"]} grammar={data["grammar"]} '
+                    f'vocab={data["vocabulary"]} fluency={data["fluency"]} '
+                    f'total={data["total_score"]}'
+                )
+                return data
+
+            except Exception as e:
+                last_exc = e
+                if self._is_retryable(e) and attempt < _MAX_RETRIES - 1:
+                    wait = _BACKOFF_BASE ** attempt
+                    print(f'[BrainManager] evaluate_turn failed (attempt {attempt + 1}/{_MAX_RETRIES}), retrying in {wait}s...')
+                    time.sleep(wait)
+                else:
+                    break
+
+        print(f'[BrainManager] evaluate_turn failed after {_MAX_RETRIES} attempts: {last_exc}. Skipping scores.')
+        return None
