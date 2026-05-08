@@ -3201,6 +3201,7 @@ export namespace Prisma {
     passwordHash: string | null
     name: string | null
     currentLevel: $Enums.UserLevel | null
+    diagnosisCompleted: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
     targetLanguageId: string | null
@@ -3213,6 +3214,7 @@ export namespace Prisma {
     passwordHash: string | null
     name: string | null
     currentLevel: $Enums.UserLevel | null
+    diagnosisCompleted: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
     targetLanguageId: string | null
@@ -3225,6 +3227,7 @@ export namespace Prisma {
     passwordHash: number
     name: number
     currentLevel: number
+    diagnosisCompleted: number
     createdAt: number
     updatedAt: number
     targetLanguageId: number
@@ -3239,6 +3242,7 @@ export namespace Prisma {
     passwordHash?: true
     name?: true
     currentLevel?: true
+    diagnosisCompleted?: true
     createdAt?: true
     updatedAt?: true
     targetLanguageId?: true
@@ -3251,6 +3255,7 @@ export namespace Prisma {
     passwordHash?: true
     name?: true
     currentLevel?: true
+    diagnosisCompleted?: true
     createdAt?: true
     updatedAt?: true
     targetLanguageId?: true
@@ -3263,6 +3268,7 @@ export namespace Prisma {
     passwordHash?: true
     name?: true
     currentLevel?: true
+    diagnosisCompleted?: true
     createdAt?: true
     updatedAt?: true
     targetLanguageId?: true
@@ -3348,6 +3354,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel: $Enums.UserLevel
+    diagnosisCompleted: boolean
     createdAt: Date
     updatedAt: Date
     targetLanguageId: string | null
@@ -3377,6 +3384,7 @@ export namespace Prisma {
     passwordHash?: boolean
     name?: boolean
     currentLevel?: boolean
+    diagnosisCompleted?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     targetLanguageId?: boolean
@@ -3397,6 +3405,7 @@ export namespace Prisma {
     passwordHash?: boolean
     name?: boolean
     currentLevel?: boolean
+    diagnosisCompleted?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     targetLanguageId?: boolean
@@ -3410,6 +3419,7 @@ export namespace Prisma {
     passwordHash?: boolean
     name?: boolean
     currentLevel?: boolean
+    diagnosisCompleted?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     targetLanguageId?: boolean
@@ -3423,12 +3433,13 @@ export namespace Prisma {
     passwordHash?: boolean
     name?: boolean
     currentLevel?: boolean
+    diagnosisCompleted?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     targetLanguageId?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "username" | "passwordHash" | "name" | "currentLevel" | "createdAt" | "updatedAt" | "targetLanguageId", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "username" | "passwordHash" | "name" | "currentLevel" | "diagnosisCompleted" | "createdAt" | "updatedAt" | "targetLanguageId", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     targetLanguage?: boolean | User$targetLanguageArgs<ExtArgs>
     profile?: boolean | User$profileArgs<ExtArgs>
@@ -3464,6 +3475,7 @@ export namespace Prisma {
       passwordHash: string
       name: string
       currentLevel: $Enums.UserLevel
+      diagnosisCompleted: boolean
       createdAt: Date
       updatedAt: Date
       targetLanguageId: string | null
@@ -3903,6 +3915,7 @@ export namespace Prisma {
     readonly passwordHash: FieldRef<"User", 'String'>
     readonly name: FieldRef<"User", 'String'>
     readonly currentLevel: FieldRef<"User", 'UserLevel'>
+    readonly diagnosisCompleted: FieldRef<"User", 'Boolean'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
     readonly targetLanguageId: FieldRef<"User", 'String'>
@@ -14706,6 +14719,7 @@ export namespace Prisma {
     passwordHash: 'passwordHash',
     name: 'name',
     currentLevel: 'currentLevel',
+    diagnosisCompleted: 'diagnosisCompleted',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     targetLanguageId: 'targetLanguageId'
@@ -15070,6 +15084,7 @@ export namespace Prisma {
     passwordHash?: StringFilter<"User"> | string
     name?: StringFilter<"User"> | string
     currentLevel?: EnumUserLevelFilter<"User"> | $Enums.UserLevel
+    diagnosisCompleted?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     targetLanguageId?: StringNullableFilter<"User"> | string | null
@@ -15089,6 +15104,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     name?: SortOrder
     currentLevel?: SortOrder
+    diagnosisCompleted?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     targetLanguageId?: SortOrderInput | SortOrder
@@ -15111,6 +15127,7 @@ export namespace Prisma {
     passwordHash?: StringFilter<"User"> | string
     name?: StringFilter<"User"> | string
     currentLevel?: EnumUserLevelFilter<"User"> | $Enums.UserLevel
+    diagnosisCompleted?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     targetLanguageId?: StringNullableFilter<"User"> | string | null
@@ -15130,6 +15147,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     name?: SortOrder
     currentLevel?: SortOrder
+    diagnosisCompleted?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     targetLanguageId?: SortOrderInput | SortOrder
@@ -15148,6 +15166,7 @@ export namespace Prisma {
     passwordHash?: StringWithAggregatesFilter<"User"> | string
     name?: StringWithAggregatesFilter<"User"> | string
     currentLevel?: EnumUserLevelWithAggregatesFilter<"User"> | $Enums.UserLevel
+    diagnosisCompleted?: BoolWithAggregatesFilter<"User"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     targetLanguageId?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -15873,6 +15892,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguage?: LanguageCreateNestedOneWithoutUsersInput
@@ -15891,6 +15911,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguageId?: string | null
@@ -15909,6 +15930,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguage?: LanguageUpdateOneWithoutUsersNestedInput
@@ -15927,6 +15949,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -15945,6 +15968,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguageId?: string | null
@@ -15957,6 +15981,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -15968,6 +15993,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16862,6 +16888,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     name?: SortOrder
     currentLevel?: SortOrder
+    diagnosisCompleted?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     targetLanguageId?: SortOrder
@@ -16874,6 +16901,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     name?: SortOrder
     currentLevel?: SortOrder
+    diagnosisCompleted?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     targetLanguageId?: SortOrder
@@ -16886,6 +16914,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     name?: SortOrder
     currentLevel?: SortOrder
+    diagnosisCompleted?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     targetLanguageId?: SortOrder
@@ -18638,6 +18667,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: UserProfileCreateNestedOneWithoutUserInput
@@ -18655,6 +18685,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: UserProfileUncheckedCreateNestedOneWithoutUserInput
@@ -18727,6 +18758,7 @@ export namespace Prisma {
     passwordHash?: StringFilter<"User"> | string
     name?: StringFilter<"User"> | string
     currentLevel?: EnumUserLevelFilter<"User"> | $Enums.UserLevel
+    diagnosisCompleted?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     targetLanguageId?: StringNullableFilter<"User"> | string | null
@@ -19135,6 +19167,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguage?: LanguageCreateNestedOneWithoutUsersInput
@@ -19152,6 +19185,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguageId?: string | null
@@ -19185,6 +19219,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguage?: LanguageUpdateOneWithoutUsersNestedInput
@@ -19202,6 +19237,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -19219,6 +19255,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguage?: LanguageCreateNestedOneWithoutUsersInput
@@ -19236,6 +19273,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguageId?: string | null
@@ -19269,6 +19307,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguage?: LanguageUpdateOneWithoutUsersNestedInput
@@ -19286,6 +19325,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -19303,6 +19343,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguage?: LanguageCreateNestedOneWithoutUsersInput
@@ -19320,6 +19361,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguageId?: string | null
@@ -19353,6 +19395,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguage?: LanguageUpdateOneWithoutUsersNestedInput
@@ -19370,6 +19413,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -19504,6 +19548,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguage?: LanguageCreateNestedOneWithoutUsersInput
@@ -19521,6 +19566,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguageId?: string | null
@@ -19613,6 +19659,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguage?: LanguageUpdateOneWithoutUsersNestedInput
@@ -19630,6 +19677,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -19821,6 +19869,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguage?: LanguageCreateNestedOneWithoutUsersInput
@@ -19838,6 +19887,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguageId?: string | null
@@ -19900,6 +19950,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguage?: LanguageUpdateOneWithoutUsersNestedInput
@@ -19917,6 +19968,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -19969,6 +20021,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguage?: LanguageCreateNestedOneWithoutUsersInput
@@ -19986,6 +20039,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     targetLanguageId?: string | null
@@ -20092,6 +20146,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguage?: LanguageUpdateOneWithoutUsersNestedInput
@@ -20109,6 +20164,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     targetLanguageId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20256,6 +20312,7 @@ export namespace Prisma {
     passwordHash: string
     name: string
     currentLevel?: $Enums.UserLevel
+    diagnosisCompleted?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -20287,6 +20344,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: UserProfileUpdateOneWithoutUserNestedInput
@@ -20304,6 +20362,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: UserProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -20321,6 +20380,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     currentLevel?: EnumUserLevelFieldUpdateOperationsInput | $Enums.UserLevel
+    diagnosisCompleted?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

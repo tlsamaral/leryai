@@ -135,6 +135,7 @@ exports.Prisma.UserScalarFieldEnum = {
   passwordHash: 'passwordHash',
   name: 'name',
   currentLevel: 'currentLevel',
+  diagnosisCompleted: 'diagnosisCompleted',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   targetLanguageId: 'targetLanguageId'
