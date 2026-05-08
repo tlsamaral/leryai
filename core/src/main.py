@@ -8,7 +8,7 @@ from openai import OpenAI
 from api_client import create_api_client
 from audio_manager import AudioManager
 from brain_manager import BrainManager
-from led_controller import LEDController
+from led_controller import LEDController, create_led_controller
 from tts_manager import create_tts_provider
 from wake_word import create_wake_word_detector
 
@@ -215,7 +215,7 @@ class LeryAI:
     def __init__(self):
         self.state = State.IDLE
         self.audio_manager = AudioManager()
-        self.led_controller = LEDController()
+        self.led_controller = create_led_controller()
         self.led_controller.set_state("IDLE")
 
         self.tts = create_tts_provider()

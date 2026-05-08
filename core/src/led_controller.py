@@ -131,3 +131,19 @@ class LEDController:
             if self.use_gpio:
                 GPIO.output(LED_PIN, GPIO.LOW)
 
+
+def create_led_controller():
+    """
+    Factory — returns LEDController when running on Pi hardware,
+    ScreenBorderVisualizer when running on a desktop (no rpi_ws281x / GPIO).
+    Falls back to a no-op LEDController if ScreenBorderVisualizer fails.
+    """
+    if HAS_NEOPIXEL or HAS_GPIO:
+        return LEDController()
+    try:
+        from screen_border import ScreenBorderVisualizer
+        return ScreenBorderVisualizer()
+    except Exception as e:
+        print(f'[LED] Screen border unavailable ({e}) — no visual feedback')
+        return LEDController()
+
