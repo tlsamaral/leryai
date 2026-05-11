@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import random
 import time
 from enum import Enum
 from typing import Optional
@@ -27,6 +28,17 @@ _EXIT_KEYWORDS = {
     "i am done", "that's all", "that is all", "exit", "quit", "stop",
     "tchau", "até logo", "até mais", "encerrar",
 }
+
+# Immediate spoken acknowledgment right after the wake word chime.
+# No AI involved — picked randomly so it doesn't feel repetitive.
+_ACTIVATION_PHRASES = [
+    "Hey!",
+    "I'm here!",
+    "Yes?",
+    "Go ahead!",
+    "I'm listening!",
+    "What's up?",
+]
 
 _LESSON_TRIGGER_WORDS = {"lesson", "lição", "aula"}
 _LESSON_ACTION_WORDS = {"start", "begin", "do", "let's", "lets", "vamos", "quero", "iniciar", "começa", "começar"}
@@ -538,6 +550,10 @@ class LeryAI:
                 self.set_state(State.IDLE)
                 self.wake_detector.wait_for_wake_word()
                 self.audio_manager.play_chime()
+
+                # ── Immediate acknowledgment — no AI, no latency ──────
+                self._speak(random.choice(_ACTIVATION_PHRASES))
+                self.set_state(State.LISTENING)
 
                 # ── Diagnosis on first ever wake word ─────────────────
                 if self._needs_diagnosis:
