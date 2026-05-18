@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import concurrent.futures
 import json
 import os
 import re
+import threading
 import time
 from dotenv import load_dotenv
 from google import genai
@@ -11,6 +13,8 @@ from google.genai import types
 _RETRYABLE_CODES = {503, 429, 500}
 _MAX_RETRIES = 4
 _BACKOFF_BASE = 2  # seconds — doubles each attempt (2, 4, 8, 16)
+_SLOW_THRESHOLD = 3   # seconds before playing hmm sound
+_HARD_TIMEOUT = 10    # seconds per attempt before giving up
 
 
 class BrainManager:
@@ -42,24 +46,52 @@ class BrainManager:
         msg = str(exc)
         return any(str(code) in msg for code in _RETRYABLE_CODES)
 
-    def generate_response(self, user_input: str) -> str:
+    def generate_response(self, user_input: str, on_slow=None) -> str:
         """
         Sends user input to Gemini and returns response text.
-        Retries on 503/429/500 with exponential backoff.
+        on_slow: callback fired after _SLOW_THRESHOLD seconds if still waiting.
+        Each attempt is capped at _HARD_TIMEOUT seconds.
+        Retries on 503/429/500 or timeout with exponential backoff.
         """
         last_exc = None
         for attempt in range(_MAX_RETRIES):
+            executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+            future = executor.submit(self.chat.send_message, message=user_input)
+            executor.shutdown(wait=False)
+
+            hmm_timer = None
+            if on_slow:
+                hmm_timer = threading.Timer(_SLOW_THRESHOLD, on_slow)
+                hmm_timer.start()
+
+            should_retry = False
             try:
-                response = self.chat.send_message(message=user_input)
-                return response.text
+                result = future.result(timeout=_HARD_TIMEOUT)
+                if hmm_timer:
+                    hmm_timer.cancel()
+                return result.text
+
+            except concurrent.futures.TimeoutError:
+                last_exc = TimeoutError(f"Gemini timed out after {_HARD_TIMEOUT}s")
+                print(f"[BrainManager] Timeout (attempt {attempt + 1}/{_MAX_RETRIES})")
+                should_retry = attempt < _MAX_RETRIES - 1
+
             except Exception as e:
                 last_exc = e
                 if self._is_retryable(e) and attempt < _MAX_RETRIES - 1:
-                    wait = _BACKOFF_BASE ** attempt
-                    print(f"[BrainManager] Gemini unavailable (attempt {attempt + 1}/{_MAX_RETRIES}), retrying in {wait}s...")
-                    time.sleep(wait)
+                    should_retry = True
                 else:
+                    if hmm_timer:
+                        hmm_timer.cancel()
                     break
+
+            if hmm_timer:
+                hmm_timer.cancel()
+
+            if should_retry:
+                wait = _BACKOFF_BASE ** attempt
+                print(f"[BrainManager] Retrying in {wait}s (attempt {attempt + 1}/{_MAX_RETRIES}): {last_exc}")
+                time.sleep(wait)
 
         print(f"[BrainManager] Failed after {_MAX_RETRIES} attempts: {last_exc}")
         return "I'm sorry, I'm having trouble thinking right now."

@@ -300,8 +300,10 @@ class LeryAI:
         student_lines: list[str] = []
 
         # Opening line from Lery
+        on_slow = self.audio_manager.play_hmm
         opening = diagnosis_brain.generate_response(
-            'Start the icebreaker. Greet the student warmly and ask their first question.'
+            'Start the icebreaker. Greet the student warmly and ask their first question.',
+            on_slow=on_slow,
         )
         self._speak(opening)
         self.set_state(State.LISTENING)
@@ -317,7 +319,8 @@ class LeryAI:
                 if silence_strikes >= 2:
                     break
                 nudge = diagnosis_brain.generate_response(
-                    'The student is silent. Gently encourage them to speak with a simple question.'
+                    'The student is silent. Gently encourage them to speak with a simple question.',
+                    on_slow=on_slow,
                 )
                 self._speak(nudge)
                 self.set_state(State.LISTENING)
@@ -337,7 +340,7 @@ class LeryAI:
             if _matches_keywords(user_text, _EXIT_KEYWORDS):
                 break
 
-            lery_reply = diagnosis_brain.generate_response(user_text)
+            lery_reply = diagnosis_brain.generate_response(user_text, on_retry=on_retry)
             print(f'[Diagnosis] Lery: {lery_reply}')
 
             if self.api and session_id:
@@ -418,7 +421,13 @@ class LeryAI:
             return transcription.text
         except Exception as e:
             print(f"Error during transcription: {e}")
+            self.audio_manager.play_error_sound()
             return None
+        finally:
+            try:
+                os.remove(audio_file)
+            except OSError:
+                pass
 
     def text_to_speech(self, text: str) -> list:
         return self.tts.synthesize(text)
@@ -430,6 +439,7 @@ class LeryAI:
             files = self.text_to_speech(text)
         except Exception as e:
             print(f"[TTS] Failed to synthesize — skipping audio: {e}")
+            self.audio_manager.play_error_sound()
             return
 
         # Switch to SPEAKING only when audio is ready
@@ -506,11 +516,14 @@ class LeryAI:
 
             # ── Normal turn ───────────────────────────────────────────
             self._ensure_session()
-            response_text = self.brain_manager.generate_response(user_text)
+            response_text = self.brain_manager.generate_response(
+                user_text, on_slow=self.audio_manager.play_hmm
+            )
             print(f"Lery: {response_text}")
 
             if response_text == "I'm sorry, I'm having trouble thinking right now.":
                 self.set_state(State.ERROR)
+                self.audio_manager.play_error_sound()
                 time.sleep(2)
                 self.set_state(State.LISTENING)
                 continue

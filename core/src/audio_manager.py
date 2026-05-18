@@ -132,6 +132,57 @@ class AudioManager:
         except Exception as e:
             print(f"[Chime] {e}")
 
+    def play_hmm(self):
+        """Soft descending hum — signals retrying a network call."""
+        sr = 44100
+        duration = 0.6
+        t = np.linspace(0, duration, int(sr * duration), endpoint=False)
+
+        freq = np.linspace(280, 220, len(t))
+        tone = np.sin(2 * np.pi * np.cumsum(freq) / sr)
+
+        env = np.ones_like(t)
+        attack = int(0.1 * sr)
+        decay = int(0.2 * sr)
+        env[:attack] = np.linspace(0, 1, attack)
+        env[-decay:] = np.linspace(1, 0, decay)
+
+        sound_data = (tone * env * 0.35 * 32767).astype(np.int16)
+        stereo = np.column_stack([sound_data, sound_data])
+
+        try:
+            sound = pygame.sndarray.make_sound(stereo)
+            sound.play()
+            pygame.time.wait(int(duration * 1000) + 50)
+        except Exception as e:
+            print(f"[Hmm] {e}")
+
+    def play_error_sound(self):
+        """Two-tone descending sound — signals a hard failure."""
+        sr = 44100
+        duration = 0.15
+        t = np.linspace(0, duration, int(sr * duration), endpoint=False)
+
+        def note(freq):
+            tone = np.sin(2 * np.pi * freq * t)
+            env = np.ones_like(t)
+            attack = int(0.01 * sr)
+            decay = int(0.05 * sr)
+            env[:attack] = np.linspace(0, 1, attack)
+            env[-decay:] = np.linspace(1, 0, decay)
+            return (tone * env * 0.4 * 32767).astype(np.int16)
+
+        # A5 → C5 descending (inverse of wake chime)
+        error = np.concatenate([note(880), np.zeros(int(sr * 0.05), dtype=np.int16), note(523)])
+        stereo = np.column_stack([error, error])
+
+        try:
+            sound = pygame.sndarray.make_sound(stereo)
+            sound.play()
+            pygame.time.wait(int((duration * 2 + 0.05) * 1000) + 50)
+        except Exception as e:
+            print(f"[Error sound] {e}")
+
     def play_audio(self, file_path):
         """
         Plays an audio file using pygame.
