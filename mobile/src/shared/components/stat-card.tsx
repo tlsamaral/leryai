@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons'
 import type { ComponentProps } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { theme } from '../theme'
+import { AppCard, type CardTone } from './app-card'
 
 type IconName = ComponentProps<typeof Ionicons>['name']
 
@@ -13,31 +14,30 @@ interface StatCardProps {
   tone?: 'default' | 'cyan' | 'mint' | 'amber'
 }
 
-const toneMap = {
+const toneMap: Record<
+  'default' | 'cyan' | 'mint' | 'amber',
+  { cardTone: CardTone; iconBg: string; iconColor: string; valueColor: string }
+> = {
   default: {
-    bg: theme.colors.surface,
-    border: theme.colors.border,
+    cardTone: 'default',
     iconBg: theme.colors.surfaceAlt,
     iconColor: theme.colors.primary,
     valueColor: theme.colors.text,
   },
   cyan: {
-    bg: theme.colors.primarySoft,
-    border: `${theme.colors.primary}33`,
+    cardTone: 'cyan',
     iconBg: '#FFFFFF',
     iconColor: theme.colors.primaryDeep,
     valueColor: theme.colors.primaryDeep,
   },
   mint: {
-    bg: '#E7F8F0',
-    border: '#B7E5CD',
+    cardTone: 'mint',
     iconBg: '#FFFFFF',
     iconColor: theme.colors.mint,
     valueColor: '#1A7C56',
   },
   amber: {
-    bg: '#FFF6E5',
-    border: '#FFD899',
+    cardTone: 'amber',
     iconBg: '#FFFFFF',
     iconColor: theme.colors.accent,
     valueColor: '#7A4A10',
@@ -47,66 +47,66 @@ const toneMap = {
 export function StatCard({ icon, label, value, hint, tone = 'default' }: StatCardProps) {
   const t = toneMap[tone]
   return (
-    <View
-      style={[
-        styles.shell,
-        { backgroundColor: t.bg, borderColor: t.border },
-      ]}
-    >
-      <View style={[styles.iconWrap, { backgroundColor: t.iconBg }]}>
-        <Ionicons name={icon} size={18} color={t.iconColor} />
+    <AppCard tone={t.cardTone} padding={14} radius={22} style={styles.card}>
+      <View style={styles.inner}>
+        <View style={styles.header}>
+          <Text style={styles.label} numberOfLines={1}>{label}</Text>
+          <View style={[styles.iconWrap, { backgroundColor: t.iconBg }]}>
+            <Ionicons name={icon} size={18} color={t.iconColor} />
+          </View>
+        </View>
+        <View style={styles.body}>
+          <Text style={[styles.value, { color: t.valueColor }]} numberOfLines={1}>{value}</Text>
+          {hint ? (
+            <Text style={styles.hint} numberOfLines={1}>{hint}</Text>
+          ) : null}
+        </View>
       </View>
-
-      <Text style={styles.label} numberOfLines={1}>
-        {label}
-      </Text>
-      <Text style={[styles.value, { color: t.valueColor }]} numberOfLines={1}>
-        {value}
-      </Text>
-      {hint ? (
-        <Text style={styles.hint} numberOfLines={1}>
-          {hint}
-        </Text>
-      ) : null}
-    </View>
+    </AppCard>
   )
 }
 
 const styles = StyleSheet.create({
-  shell: {
+  card: { flex: 1 },
+  inner: {
     flex: 1,
-    borderWidth: 1,
-    borderRadius: 22,
-    padding: 14,
-    gap: 4,
-    minHeight: 118,
-    ...theme.shadow.soft,
+    justifyContent: 'space-between',
+    minHeight: 100,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  body: {
+    gap: 0,
+    marginTop: 12,
   },
   iconWrap: {
     width: 34,
     height: 34,
-    borderRadius: 12,
+    borderRadius: 17, // perfectly circular
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
   },
   label: {
     color: theme.colors.muted,
+    fontFamily: theme.fonts.extraBold,
     fontSize: 11,
-    fontWeight: '700',
     letterSpacing: 0.6,
     textTransform: 'uppercase',
+    flex: 1,
+    marginTop: 8,
   },
   value: {
-    fontSize: 26,
-    fontWeight: '800',
-    letterSpacing: -0.4,
-    marginTop: 2,
+    fontFamily: theme.fonts.black,
+    fontSize: 32,
+    letterSpacing: -1,
   },
   hint: {
     color: theme.colors.dim,
-    fontSize: 11,
-    fontWeight: '600',
-    marginTop: 2,
+    fontFamily: theme.fonts.bold,
+    fontSize: 12,
+    marginTop: 0,
   },
 })

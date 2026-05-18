@@ -10,6 +10,12 @@ export const theme = {
   lineHeights,
   fontWeights,
   tracking,
+  fonts: {
+    regular: 'Nunito_400Regular',
+    bold: 'Nunito_700Bold',
+    extraBold: 'Nunito_800ExtraBold',
+    black: 'Nunito_900Black',
+  },
   gradients: {
     hero:    ['#04D2FF', '#0091B8'] as [string, string],
     glow:    ['rgba(4,210,255,0)', 'rgba(4,210,255,0.22)'] as [string, string],
