@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { theme } from '../theme'
+import { AppCard } from './app-card'
 
 interface LessonFocusCardProps {
   moduleName: string
@@ -20,64 +21,52 @@ export function LessonFocusCard({
   onPress,
 }: LessonFocusCardProps) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.shell, pressed && styles.pressed]}>
-      <View style={styles.cornerGlow} />
+    <AppCard tone="default" onPress={onPress} padding={0} radius={26}>
+      <View style={[styles.innerContainer, { borderRadius: 26 }]}>
+        <View style={styles.cornerGlow} />
 
-      <View style={styles.topRow}>
-        <View style={styles.modulePill}>
-          <Ionicons name="layers-outline" size={11} color={theme.colors.primaryDeep} />
-          <Text style={styles.modulePillText} numberOfLines={1}>
-            {moduleName}
-          </Text>
+        <View style={styles.topRow}>
+          <View style={styles.modulePill}>
+            <Ionicons
+              name="layers-outline"
+              size={11}
+              color={theme.colors.primaryDeep}
+            />
+            <Text style={styles.modulePillText} numberOfLines={1}>
+              {moduleName}
+            </Text>
+          </View>
+          <View style={styles.scoreBadge}>
+            <Text style={styles.scoreValue}>{score}</Text>
+            <Text style={styles.scoreUnit}>%</Text>
+          </View>
         </View>
-        <View style={styles.scoreBadge}>
-          <Text style={styles.scoreValue}>{score}</Text>
-          <Text style={styles.scoreUnit}>%</Text>
+
+        <Text style={styles.title} numberOfLines={2}>
+          {lessonTitle}
+        </Text>
+        <Text style={styles.subtitle} numberOfLines={2}>
+          {scenario}
+        </Text>
+
+        <View style={styles.footer}>
+          <View style={styles.metaChip}>
+            <Ionicons name="repeat" size={12} color={theme.colors.muted} />
+            <Text style={styles.metaText}>
+              {attempts} {attempts === 1 ? 'tentativa' : 'tentativas'}
+            </Text>
+          </View>
         </View>
       </View>
-
-      <Text style={styles.title} numberOfLines={2}>
-        {lessonTitle}
-      </Text>
-      <Text style={styles.subtitle} numberOfLines={2}>
-        {scenario}
-      </Text>
-
-      <View style={styles.footer}>
-        <View style={styles.metaChip}>
-          <Ionicons name="repeat" size={12} color={theme.colors.muted} />
-          <Text style={styles.metaText}>
-            {attempts} {attempts === 1 ? 'tentativa' : 'tentativas'}
-          </Text>
-        </View>
-
-        <View style={styles.cta}>
-          <Text style={styles.ctaText}>Ver lição</Text>
-          <Ionicons name="arrow-forward" size={16} color="#040D12" />
-        </View>
-      </View>
-    </Pressable>
+    </AppCard>
   )
 }
 
 const styles = StyleSheet.create({
-  shell: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 26,
+  innerContainer: {
     padding: 18,
-    borderWidth: 1,
-    borderColor: `${theme.colors.primary}33`,
     overflow: 'hidden',
-    gap: 6,
-    shadowColor: theme.colors.primary,
-    shadowOpacity: 0.14,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 6,
-  },
-  pressed: {
-    opacity: 0.94,
-    transform: [{ scale: 0.985 }],
+    width: '100%',
   },
   cornerGlow: {
     position: 'absolute',
@@ -85,8 +74,8 @@ const styles = StyleSheet.create({
     right: -40,
     width: 160,
     height: 160,
-    borderRadius: 999,
-    backgroundColor: 'rgba(4,210,255,0.10)',
+    borderRadius: 80, // perfect circular radius for 160 width
+    backgroundColor: 'rgba(4,210,255,0.08)',
   },
   topRow: {
     flexDirection: 'row',
@@ -107,8 +96,8 @@ const styles = StyleSheet.create({
   },
   modulePillText: {
     color: theme.colors.primaryDeep,
+    fontFamily: theme.fonts.bold,
     fontSize: 11,
-    fontWeight: '700',
   },
   scoreBadge: {
     flexDirection: 'row',
@@ -117,19 +106,19 @@ const styles = StyleSheet.create({
   },
   scoreValue: {
     color: theme.colors.text,
+    fontFamily: theme.fonts.black,
     fontSize: 24,
-    fontWeight: '800',
     letterSpacing: -0.6,
   },
   scoreUnit: {
     color: theme.colors.muted,
+    fontFamily: theme.fonts.bold,
     fontSize: 12,
-    fontWeight: '700',
   },
   title: {
     color: theme.colors.text,
+    fontFamily: theme.fonts.black,
     fontSize: 22,
-    fontWeight: '800',
     letterSpacing: -0.4,
     marginTop: 8,
   },
@@ -151,8 +140,8 @@ const styles = StyleSheet.create({
   },
   metaText: {
     color: theme.colors.muted,
+    fontFamily: theme.fonts.bold,
     fontSize: 12,
-    fontWeight: '600',
   },
   cta: {
     flexDirection: 'row',

@@ -1,16 +1,15 @@
-import { Ionicons } from '@expo/vector-icons'
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { StyleSheet, Text, View } from 'react-native'
 import { ModuleOverviewCard } from '../../features/home/components/module-overview-card'
 import { useHomeViewModel } from '../../features/home/viewmodels/use-home-view-model'
+import { CandyBadge } from '../../shared/components/candy-badge'
+import { DarkHeroLayout } from '../../shared/components/dark-hero-layout'
+import { theme } from '../../shared/theme'
 import { EmptyState } from '../../shared/components/empty-state'
 import { LoadingState } from '../../shared/components/loading-state'
 import { ScreenContainer } from '../../shared/components/screen-container'
-import { theme } from '../../shared/theme'
 
 export default function JourneyTab() {
   const { map, isLoading, openLesson, refetch } = useHomeViewModel()
-  const insets = useSafeAreaInsets()
 
   if (isLoading) {
     return (
@@ -29,53 +28,48 @@ export default function JourneyTab() {
   }
 
   const allLessons = map.modules.flatMap((m) => m.lessons)
-  const totalCompleted = allLessons.filter((l) => l.status === 'COMPLETED').length
+  const totalCompleted = allLessons.filter(
+    (l) => l.status === 'COMPLETED',
+  ).length
   const totalLessons = allLessons.length
-  const overallPct = totalLessons === 0 ? 0 : Math.round((totalCompleted / totalLessons) * 100)
+  const overallPct =
+    totalLessons === 0 ? 0 : Math.round((totalCompleted / totalLessons) * 100)
 
   return (
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + 12 }]}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={false}
-          onRefresh={() => void refetch()}
-          tintColor={theme.colors.primary}
-        />
+    <DarkHeroLayout
+      onRefresh={() => void refetch()}
+      hero={
+        <>
+          <View style={styles.header}>
+            <Text style={styles.eyebrow}>Trilha de aprendizado</Text>
+            <Text style={styles.title}>Módulos</Text>
+          </View>
+
+          <View style={styles.overallHero}>
+            <View style={styles.overallTopRow}>
+              <CandyBadge
+                tone="dark"
+                label={`Nível ${map.level}`}
+                icon="school"
+                size="default"
+              />
+              <Text style={styles.overallPctText}>{overallPct}%</Text>
+            </View>
+
+            <Text style={styles.overallTitle}>
+              {totalCompleted} de {totalLessons} lições
+            </Text>
+            <Text style={styles.overallSubtitle}>
+              Cada lição precisa de 70+ pontos para liberar a próxima
+            </Text>
+
+            <View style={styles.overallTrack}>
+              <View style={[styles.overallFill, { width: `${overallPct}%` }]} />
+            </View>
+          </View>
+        </>
       }
     >
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>Trilha de aprendizado</Text>
-        <Text style={styles.title}>Módulos</Text>
-      </View>
-
-      {/* Overall hero */}
-      <View style={styles.overallHero}>
-        <View style={styles.overallGlow} />
-
-        <View style={styles.overallTopRow}>
-          <View style={styles.levelChip}>
-            <Ionicons name="school-outline" size={12} color="#04D2FF" />
-            <Text style={styles.levelChipText}>{map.level}</Text>
-          </View>
-          <Text style={styles.overallPctText}>{overallPct}%</Text>
-        </View>
-
-        <Text style={styles.overallTitle}>
-          {totalCompleted} de {totalLessons} lições
-        </Text>
-        <Text style={styles.overallSubtitle}>
-          Cada lição precisa de 70+ pontos para liberar a próxima
-        </Text>
-
-        <View style={styles.overallTrack}>
-          <View style={[styles.overallFill, { width: `${overallPct}%` }]} />
-        </View>
-      </View>
-
-      {/* Modules list */}
       <View style={styles.modulesList}>
         {map.modules.map((module) => (
           <ModuleOverviewCard
@@ -88,91 +82,51 @@ export default function JourneyTab() {
           />
         ))}
       </View>
-    </ScrollView>
+    </DarkHeroLayout>
   )
 }
 
 const styles = StyleSheet.create({
-  scroll: {
-    flex: 1,
-    backgroundColor: theme.colors.bg,
-  },
-  content: {
-    paddingHorizontal: theme.spacing.md,
-    paddingBottom: 130,
-    gap: 16,
-  },
-  header: {
-    gap: 4,
-  },
+  header: { gap: 4 },
   eyebrow: {
-    color: theme.colors.primary,
+    color: '#04D2FF',
+    fontFamily: theme.fonts.black,
     fontSize: 10,
-    fontWeight: '800',
     letterSpacing: 1.4,
     textTransform: 'uppercase',
   },
   title: {
-    color: theme.colors.text,
+    color: '#F6FAFE',
+    fontFamily: theme.fonts.black,
     fontSize: 26,
-    fontWeight: '800',
     letterSpacing: -0.6,
   },
+
   overallHero: {
-    backgroundColor: '#040D12',
-    borderRadius: 26,
+    backgroundColor: 'rgba(4,210,255,0.08)',
+    borderRadius: 24,
     padding: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(4,210,255,0.18)',
-    shadowColor: '#04D2FF',
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
+    borderColor: 'rgba(4,210,255,0.15)',
     gap: 6,
-  },
-  overallGlow: {
-    position: 'absolute',
-    top: -90,
-    right: -50,
-    width: 200,
-    height: 200,
-    borderRadius: 999,
-    backgroundColor: 'rgba(4,210,255,0.18)',
+    marginTop: 16,
   },
   overallTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  levelChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 999,
-    backgroundColor: 'rgba(4,210,255,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(4,210,255,0.30)',
-  },
-  levelChipText: {
-    color: '#04D2FF',
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 0.4,
-  },
   overallPctText: {
     color: '#04D2FF',
+    fontFamily: theme.fonts.black,
     fontSize: 26,
-    fontWeight: '900',
     letterSpacing: -0.6,
   },
   overallTitle: {
     color: '#F6FAFE',
+    fontFamily: theme.fonts.extraBold,
     fontSize: 20,
-    fontWeight: '800',
     letterSpacing: -0.4,
     marginTop: 4,
   },
@@ -194,7 +148,6 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: '#04D2FF',
   },
-  modulesList: {
-    gap: 12,
-  },
+
+  modulesList: { gap: 12 },
 })

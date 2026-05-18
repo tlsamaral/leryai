@@ -11,7 +11,7 @@ const now = new Date()
 export const mockUser: User = {
   id: 'user-1',
   name: 'Talles Amaral',
-  email: 'talles@lery.ai',
+  email: 'tlsamaral@lery.ai',
   avatarUrl: null,
 }
 
@@ -238,7 +238,7 @@ export const mockProfile: ProfileResponse = {
     nativeLanguage: 'pt-BR',
     interests: ['music', 'technology', 'travel'],
     hobbies: ['reading', 'gaming'],
-    occupation: 'Product Designer',
+    occupation: 'Software Engineer',
     ageGroup: 'adult',
     learningGoal: 'travel',
   },

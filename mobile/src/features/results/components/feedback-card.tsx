@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { theme } from '../../../shared/theme'
+import { AppCard } from '../../../shared/components/app-card'
 
 interface FeedbackCardProps {
   lessonTitle: string
@@ -11,9 +12,9 @@ interface FeedbackCardProps {
 }
 
 function scoreTone(score: number) {
-  if (score >= 70) return { color: theme.colors.mint, bg: '#E7F8F0', border: '#B7E5CD', label: 'Forte', icon: 'checkmark-circle' as const }
-  if (score >= 51) return { color: theme.colors.accent, bg: '#FFF6E5', border: '#FFD899', label: 'Médio', icon: 'time-outline' as const }
-  return { color: theme.colors.danger, bg: '#FCE7E9', border: '#F4B5BB', label: 'Frágil', icon: 'alert-circle' as const }
+  if (score >= 70) return { cardTone: 'mint' as const, color: theme.colors.mint, bg: '#E7F8F0', border: '#B7E5CD', label: 'Forte', icon: 'checkmark-circle' as const }
+  if (score >= 51) return { cardTone: 'amber' as const, color: theme.colors.accent, bg: '#FFF6E5', border: '#FFD899', label: 'Médio', icon: 'time-outline' as const }
+  return { cardTone: 'danger' as const, color: theme.colors.danger, bg: '#FCE7E9', border: '#F4B5BB', label: 'Frágil', icon: 'alert-circle' as const }
 }
 
 function relativeDate(iso: string) {
@@ -36,60 +37,49 @@ export function FeedbackCard({
   const tone = scoreTone(score)
 
   return (
-    <Pressable
-      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
-      onPress={onPress}
-    >
-      <View style={[styles.scoreCircle, { backgroundColor: tone.bg, borderColor: tone.border }]}>
-        <Text style={[styles.scoreValue, { color: tone.color }]}>{score}</Text>
-        <Text style={[styles.scoreUnit, { color: tone.color }]}>pts</Text>
-      </View>
+    <AppCard tone={tone.cardTone} onPress={onPress} padding={14} radius={22}>
+      <View style={styles.row}>
+        <View style={[styles.scoreCircle, { backgroundColor: tone.bg, borderColor: tone.border }]}>
+          <Text style={[styles.scoreValue, { color: tone.color }]}>{score}</Text>
+          <Text style={[styles.scoreUnit, { color: tone.color }]}>pts</Text>
+        </View>
 
-      <View style={styles.body}>
-        <Text style={styles.title} numberOfLines={1}>
-          {lessonTitle}
-        </Text>
+        <View style={styles.body}>
+          <Text style={styles.title} numberOfLines={1}>
+            {lessonTitle}
+          </Text>
 
-        <View style={styles.metaRow}>
-          <View style={styles.metaItem}>
-            <Ionicons name="repeat" size={11} color={theme.colors.muted} />
-            <Text style={styles.metaText}>
-              {attempts} {attempts === 1 ? 'tent.' : 'tents.'}
-            </Text>
+          <View style={styles.metaRow}>
+            <View style={styles.metaItem}>
+              <Ionicons name="repeat" size={11} color={theme.colors.muted} />
+              <Text style={styles.metaText}>
+                {attempts} {attempts === 1 ? 'tent.' : 'tents.'}
+              </Text>
+            </View>
+            <View style={styles.metaDot} />
+            <View style={styles.metaItem}>
+              <Ionicons name="calendar-outline" size={11} color={theme.colors.muted} />
+              <Text style={styles.metaText}>{relativeDate(lastSessionAt)}</Text>
+            </View>
           </View>
-          <View style={styles.metaDot} />
-          <View style={styles.metaItem}>
-            <Ionicons name="calendar-outline" size={11} color={theme.colors.muted} />
-            <Text style={styles.metaText}>{relativeDate(lastSessionAt)}</Text>
+
+          <View style={[styles.tag, { backgroundColor: tone.bg, borderColor: tone.border }]}>
+            <Ionicons name={tone.icon} size={10} color={tone.color} />
+            <Text style={[styles.tagText, { color: tone.color }]}>{tone.label}</Text>
           </View>
         </View>
 
-        <View style={[styles.tag, { backgroundColor: tone.bg, borderColor: tone.border }]}>
-          <Ionicons name={tone.icon} size={10} color={tone.color} />
-          <Text style={[styles.tagText, { color: tone.color }]}>{tone.label}</Text>
-        </View>
+        <Ionicons name="chevron-forward" size={18} color={theme.colors.dim} />
       </View>
-
-      <Ionicons name="chevron-forward" size={18} color={theme.colors.dim} />
-    </Pressable>
+    </AppCard>
   )
 }
 
 const styles = StyleSheet.create({
-  card: {
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    padding: 14,
-    ...theme.shadow.soft,
-  },
-  pressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.99 }],
   },
   scoreCircle: {
     width: 64,

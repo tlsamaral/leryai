@@ -41,8 +41,6 @@ export function ProfileMenuItem({
 const styles = StyleSheet.create({
   row: {
     height: 52,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EDF3F0',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -55,9 +53,10 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     color: theme.colors.text,
-    fontWeight: '500',
+    fontFamily: theme.fonts.bold,
   },
   labelDanger: {
     color: theme.colors.danger,
+    fontFamily: theme.fonts.bold,
   },
 })
