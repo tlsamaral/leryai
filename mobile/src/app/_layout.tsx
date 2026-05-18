@@ -16,22 +16,19 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <StatusBar style="dark" />
+      <StatusBar style="auto" />
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="auth" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="pair-lery"
-          options={{ ...headerDefaults, title: 'Configurar Lery' }}
-        />
+        <Stack.Screen name="pair-lery" options={{ headerShown: false }} />
         <Stack.Screen
           name="lesson/[lessonId]"
-          options={{ ...headerDefaults, title: 'Lição' }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="results/[lessonId]"
-          options={{ ...headerDefaults, title: 'Resultado' }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
       </Stack>
