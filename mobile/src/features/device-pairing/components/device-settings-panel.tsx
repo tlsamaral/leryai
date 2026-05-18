@@ -1,6 +1,7 @@
 import Slider from '@react-native-community/slider'
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native'
 import { theme } from '../../../shared/theme'
+import { AppCard } from '../../../shared/components/app-card'
 import type { DeviceSettings, LeryVoiceTone } from '../../../shared/types/api'
 
 interface DeviceSettingsPanelProps {
@@ -29,8 +30,8 @@ export function DeviceSettingsPanel({
   }
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>Configuracao do Lery fisico</Text>
+    <AppCard tone="default" padding={16} radius={24}>
+      <Text style={styles.title}>Configuração do Lery físico</Text>
       <Text style={styles.subtitle}>
         Ajuste a voz e o comportamento do dispositivo.
       </Text>
@@ -145,65 +146,66 @@ export function DeviceSettingsPanel({
       {isSaving ? (
         <Text style={styles.savingText}>Salvando configuracoes...</Text>
       ) : null}
-    </View>
+    </AppCard>
   )
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 24,
-    padding: 16,
-    gap: 14,
-  },
+  // Removed card styles in favor of AppCard
   title: {
     color: theme.colors.text,
+    fontFamily: theme.fonts.black,
     fontSize: 20,
-    fontWeight: '800',
+    letterSpacing: -0.3,
   },
   subtitle: {
     color: theme.colors.muted,
+    fontFamily: theme.fonts.bold,
     fontSize: 13,
+    opacity: 0.8,
   },
   section: {
     gap: 8,
   },
   sectionTitle: {
     color: theme.colors.text,
+    fontFamily: theme.fonts.extraBold,
     fontSize: 14,
-    fontWeight: '700',
+    letterSpacing: -0.1,
   },
   toneGrid: {
     gap: 8,
+    marginTop: 4,
   },
   toneChip: {
-    borderWidth: 1,
-    borderColor: '#DCEAE4',
-    borderRadius: 14,
-    padding: 11,
+    borderWidth: 2,
+    borderColor: theme.colors.border,
+    borderRadius: 16,
+    padding: 12,
     backgroundColor: '#FAFDFC',
     gap: 2,
   },
   toneChipSelected: {
-    borderColor: '#8ACBB7',
-    backgroundColor: '#EAF7F2',
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primarySoft,
   },
   toneLabel: {
     color: theme.colors.text,
-    fontWeight: '700',
+    fontFamily: theme.fonts.black,
     fontSize: 14,
   },
   toneLabelSelected: {
-    color: '#0E6550',
+    color: theme.colors.primaryDeep,
   },
   toneDescription: {
     color: theme.colors.muted,
+    fontFamily: theme.fonts.bold,
     fontSize: 12,
+    opacity: 0.85,
   },
   toneDescriptionSelected: {
-    color: '#477A6D',
+    color: theme.colors.primaryDeep,
+    opacity: 0.9,
   },
   rowBetween: {
     flexDirection: 'row',
@@ -211,18 +213,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   valuePill: {
-    color: '#0D5E4A',
+    color: theme.colors.primaryDeep,
     fontSize: 12,
-    fontWeight: '700',
-    backgroundColor: '#E5F5EF',
+    fontFamily: theme.fonts.black,
+    backgroundColor: theme.colors.primarySoft,
     borderRadius: 999,
     paddingHorizontal: 9,
     paddingVertical: 4,
+    borderWidth: 1.5,
+    borderColor: `${theme.colors.primary}33`,
   },
   switchRow: {
-    borderWidth: 1,
-    borderColor: '#E4ECE8',
-    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: theme.colors.border,
+    borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 10,
     flexDirection: 'row',
@@ -232,18 +236,20 @@ const styles = StyleSheet.create({
   },
   switchTitle: {
     color: theme.colors.text,
-    fontWeight: '700',
+    fontFamily: theme.fonts.black,
     fontSize: 14,
   },
   switchSubtitle: {
     color: theme.colors.muted,
+    fontFamily: theme.fonts.bold,
     fontSize: 12,
     maxWidth: 220,
     marginTop: 1,
+    opacity: 0.8,
   },
   savingText: {
     color: theme.colors.primary,
+    fontFamily: theme.fonts.bold,
     fontSize: 12,
-    fontWeight: '600',
   },
 })

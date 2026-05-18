@@ -12,6 +12,8 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { getLeryApi } from '../shared/api/provider'
+import { AppCard } from '../shared/components/app-card'
+import { PrimaryButton } from '../shared/components/primary-button'
 import { WaveformBars } from '../shared/components/waveform-bars'
 import { theme } from '../shared/theme'
 
@@ -421,7 +423,7 @@ function ConfirmScreen({
           </Text>
         </View>
 
-        <View style={cs.summaryCard}>
+        <AppCard tone="default" padding={0} radius={22}>
           {pairs.map(({ label, answer }) => (
             <View key={label} style={cs.summaryRow}>
               <Text style={cs.summaryLabel}>{labels[label] ?? label}</Text>
@@ -430,27 +432,17 @@ function ConfirmScreen({
               </Text>
             </View>
           ))}
-        </View>
+        </AppCard>
 
         <View style={cs.actions}>
-          <Pressable
-            style={({ pressed }) => [
-              cs.saveBtn,
-              saving && cs.saveBtnDisabled,
-              pressed && cs.saveBtnPressed,
-            ]}
+          <PrimaryButton
+            label={saving ? 'Salvando...' : 'Está certo! Vamos começar'}
             onPress={onSave}
             disabled={saving}
-          >
-            <Ionicons
-              name={saving ? 'hourglass-outline' : 'rocket-outline'}
-              size={18}
-              color="#040D12"
-            />
-            <Text style={cs.saveBtnText}>
-              {saving ? 'Salvando...' : 'Está certo! Vamos começar'}
-            </Text>
-          </Pressable>
+            loading={saving}
+            tone="cyan"
+            icon={saving ? undefined : 'rocket-outline'}
+          />
 
           <Pressable style={cs.redoLink} onPress={onRedo}>
             <Text style={cs.redoLinkText}>Refazer respostas</Text>
@@ -493,14 +485,7 @@ const cs = StyleSheet.create({
     color: 'rgba(229,250,255,0.85)',
     fontSize: 15,
     lineHeight: 22,
-    fontWeight: '500',
-  },
-  summaryCard: {
-    backgroundColor: 'rgba(4,210,255,0.06)',
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: 'rgba(4,210,255,0.18)',
-    overflow: 'hidden',
+    fontFamily: theme.fonts.bold,
   },
   summaryRow: {
     flexDirection: 'row',
@@ -508,13 +493,13 @@ const cs = StyleSheet.create({
     gap: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(4,210,255,0.08)',
+    borderBottomWidth: 2,
+    borderBottomColor: theme.colors.border,
   },
   summaryLabel: {
     color: theme.colors.primary,
     fontSize: 11,
-    fontWeight: '800',
+    fontFamily: theme.fonts.black,
     letterSpacing: 0.6,
     textTransform: 'uppercase',
     width: 80,
@@ -524,33 +509,11 @@ const cs = StyleSheet.create({
     flex: 1,
     color: '#F6FAFE',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: theme.fonts.bold,
     lineHeight: 20,
   },
   actions: {
     gap: 12,
-  },
-  saveBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 9,
-    backgroundColor: theme.colors.primary,
-    borderRadius: 999,
-    paddingVertical: 16,
-    shadowColor: theme.colors.primary,
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
-  },
-  saveBtnDisabled: { opacity: 0.6 },
-  saveBtnPressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
-  saveBtnText: {
-    color: '#040D12',
-    fontSize: 16,
-    fontWeight: '800',
-    letterSpacing: -0.3,
   },
   redoLink: {
     alignSelf: 'center',
@@ -559,7 +522,8 @@ const cs = StyleSheet.create({
   redoLinkText: {
     color: 'rgba(229,250,255,0.45)',
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: theme.fonts.bold,
+    opacity: 0.9,
   },
 })
 
@@ -779,39 +743,25 @@ export default function OnboardingScreen() {
           </View>
 
           <View style={styles.actionRow}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.redoBtn,
-                pressed && { opacity: 0.7 },
-              ]}
-              onPress={redoAnswer}
-            >
-              <Ionicons
-                name="mic-outline"
-                size={15}
-                color={theme.colors.primary}
+            <View style={{ flex: 1 }}>
+              <PrimaryButton
+                label="Outra vez"
+                onPress={redoAnswer}
+                tone="ghost"
+                icon="mic-outline"
               />
-              <Text style={styles.redoBtnText}>Gravar de novo</Text>
-            </Pressable>
+            </View>
 
-            <Pressable
-              style={({ pressed }) => [
-                styles.confirmBtn,
-                pressed && styles.confirmBtnPressed,
-              ]}
-              onPress={confirmAnswer}
-            >
-              <Text style={styles.confirmBtnText}>
-                {currentStep < STEPS.length - 1 ? 'Próximo' : 'Finalizar'}
-              </Text>
-              <Ionicons
-                name={
+            <View style={{ flex: 1.4 }}>
+              <PrimaryButton
+                label={currentStep < STEPS.length - 1 ? 'Próximo' : 'Finalizar'}
+                onPress={confirmAnswer}
+                tone="cyan"
+                icon={
                   currentStep < STEPS.length - 1 ? 'arrow-forward' : 'checkmark'
                 }
-                size={15}
-                color="#040D12"
               />
-            </Pressable>
+            </View>
           </View>
         </Animated.View>
       )}
@@ -870,11 +820,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   leryAvatar: {
-    width: 30,
-    height: 30,
+    width: 32,
+    height: 32,
     borderRadius: 999,
     backgroundColor: 'rgba(4,210,255,0.10)',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: 'rgba(4,210,255,0.28)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -893,12 +843,14 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
     paddingHorizontal: 15,
     paddingVertical: 13,
+    borderWidth: 2,
+    borderColor: theme.colors.border,
   },
   questionText: {
     color: '#0A1B23',
+    fontFamily: theme.fonts.bold,
     fontSize: 15,
     lineHeight: 22,
-    fontWeight: '500',
   },
   recordZone: {
     flex: 1,
@@ -908,8 +860,8 @@ const styles = StyleSheet.create({
   },
   recordLabel: {
     color: 'rgba(229,250,255,0.45)',
+    fontFamily: theme.fonts.bold,
     fontSize: 13,
-    fontWeight: '600',
     textAlign: 'center',
     letterSpacing: 0.2,
   },
@@ -939,11 +891,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignSelf: 'flex-end',
     maxWidth: '85%',
+    borderWidth: 2,
+    borderColor: '#000000',
   },
   responseText: {
     color: '#040D12',
+    fontFamily: theme.fonts.bold,
     fontSize: 15,
-    fontWeight: '600',
     lineHeight: 21,
     flex: 1,
   },
@@ -998,7 +952,7 @@ const styles = StyleSheet.create({
   bottomHintText: {
     color: 'rgba(229,250,255,0.3)',
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: theme.fonts.bold,
     letterSpacing: 0.5,
   },
 })

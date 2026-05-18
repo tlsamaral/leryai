@@ -1,11 +1,10 @@
 import { Ionicons } from '@expo/vector-icons'
-import { Redirect, useLocalSearchParams } from 'expo-router'
+import { Redirect, router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import {
   Animated,
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -15,12 +14,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSessionStore } from '../../features/auth/store/session-store'
 import { useResultDetailViewModel } from '../../features/results/viewmodels/use-result-detail-view-model'
 import { getLeryApi } from '../../shared/api/provider'
+import { AppCard } from '../../shared/components/app-card'
+import { DarkHeroLayout } from '../../shared/components/dark-hero-layout'
 import { EmptyState } from '../../shared/components/empty-state'
 import { LoadingState } from '../../shared/components/loading-state'
 import { ScoreBar } from '../../shared/components/score-bar'
 import { ScreenContainer } from '../../shared/components/screen-container'
 import { theme } from '../../shared/theme'
 import type { InteractionLog } from '../../shared/types/domain'
+import { PrimaryButton } from '../../shared/components/primary-button'
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -68,9 +70,9 @@ function DisputeModal({ logId, visible, onClose }: { logId: string; visible: boo
               </View>
               <Text style={ms.sentTitle}>Disputa enviada</Text>
               <Text style={ms.sentSub}>Lery vai revisar e ajustar se necessário.</Text>
-              <Pressable style={ms.closeBtn} onPress={close}>
-                <Text style={ms.closeBtnText}>Fechar</Text>
-              </Pressable>
+              <View style={{ width: '100%', marginTop: 8 }}>
+                <PrimaryButton label="Fechar" onPress={close} tone="cyan" />
+              </View>
             </View>
           ) : (
             <View style={ms.form}>
@@ -87,14 +89,16 @@ function DisputeModal({ logId, visible, onClose }: { logId: string; visible: boo
                 onChangeText={setReason}
                 textAlignVertical="top"
               />
-              <Pressable
-                style={[ms.submitBtn, (!reason.trim() || loading) && ms.submitDisabled]}
-                disabled={!reason.trim() || loading}
-                onPress={() => void submit()}
-              >
-                <Ionicons name="send-outline" size={15} color="#040D12" />
-                <Text style={ms.submitText}>{loading ? 'Enviando...' : 'Enviar disputa'}</Text>
-              </Pressable>
+              <View style={{ marginTop: 4 }}>
+                <PrimaryButton
+                  label={loading ? 'Enviando...' : 'Enviar disputa'}
+                  onPress={() => void submit()}
+                  disabled={!reason.trim() || loading}
+                  loading={loading}
+                  tone="cyan"
+                  icon={loading ? undefined : 'send'}
+                />
+              </View>
               <Pressable style={ms.cancel} onPress={close}>
                 <Text style={ms.cancelText}>Cancelar</Text>
               </Pressable>
@@ -122,34 +126,24 @@ const ms = StyleSheet.create({
     alignSelf: 'center', marginTop: 12, marginBottom: 4,
   },
   form: { padding: 22, gap: 12 },
-  title: { color: theme.colors.text, fontSize: 18, fontWeight: '800', letterSpacing: -0.3 },
-  sub: { color: theme.colors.muted, fontSize: 14, lineHeight: 20 },
+  title: { color: theme.colors.text, fontFamily: theme.fonts.black, fontSize: 18, letterSpacing: -0.3 },
+  sub: { color: theme.colors.muted, fontFamily: theme.fonts.bold, fontSize: 14, lineHeight: 20, opacity: 0.85 },
   input: {
-    minHeight: 110, borderRadius: 16, borderWidth: 1.5,
+    minHeight: 110, borderRadius: 16, borderWidth: 2,
     borderColor: theme.colors.border, backgroundColor: theme.colors.bg,
     padding: 12, fontSize: 14, color: theme.colors.text,
+    fontFamily: theme.fonts.bold, marginBottom: 4,
   },
-  submitBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, backgroundColor: theme.colors.primary, borderRadius: 999, paddingVertical: 14,
-    shadowColor: theme.colors.primary, shadowOpacity: 0.3, shadowRadius: 10, elevation: 4,
-  },
-  submitDisabled: { opacity: 0.45 },
-  submitText: { color: '#040D12', fontSize: 15, fontWeight: '800' },
-  cancel: { alignSelf: 'center', paddingVertical: 6 },
-  cancelText: { color: theme.colors.dim, fontSize: 13, fontWeight: '600' },
+  cancel: { alignSelf: 'center', paddingVertical: 6, marginTop: 4 },
+  cancelText: { color: theme.colors.dim, fontFamily: theme.fonts.bold, fontSize: 13 },
   sentWrap: { alignItems: 'center', gap: 10, paddingVertical: 36, paddingHorizontal: 24 },
   sentIcon: {
     width: 72, height: 72, borderRadius: 999,
     backgroundColor: '#E7F8F0', alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: theme.colors.mint,
   },
-  sentTitle: { color: theme.colors.text, fontSize: 20, fontWeight: '800', letterSpacing: -0.3 },
-  sentSub: { color: theme.colors.muted, fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  closeBtn: {
-    marginTop: 8, backgroundColor: theme.colors.primary, borderRadius: 999,
-    paddingHorizontal: 32, paddingVertical: 12,
-  },
-  closeBtnText: { color: '#040D12', fontSize: 15, fontWeight: '800' },
+  sentTitle: { color: theme.colors.text, fontFamily: theme.fonts.black, fontSize: 20, letterSpacing: -0.3 },
+  sentSub: { color: theme.colors.muted, fontFamily: theme.fonts.bold, fontSize: 14, textAlign: 'center', lineHeight: 20, opacity: 0.85 },
 })
 
 // ─── log card ─────────────────────────────────────────────────────────────────
@@ -203,11 +197,11 @@ function LogCard({ log, index }: { log: InteractionLog; index: number }) {
 
       {/* 4-pillar section */}
       {pillars ? (
-        <View style={lc.pillarsCard}>
+        <AppCard tone="default" padding={0} radius={16}>
           <Pressable style={lc.pillarsHeader} onPress={() => setPillarsOpen((v) => !v)}>
             <Text style={lc.pillarsTitle}>Avaliação detalhada</Text>
             {log.totalScore !== null ? (
-              <View style={[lc.totalBadge, { backgroundColor: `${scoreTone(log.totalScore).color}20` }]}>
+              <View style={[lc.totalBadge, { backgroundColor: `${scoreTone(log.totalScore).color}20`, borderWidth: 1.5, borderColor: scoreTone(log.totalScore).color }]}>
                 <Text style={[lc.totalBadgeText, { color: scoreTone(log.totalScore).color }]}>
                   {log.totalScore}pts
                 </Text>
@@ -235,7 +229,7 @@ function LogCard({ log, index }: { log: InteractionLog; index: number }) {
               ) : null}
             </View>
           ) : null}
-        </View>
+        </AppCard>
       ) : null}
 
       {/* Dispute */}
@@ -271,69 +265,66 @@ const lc = StyleSheet.create({
     backgroundColor: theme.colors.primary,
     borderRadius: 18, borderBottomRightRadius: 4,
     paddingHorizontal: 14, paddingVertical: 10, maxWidth: '78%',
+    borderWidth: 2, borderColor: '#000000',
   },
-  userText: { color: '#040D12', fontSize: 14, fontWeight: '600', lineHeight: 20 },
+  userText: { color: '#040D12', fontFamily: theme.fonts.bold, fontSize: 14, lineHeight: 20 },
   leryAvatar: {
     width: 26, height: 26, borderRadius: 999, flexShrink: 0,
     backgroundColor: theme.colors.primarySoft,
-    borderWidth: 1, borderColor: `${theme.colors.primary}33`,
+    borderWidth: 2, borderColor: `${theme.colors.primary}33`,
     alignItems: 'center', justifyContent: 'center',
   },
   leryBubble: {
     flex: 1, backgroundColor: theme.colors.surface,
     borderRadius: 18, borderBottomLeftRadius: 4,
     paddingHorizontal: 14, paddingVertical: 10,
-    borderWidth: 1, borderColor: theme.colors.border,
+    borderWidth: 2, borderColor: theme.colors.border,
   },
-  leryText: { color: theme.colors.text, fontSize: 14, lineHeight: 20 },
+  leryText: { color: theme.colors.text, fontFamily: theme.fonts.bold, fontSize: 14, lineHeight: 20, opacity: 0.9 },
   fixRow: {
     flexDirection: 'row', gap: 7, alignItems: 'flex-start',
     backgroundColor: `${theme.colors.accent}14`,
     borderRadius: 12, padding: 10,
-    borderLeftWidth: 2.5, borderLeftColor: theme.colors.accent,
+    borderWidth: 2, borderColor: `${theme.colors.accent}33`,
+    borderLeftWidth: 4, borderLeftColor: theme.colors.accent,
   },
-  fixText: { flex: 1, color: theme.colors.text, fontSize: 13, lineHeight: 18, fontStyle: 'italic' },
-  pillarsCard: {
-    borderRadius: 16, borderWidth: 1,
-    borderColor: `${theme.colors.primary}22`,
-    overflow: 'hidden',
-    backgroundColor: theme.colors.surface,
-  },
+  fixText: { flex: 1, color: theme.colors.text, fontFamily: theme.fonts.bold, fontSize: 13, lineHeight: 18, fontStyle: 'italic', opacity: 0.95 },
   pillarsHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingVertical: 12, paddingHorizontal: 14,
   },
-  pillarsTitle: { flex: 1, color: theme.colors.text, fontSize: 13, fontWeight: '700' },
+  pillarsTitle: { flex: 1, color: theme.colors.text, fontFamily: theme.fonts.extraBold, fontSize: 13 },
   totalBadge: {
     paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999,
   },
-  totalBadgeText: { fontSize: 12, fontWeight: '800' },
+  totalBadgeText: { fontSize: 12, fontFamily: theme.fonts.black },
   pillarsBars: {
     gap: 8, paddingHorizontal: 14, paddingBottom: 14,
-    borderTopWidth: 1, borderTopColor: theme.colors.border,
+    borderTopWidth: 2, borderTopColor: theme.colors.border,
     paddingTop: 12,
   },
   reasoning: {
     flexDirection: 'row', gap: 7, alignItems: 'flex-start',
     marginTop: 4, backgroundColor: `${theme.colors.primary}08`,
     borderRadius: 10, padding: 10,
-    borderLeftWidth: 2, borderLeftColor: theme.colors.primary,
+    borderWidth: 1.5, borderColor: `${theme.colors.primary}22`,
+    borderLeftWidth: 3, borderLeftColor: theme.colors.primary,
   },
-  reasoningText: { flex: 1, color: theme.colors.muted, fontSize: 12, lineHeight: 17 },
+  reasoningText: { flex: 1, color: theme.colors.muted, fontFamily: theme.fonts.bold, fontSize: 12, lineHeight: 17, opacity: 0.9 },
   disputeBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 6,
-    borderRadius: 999, borderWidth: 1,
-    borderColor: `${theme.colors.warning}44`,
+    borderRadius: 999, borderWidth: 2,
+    borderColor: theme.colors.warning,
     backgroundColor: `${theme.colors.warning}0C`,
   },
-  disputeText: { color: theme.colors.warning, fontSize: 12, fontWeight: '600' },
+  disputeText: { color: theme.colors.warning, fontFamily: theme.fonts.bold, fontSize: 12 },
   disputedChip: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
     alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 6,
-    borderRadius: 999, backgroundColor: `${theme.colors.warning}12`,
+    borderRadius: 999, borderWidth: 2, borderColor: `${theme.colors.warning}55`, backgroundColor: `${theme.colors.warning}12`,
   },
-  disputedText: { color: theme.colors.warning, fontSize: 12, fontWeight: '600' },
+  disputedText: { color: theme.colors.warning, fontFamily: theme.fonts.bold, fontSize: 12 },
 })
 
 // ─── main screen ──────────────────────────────────────────────────────────────
@@ -363,48 +354,52 @@ export default function ResultDetailPage() {
   const bestScore = Math.max(...data.attempts.map((a) => a.score))
 
   return (
-    <ScrollView
-      style={pg.scroll}
-      contentContainerStyle={[pg.content, { paddingBottom: 80 + insets.bottom }]}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Hero dark card */}
-      <View style={pg.hero}>
-        <View style={pg.heroGlow} />
-        <View style={pg.heroGlow2} />
-
-        <Text style={pg.heroEyebrow}>Resultado da lição</Text>
-        <Text style={pg.heroTitle} numberOfLines={2}>{data.lessonTitle}</Text>
-
-        {/* Score + best */}
-        <View style={pg.heroScoreRow}>
-          <View style={[pg.scoreCircle, { borderColor: `${tone.color}55`, backgroundColor: `${tone.color}18` }]}>
-            <Text style={[pg.scoreValue, { color: tone.color }]}>{attempt.score}</Text>
-            <Text style={[pg.scoreUnit, { color: tone.color }]}>pts</Text>
+    <DarkHeroLayout
+      bottomPadding={40}
+      hero={
+        <>
+          <View style={pg.heroTopBar}>
+            <Pressable onPress={() => router.back()} style={pg.backBtn}>
+              <Ionicons name="arrow-back" size={20} color="rgba(229,250,255,0.8)" />
+              <Text style={pg.backLabel}>Voltar</Text>
+            </Pressable>
           </View>
 
-          <View style={pg.heroMeta}>
-            <View style={[pg.toneBadge, { backgroundColor: `${tone.color}22` }]}>
-              <Text style={[pg.toneBadgeText, { color: tone.color }]}>{tone.label}</Text>
+          <View style={pg.heroGlow} />
+          <View style={pg.heroGlow2} />
+
+          <Text style={pg.heroEyebrow}>Resultado da lição</Text>
+          <Text style={pg.heroTitle} numberOfLines={2}>{data.lessonTitle}</Text>
+
+          <View style={pg.heroScoreRow}>
+            <View style={[pg.scoreCircle, { borderColor: tone.color, backgroundColor: `${tone.color}18` }]}>
+              <Text style={[pg.scoreValue, { color: tone.color }]}>{attempt.score}</Text>
+              <Text style={[pg.scoreUnit, { color: tone.color }]}>pts</Text>
             </View>
-            <Text style={pg.heroMetaText}>
-              Melhor: <Text style={{ color: '#04D2FF', fontWeight: '800' }}>{bestScore}pts</Text>
-            </Text>
-            <Text style={pg.heroMetaText}>
-              {data.attempts.length} {data.attempts.length === 1 ? 'tentativa' : 'tentativas'}
-            </Text>
-          </View>
-        </View>
 
-        {attempt.feedbackSummary ? (
-          <View style={pg.feedbackRow}>
-            <Ionicons name="chatbubble-outline" size={13} color="rgba(229,250,255,0.6)" />
-            <Text style={pg.feedbackText}>{attempt.feedbackSummary}</Text>
+            <View style={pg.heroMeta}>
+              <View style={[pg.toneBadge, { backgroundColor: `${tone.color}22`, borderWidth: 1.5, borderColor: tone.color }]}>
+                <Text style={[pg.toneBadgeText, { color: tone.color }]}>{tone.label}</Text>
+              </View>
+              <Text style={pg.heroMetaText}>
+                Melhor: <Text style={{ color: '#04D2FF', fontFamily: theme.fonts.black }}>{bestScore}pts</Text>
+              </Text>
+              <Text style={pg.heroMetaText}>
+                {data.attempts.length} {data.attempts.length === 1 ? 'tentativa' : 'tentativas'}
+              </Text>
+            </View>
           </View>
-        ) : null}
-      </View>
 
-      {/* Attempt selector — only if more than one */}
+          {attempt.feedbackSummary ? (
+            <View style={pg.feedbackRow}>
+              <Ionicons name="chatbubble-outline" size={13} color="rgba(229,250,255,0.6)" />
+              <Text style={pg.feedbackText}>{attempt.feedbackSummary}</Text>
+            </View>
+          ) : null}
+        </>
+      }
+    >
+      {/* Attempt selector */}
       {data.attempts.length > 1 ? (
         <View style={pg.attemptRow}>
           {data.attempts.map((a, i) => {
@@ -434,23 +429,14 @@ export default function ResultDetailPage() {
           ))}
         </View>
       </View>
-    </ScrollView>
+    </DarkHeroLayout>
   )
 }
 
 const pg = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: theme.colors.bg },
-  content: { gap: 16 },
-  hero: {
-    backgroundColor: '#040D12',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 24,
-    overflow: 'hidden',
-    gap: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(4,210,255,0.10)',
-  },
+  heroTopBar: { marginBottom: 12 },
+  backBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start' },
+  backLabel: { color: 'rgba(229,250,255,0.8)', fontFamily: theme.fonts.extraBold, fontSize: 15 },
   heroGlow: {
     position: 'absolute', top: -100, right: -60,
     width: 240, height: 240, borderRadius: 999,
@@ -463,54 +449,58 @@ const pg = StyleSheet.create({
   },
   heroEyebrow: {
     color: theme.colors.primary,
-    fontSize: 10, fontWeight: '800',
+    fontFamily: theme.fonts.black,
+    fontSize: 10,
     letterSpacing: 1.4, textTransform: 'uppercase',
   },
   heroTitle: {
     color: '#F6FAFE',
-    fontSize: 26, fontWeight: '800', letterSpacing: -0.6, lineHeight: 32,
+    fontFamily: theme.fonts.black,
+    fontSize: 26, letterSpacing: -0.6, lineHeight: 32,
   },
   heroScoreRow: {
     flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 4,
   },
   scoreCircle: {
-    width: 84, height: 84, borderRadius: 999, borderWidth: 2.5,
+    width: 84, height: 84, borderRadius: 999, borderWidth: 4,
     alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 0,
   },
-  scoreValue: { fontSize: 30, fontWeight: '900', letterSpacing: -1, lineHeight: 32 },
-  scoreUnit: { fontSize: 10, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' },
+  scoreValue: { fontSize: 30, fontFamily: theme.fonts.black, letterSpacing: -1, lineHeight: 32 },
+  scoreUnit: { fontSize: 10, fontFamily: theme.fonts.black, letterSpacing: 0.8, textTransform: 'uppercase' },
   heroMeta: { flex: 1, gap: 6 },
   toneBadge: {
     alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4,
     borderRadius: 999,
   },
-  toneBadgeText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.4, textTransform: 'uppercase' },
-  heroMetaText: { color: 'rgba(229,250,255,0.6)', fontSize: 13, fontWeight: '600' },
+  toneBadgeText: { fontSize: 11, fontFamily: theme.fonts.black, letterSpacing: 0.4, textTransform: 'uppercase' },
+  heroMetaText: { color: 'rgba(229,250,255,0.6)', fontFamily: theme.fonts.bold, fontSize: 13, opacity: 0.95 },
   feedbackRow: {
     flexDirection: 'row', gap: 8, alignItems: 'flex-start',
     backgroundColor: 'rgba(229,250,255,0.05)',
     borderRadius: 12, padding: 10, marginTop: 2,
+    borderWidth: 1.5, borderColor: 'rgba(229,250,255,0.08)',
   },
-  feedbackText: { flex: 1, color: 'rgba(229,250,255,0.7)', fontSize: 13, lineHeight: 19 },
+  feedbackText: { flex: 1, color: 'rgba(229,250,255,0.7)', fontFamily: theme.fonts.bold, fontSize: 13, lineHeight: 19, opacity: 0.9 },
   attemptRow: {
-    flexDirection: 'row', gap: 8, paddingHorizontal: 16, flexWrap: 'wrap',
+    flexDirection: 'row', gap: 8, flexWrap: 'wrap',
   },
   attemptChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999,
-    borderWidth: 1, borderColor: theme.colors.border,
+    borderWidth: 2, borderColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
   },
   attemptChipActive: {
-    borderColor: `${theme.colors.primary}55`,
+    borderColor: theme.colors.primary,
     backgroundColor: theme.colors.primarySoft,
   },
   attemptDot: { width: 7, height: 7, borderRadius: 999 },
-  attemptChipText: { color: theme.colors.muted, fontSize: 12, fontWeight: '700' },
+  attemptChipText: { color: theme.colors.muted, fontFamily: theme.fonts.bold, fontSize: 12, opacity: 0.95 },
   attemptChipTextActive: { color: theme.colors.primaryDeep },
-  logsSection: { paddingHorizontal: 16, gap: 12 },
+  logsSection: { gap: 12 },
   logsSectionTitle: {
-    color: theme.colors.text, fontSize: 15, fontWeight: '800', letterSpacing: -0.2,
+    color: theme.colors.text, fontFamily: theme.fonts.black, fontSize: 15, letterSpacing: -0.2,
   },
   logsWrap: { gap: 20 },
 })

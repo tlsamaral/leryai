@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons'
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { theme } from '../../../shared/theme'
+import { AppCard } from '../../../shared/components/app-card'
+import { PrimaryButton } from '../../../shared/components/primary-button'
 
 interface PromptEditorCardProps {
   value: string
@@ -11,7 +13,7 @@ interface PromptEditorCardProps {
 
 export function PromptEditorCard({ value, isSaving, onChange, onSave }: PromptEditorCardProps) {
   return (
-    <View style={styles.card}>
+    <AppCard tone="default" padding={16} radius={22}>
       <View style={styles.headerRow}>
         <View style={styles.iconWrap}>
           <Ionicons name="sparkles" size={16} color={theme.colors.primary} />
@@ -37,34 +39,27 @@ export function PromptEditorCard({ value, isSaving, onChange, onSave }: PromptEd
         textAlignVertical="top"
       />
 
-      <Pressable
-        style={({ pressed }) => [styles.saveBtn, isSaving && styles.saveBtnDisabled, pressed && styles.saveBtnPressed]}
-        onPress={onSave}
-        disabled={isSaving}
-      >
-        <Ionicons name={isSaving ? 'hourglass-outline' : 'checkmark'} size={16} color="#040D12" />
-        <Text style={styles.saveBtnText}>
-          {isSaving ? 'Salvando...' : 'Salvar configuração'}
-        </Text>
-      </Pressable>
-    </View>
+      <View style={{ marginTop: 4 }}>
+        <PrimaryButton
+          label={isSaving ? 'Salvando...' : 'Salvar configuração'}
+          onPress={onSave}
+          disabled={isSaving}
+          loading={isSaving}
+          tone="cyan"
+          icon={isSaving ? undefined : 'checkmark'}
+        />
+      </View>
+    </AppCard>
   )
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    padding: 16,
-    gap: 12,
-    ...theme.shadow.soft,
-  },
+  // Removed card style in favor of AppCard
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    marginBottom: 12,
   },
   iconWrap: {
     width: 38,
@@ -79,14 +74,16 @@ const styles = StyleSheet.create({
   headerTexts: { flex: 1, gap: 2 },
   title: {
     color: theme.colors.text,
+    fontFamily: theme.fonts.black,
     fontSize: 15,
-    fontWeight: '800',
     letterSpacing: -0.2,
   },
   subtitle: {
     color: theme.colors.muted,
+    fontFamily: theme.fonts.bold,
     fontSize: 12,
     lineHeight: 16,
+    opacity: 0.85,
   },
   badge: {
     paddingHorizontal: 9,
@@ -98,43 +95,22 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: theme.colors.primaryDeep,
+    fontFamily: theme.fonts.black,
     fontSize: 10,
-    fontWeight: '800',
     letterSpacing: 0.4,
     textTransform: 'uppercase',
   },
   input: {
     minHeight: 120,
-    borderWidth: 1.5,
+    borderWidth: 2,
     borderColor: theme.colors.border,
-    borderRadius: 14,
+    borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 14,
     color: theme.colors.text,
     backgroundColor: theme.colors.bg,
     lineHeight: 21,
-  },
-  saveBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: theme.colors.primary,
-    borderRadius: 999,
-    paddingVertical: 13,
-    shadowColor: theme.colors.primary,
-    shadowOpacity: 0.28,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
-  },
-  saveBtnDisabled: { opacity: 0.5 },
-  saveBtnPressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
-  saveBtnText: {
-    color: '#040D12',
-    fontSize: 14,
-    fontWeight: '800',
-    letterSpacing: -0.2,
+    marginBottom: 12,
   },
 })
