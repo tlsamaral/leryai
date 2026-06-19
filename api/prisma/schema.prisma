@@ -215,3 +215,28 @@ model InteractionLog {
   disputeStatus       DisputeStatus?
   createdAt           DateTime      @default(now())
 }
+
+// --- CONTEXT ENGINEERING ---
+// Insight card produced by Summarizer worker at the end of each session.
+// Compacted memory consumed by Tutor on next session via recall tool.
+model SessionInsight {
+  id          String   @id @default(uuid())
+  userId      String
+  sessionId   String   @unique
+  topError    String   @db.Text
+  topProgress String   @db.Text
+  openTopic   String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// Aggregated learner profile snapshot. Refreshed asynchronously after each
+// session completes. Source of truth for Learner Snapshot context layer.
+model LearnerProfileSnapshot {
+  userId              String   @id
+  recentErrors        Json     @default("[]")
+  dominatedStructures Json     @default("[]")
+  openTopics          Json     @default("[]")
+  updatedAt           DateTime @updatedAt
+}
