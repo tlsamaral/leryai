@@ -34,7 +34,7 @@ export async function authenticateWithPassword(app: FastifyInstance) {
         },
       })
 
-      if (!userFromUsername) {
+      if (!userFromUsername || !userFromUsername.passwordHash) {
         throw new BadRequestError('Invalid credentials')
       }
 
