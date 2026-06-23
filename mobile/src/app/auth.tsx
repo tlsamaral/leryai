@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useAuthViewModel } from '../features/auth/viewmodels/use-auth-view-model'
+import { useSignIn } from '../features/auth/hooks/use-sign-in'
 import { theme } from '../shared/theme'
 
 export default function AuthPage() {
-  const { signInWithGoogle, isLoading } = useAuthViewModel()
+  const { signIn, isPending, error, isCancelled } = useSignIn()
   const insets = useSafeAreaInsets()
 
   return (
@@ -22,44 +22,24 @@ export default function AuthPage() {
           Entre para continuar praticando com o Lery.
         </Text>
 
-        <View style={styles.fieldGroup}>
-          <TextInput
-            style={styles.input}
-            placeholder="E-mail"
-            placeholderTextColor={theme.colors.dim}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Senha"
-            placeholderTextColor={theme.colors.dim}
-            secureTextEntry
-          />
-        </View>
-
         <Pressable
           style={({ pressed }) => [
             styles.primaryButton,
             pressed && styles.pressed,
+            isPending && styles.disabled,
           ]}
-          onPress={signInWithGoogle}
+          onPress={signIn}
+          disabled={isPending}
         >
           <Ionicons name="logo-google" size={18} color="#040D12" />
           <Text style={styles.primaryButtonText}>
-            {isLoading ? 'Conectando...' : 'Continuar com Google'}
+            {isPending ? 'Conectando...' : 'Continuar com Google'}
           </Text>
         </Pressable>
 
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>ou entre com e-mail</Text>
-          <View style={styles.dividerLine} />
-        </View>
-
-        <Pressable style={styles.emailButton}>
-          <Text style={styles.emailButtonText}>Entrar</Text>
-        </Pressable>
+        {error && !isCancelled ? (
+          <Text style={styles.errorText}>{error.message}</Text>
+        ) : null}
       </View>
     </View>
   )
@@ -112,19 +92,6 @@ const styles = StyleSheet.create({
     lineHeight: theme.lineHeights.body,
     marginBottom: 4,
   },
-  fieldGroup: {
-    gap: 10,
-  },
-  input: {
-    minHeight: 48,
-    borderRadius: theme.radius.md,
-    borderWidth: 1.5,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.bg,
-    paddingHorizontal: 14,
-    fontSize: theme.typography.body,
-    color: theme.colors.text,
-  },
   primaryButton: {
     minHeight: 52,
     borderRadius: theme.radius.pill,
@@ -143,37 +110,17 @@ const styles = StyleSheet.create({
     opacity: 0.84,
     transform: [{ scale: 0.97 }],
   },
+  disabled: {
+    opacity: 0.6,
+  },
   primaryButtonText: {
     color: '#040D12',
     fontSize: 15,
     fontWeight: theme.fontWeights.bold,
   },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: theme.colors.border,
-  },
-  dividerText: {
-    color: theme.colors.dim,
+  errorText: {
+    color: '#D9534F',
     fontSize: theme.typography.caption,
-    fontWeight: theme.fontWeights.medium,
-  },
-  emailButton: {
-    minHeight: 48,
-    borderRadius: theme.radius.pill,
-    borderWidth: 1.5,
-    borderColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emailButtonText: {
-    color: theme.colors.primary,
-    fontSize: 15,
-    fontWeight: theme.fontWeights.bold,
+    textAlign: 'center',
   },
 })
