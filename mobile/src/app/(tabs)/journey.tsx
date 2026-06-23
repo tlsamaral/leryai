@@ -3,10 +3,10 @@ import { ModuleOverviewCard } from '../../features/home/components/module-overvi
 import { useHomeViewModel } from '../../features/home/viewmodels/use-home-view-model'
 import { CandyBadge } from '../../shared/components/candy-badge'
 import { DarkHeroLayout } from '../../shared/components/dark-hero-layout'
-import { theme } from '../../shared/theme'
 import { EmptyState } from '../../shared/components/empty-state'
 import { LoadingState } from '../../shared/components/loading-state'
 import { ScreenContainer } from '../../shared/components/screen-container'
+import { theme } from '../../shared/theme'
 
 export default function JourneyTab() {
   const { map, isLoading, openLesson, refetch } = useHomeViewModel()

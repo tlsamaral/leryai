@@ -82,9 +82,7 @@ export function PulseRing({
             width: size * 0.62,
             height: size * 0.62,
             borderRadius: (size * 0.62) / 2,
-            backgroundColor: active
-              ? `${color}22`
-              : `${theme.colors.dim}18`,
+            backgroundColor: active ? `${color}22` : `${theme.colors.dim}18`,
             borderColor: active ? `${color}55` : `${theme.colors.dim}33`,
           },
         ]}

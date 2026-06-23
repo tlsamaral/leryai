@@ -82,7 +82,12 @@ export function DarkHeroLayout({
         </View>
 
         {/* ── White content card ── */}
-        <View style={[styles.whiteCard, { paddingBottom: bottomPadding + insets.bottom }]}>
+        <View
+          style={[
+            styles.whiteCard,
+            { paddingBottom: bottomPadding + insets.bottom },
+          ]}
+        >
           {children}
         </View>
       </ScrollView>

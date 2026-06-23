@@ -1,21 +1,16 @@
 import { Ionicons } from '@expo/vector-icons'
 import { Redirect, router, useLocalSearchParams } from 'expo-router'
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSessionStore } from '../../features/auth/store/session-store'
 import { PromptEditorCard } from '../../features/lessons/components/prompt-editor-card'
 import { useLessonDetailViewModel } from '../../features/lessons/viewmodels/use-lesson-detail-view-model'
+import { AppCard } from '../../shared/components/app-card'
 import { DarkHeroLayout } from '../../shared/components/dark-hero-layout'
 import { LoadingState } from '../../shared/components/loading-state'
+import { PrimaryButton } from '../../shared/components/primary-button'
 import { ScreenContainer } from '../../shared/components/screen-container'
 import { theme } from '../../shared/theme'
 import type { LessonStatus } from '../../shared/types/domain'
-import { AppCard } from '../../shared/components/app-card'
-import { PrimaryButton } from '../../shared/components/primary-button'
 
 // ─── status visual map ────────────────────────────────────────────────────────
 
@@ -95,7 +90,11 @@ export default function LessonDetailPage() {
         <>
           {/* Back button */}
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={20} color="rgba(229,250,255,0.8)" />
+            <Ionicons
+              name="arrow-back"
+              size={20}
+              color="rgba(229,250,255,0.8)"
+            />
             <Text style={styles.backLabel}>Voltar</Text>
           </Pressable>
 
@@ -104,12 +103,25 @@ export default function LessonDetailPage() {
 
           <View style={styles.heroTopRow}>
             <View style={styles.modulePill}>
-              <Ionicons name="layers-outline" size={11} color={theme.colors.primary} />
-              <Text style={styles.modulePillText} numberOfLines={1}>{vm.lesson.moduleName}</Text>
+              <Ionicons
+                name="layers-outline"
+                size={11}
+                color={theme.colors.primary}
+              />
+              <Text style={styles.modulePillText} numberOfLines={1}>
+                {vm.lesson.moduleName}
+              </Text>
             </View>
-            <View style={[styles.statusChip, { backgroundColor: sv.chipBg, borderColor: sv.chipBorder }]}>
+            <View
+              style={[
+                styles.statusChip,
+                { backgroundColor: sv.chipBg, borderColor: sv.chipBorder },
+              ]}
+            >
               <Ionicons name={sv.icon} size={12} color={sv.color} />
-              <Text style={[styles.statusChipText, { color: sv.color }]}>{sv.label}</Text>
+              <Text style={[styles.statusChipText, { color: sv.color }]}>
+                {sv.label}
+              </Text>
             </View>
           </View>
 
@@ -125,7 +137,9 @@ export default function LessonDetailPage() {
             </View>
             <View style={styles.metricDivider} />
             <View style={styles.metricCard}>
-              <Text style={[styles.metricValue, { color: sv.color }]}>{vm.lesson.attempts}</Text>
+              <Text style={[styles.metricValue, { color: sv.color }]}>
+                {vm.lesson.attempts}
+              </Text>
               <Text style={styles.metricLabel}>Tentativas</Text>
             </View>
             <View style={styles.metricDivider} />
@@ -141,7 +155,11 @@ export default function LessonDetailPage() {
       <AppCard tone="default" padding={14} radius={18}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <View style={styles.deviceIconWrap}>
-            <Ionicons name="hardware-chip-outline" size={20} color={theme.colors.primary} />
+            <Ionicons
+              name="hardware-chip-outline"
+              size={20}
+              color={theme.colors.primary}
+            />
           </View>
           <View style={styles.deviceTexts}>
             <Text style={styles.deviceTitle}>Praticar com Lery</Text>
@@ -177,21 +195,40 @@ export default function LessonDetailPage() {
 
 const styles = StyleSheet.create({
   // Back button
-  backBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 },
-  backLabel: { color: 'rgba(229,250,255,0.8)', fontFamily: theme.fonts.extraBold, fontSize: 15 },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 12,
+  },
+  backLabel: {
+    color: 'rgba(229,250,255,0.8)',
+    fontFamily: theme.fonts.extraBold,
+    fontSize: 15,
+  },
 
   // Hero glows (positioned relative to the hero container provided by DarkHeroLayout)
   heroGlow: {
-    position: 'absolute', top: -90, right: -50,
-    width: 220, height: 220, borderRadius: 999,
+    position: 'absolute',
+    top: -90,
+    right: -50,
+    width: 220,
+    height: 220,
+    borderRadius: 999,
   },
   heroGlow2: {
-    position: 'absolute', bottom: -80, left: -40,
-    width: 180, height: 180, borderRadius: 999,
+    position: 'absolute',
+    bottom: -80,
+    left: -40,
+    width: 180,
+    height: 180,
+    borderRadius: 999,
   },
   heroTopRow: {
-    flexDirection: 'row', alignItems: 'center',
-    justifyContent: 'space-between', gap: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
   },
   modulePill: {
     flexDirection: 'row',
@@ -219,7 +256,11 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 2,
   },
-  statusChipText: { fontSize: 11, fontFamily: theme.fonts.black, letterSpacing: 0.2 },
+  statusChipText: {
+    fontSize: 11,
+    fontFamily: theme.fonts.black,
+    letterSpacing: 0.2,
+  },
   heroTitle: {
     color: '#F6FAFE',
     fontFamily: theme.fonts.black,
@@ -245,7 +286,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   metricCard: { flex: 1, alignItems: 'center', gap: 3 },
-  metricValue: { fontSize: 22, fontFamily: theme.fonts.black, letterSpacing: -0.5 },
+  metricValue: {
+    fontSize: 22,
+    fontFamily: theme.fonts.black,
+    letterSpacing: -0.5,
+  },
   metricLabel: {
     color: 'rgba(229,250,255,0.45)',
     fontSize: 10,
@@ -291,5 +336,4 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     opacity: 0.75,
   },
-
 })

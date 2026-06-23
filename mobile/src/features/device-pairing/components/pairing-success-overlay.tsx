@@ -1,7 +1,14 @@
 import { Ionicons } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import { useEffect, useRef } from 'react'
-import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native'
+import {
+  Animated,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
 import { PulseRing } from '../../../shared/components/pulse-ring'
 import { theme } from '../../../shared/theme'
 
@@ -10,7 +17,10 @@ interface PairingSuccessOverlayProps {
   onDismiss: () => void
 }
 
-export function PairingSuccessOverlay({ visible, onDismiss }: PairingSuccessOverlayProps) {
+export function PairingSuccessOverlay({
+  visible,
+  onDismiss,
+}: PairingSuccessOverlayProps) {
   const backdropOpacity = useRef(new Animated.Value(0)).current
   const cardScale = useRef(new Animated.Value(0.72)).current
   const cardOpacity = useRef(new Animated.Value(0)).current
@@ -91,7 +101,9 @@ export function PairingSuccessOverlay({ visible, onDismiss }: PairingSuccessOver
   return (
     <Modal visible transparent animationType="none" statusBarTranslucent>
       <Pressable style={styles.root} onPress={handleTap}>
-        <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]} />
+        <Animated.View
+          style={[styles.backdrop, { opacity: backdropOpacity }]}
+        />
 
         <Animated.View
           style={[

@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons'
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
-import { theme } from '../../../shared/theme'
 import { AppCard } from '../../../shared/components/app-card'
 import { PrimaryButton } from '../../../shared/components/primary-button'
+import { theme } from '../../../shared/theme'
 
 interface PromptEditorCardProps {
   value: string
@@ -11,7 +11,12 @@ interface PromptEditorCardProps {
   onSave: () => void
 }
 
-export function PromptEditorCard({ value, isSaving, onChange, onSave }: PromptEditorCardProps) {
+export function PromptEditorCard({
+  value,
+  isSaving,
+  onChange,
+  onSave,
+}: PromptEditorCardProps) {
   return (
     <AppCard tone="default" padding={16} radius={22}>
       <View style={styles.headerRow}>

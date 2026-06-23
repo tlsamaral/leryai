@@ -11,27 +11,45 @@ interface ActivityRowProps {
 }
 
 function scoreTone(score: number) {
-  if (score >= 70) return { color: theme.colors.mint, bg: '#E7F8F0', label: 'Forte' }
-  if (score >= 51) return { color: theme.colors.accent, bg: '#FFF6E5', label: 'Médio' }
+  if (score >= 70)
+    return { color: theme.colors.mint, bg: '#E7F8F0', label: 'Forte' }
+  if (score >= 51)
+    return { color: theme.colors.accent, bg: '#FFF6E5', label: 'Médio' }
   return { color: theme.colors.danger, bg: '#FCE7E9', label: 'Frágil' }
 }
 
-export function ActivityRow({ title, subtitle, score, onPress }: ActivityRowProps) {
+export function ActivityRow({
+  title,
+  subtitle,
+  score,
+  onPress,
+}: ActivityRowProps) {
   const tone = scoreTone(score)
   return (
     <AppCard onPress={onPress} padding={12} radius={18}>
       <View style={styles.row}>
-        <View style={[styles.scoreCircle, { backgroundColor: tone.bg, borderColor: `${tone.color}55` }]}>
+        <View
+          style={[
+            styles.scoreCircle,
+            { backgroundColor: tone.bg, borderColor: `${tone.color}55` },
+          ]}
+        >
           <Text style={[styles.scoreText, { color: tone.color }]}>{score}</Text>
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.title} numberOfLines={1}>{title}</Text>
-          <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text>
+          <Text style={styles.title} numberOfLines={1}>
+            {title}
+          </Text>
+          <Text style={styles.subtitle} numberOfLines={1}>
+            {subtitle}
+          </Text>
         </View>
 
         <View style={[styles.tag, { backgroundColor: tone.bg }]}>
-          <Text style={[styles.tagText, { color: tone.color }]}>{tone.label}</Text>
+          <Text style={[styles.tagText, { color: tone.color }]}>
+            {tone.label}
+          </Text>
         </View>
 
         <Ionicons name="chevron-forward" size={16} color={theme.colors.dim} />

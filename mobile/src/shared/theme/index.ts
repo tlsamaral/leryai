@@ -1,6 +1,11 @@
 import { colors } from '../tokens/colors'
 import { radius, spacing } from '../tokens/spacing'
-import { fontWeights, lineHeights, tracking, typography } from '../tokens/typography'
+import {
+  fontWeights,
+  lineHeights,
+  tracking,
+  typography,
+} from '../tokens/typography'
 
 export const theme = {
   colors,
@@ -17,15 +22,15 @@ export const theme = {
     black: 'Nunito_900Black',
   },
   gradients: {
-    hero:    ['#04D2FF', '#0091B8'] as [string, string],
-    glow:    ['rgba(4,210,255,0)', 'rgba(4,210,255,0.22)'] as [string, string],
+    hero: ['#04D2FF', '#0091B8'] as [string, string],
+    glow: ['rgba(4,210,255,0)', 'rgba(4,210,255,0.22)'] as [string, string],
     surface: ['#FFFFFF', '#F2F7FA'] as [string, string],
-    dark:    ['#040D12', '#0A1B23'] as [string, string],
+    dark: ['#040D12', '#0A1B23'] as [string, string],
   },
   motion: {
-    fast:   150,
+    fast: 150,
     normal: 250,
-    slow:   400,
+    slow: 400,
   },
   shadow: {
     cyan: {

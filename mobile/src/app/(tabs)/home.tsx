@@ -90,7 +90,11 @@ export default function HomeTab() {
               <Text style={styles.greetingLabel}>{greeting}</Text>
               <Text style={styles.greetingName}>{userName}</Text>
             </View>
-            <CandyBadge tone="dark" label={`Nível ${map?.level ?? 'A1'}`} size="default" />
+            <CandyBadge
+              tone="dark"
+              label={`Nível ${map?.level ?? 'A1'}`}
+              size="default"
+            />
           </View>
         </Animated.View>
       }

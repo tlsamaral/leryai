@@ -40,13 +40,28 @@ interface QRScannerModalProps {
   onScan: (code: string) => void
 }
 
-function DevBuildRequired({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+function DevBuildRequired({
+  visible,
+  onClose,
+}: {
+  visible: boolean
+  onClose: () => void
+}) {
   return (
-    <Modal visible={visible} animationType="fade" transparent statusBarTranslucent>
+    <Modal
+      visible={visible}
+      animationType="fade"
+      transparent
+      statusBarTranslucent
+    >
       <View style={styles.permissionBg}>
         <View style={styles.permissionCard}>
           <View style={styles.permissionIcon}>
-            <Ionicons name="construct-outline" size={32} color={theme.colors.primary} />
+            <Ionicons
+              name="construct-outline"
+              size={32}
+              color={theme.colors.primary}
+            />
           </View>
           <Text style={styles.permissionTitle}>Dev build necessário</Text>
           <Text style={styles.permissionSub}>
@@ -63,11 +78,7 @@ function DevBuildRequired({ visible, onClose }: { visible: boolean; onClose: () 
   )
 }
 
-function CameraScanner({
-  visible,
-  onClose,
-  onScan,
-}: QRScannerModalProps) {
+function CameraScanner({ visible, onClose, onScan }: QRScannerModalProps) {
   const { CameraView, useCameraPermissions } = cameraModule!
   const [permission, requestPermission] = useCameraPermissions()
   const [scanned, setScanned] = useState(false)
@@ -91,8 +102,16 @@ function CameraScanner({
 
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(scanLineY, { toValue: 1, duration: 1800, useNativeDriver: true }),
-        Animated.timing(scanLineY, { toValue: 0, duration: 1800, useNativeDriver: true }),
+        Animated.timing(scanLineY, {
+          toValue: 1,
+          duration: 1800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scanLineY, {
+          toValue: 0,
+          duration: 1800,
+          useNativeDriver: true,
+        }),
       ]),
     )
     loop.start()
@@ -119,18 +138,30 @@ function CameraScanner({
 
   if (!permission.granted) {
     return (
-      <Modal visible={visible} animationType="fade" transparent statusBarTranslucent>
+      <Modal
+        visible={visible}
+        animationType="fade"
+        transparent
+        statusBarTranslucent
+      >
         <View style={styles.permissionBg}>
           <View style={styles.permissionCard}>
             <View style={styles.permissionIcon}>
-              <Ionicons name="camera-outline" size={32} color={theme.colors.primary} />
+              <Ionicons
+                name="camera-outline"
+                size={32}
+                color={theme.colors.primary}
+              />
             </View>
             <Text style={styles.permissionTitle}>Câmera necessária</Text>
             <Text style={styles.permissionSub}>
               Para escanear o QR Code do dispositivo Lery
             </Text>
             <Pressable
-              style={({ pressed }) => [styles.permissionBtn, pressed && { opacity: 0.85 }]}
+              style={({ pressed }) => [
+                styles.permissionBtn,
+                pressed && { opacity: 0.85 },
+              ]}
               onPress={requestPermission}
             >
               <Text style={styles.permissionBtnText}>Permitir câmera</Text>
@@ -145,8 +176,15 @@ function CameraScanner({
   }
 
   return (
-    <Modal visible={visible} animationType="none" transparent statusBarTranslucent>
-      <Animated.View style={[StyleSheet.absoluteFillObject, { opacity: fadeIn }]}>
+    <Modal
+      visible={visible}
+      animationType="none"
+      transparent
+      statusBarTranslucent
+    >
+      <Animated.View
+        style={[StyleSheet.absoluteFillObject, { opacity: fadeIn }]}
+      >
         <CameraView
           style={StyleSheet.absoluteFillObject}
           facing="back"
@@ -154,26 +192,57 @@ function CameraScanner({
           barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
         />
 
-        <View style={[styles.overlay, { top: 0, left: 0, right: 0, height: topH }]} />
-        <View style={[styles.overlay, { top: topH, left: 0, width: sideW, height: SCAN_BOX }]} />
-        <View style={[styles.overlay, { top: topH, right: 0, width: sideW, height: SCAN_BOX }]} />
-        <View style={[styles.overlay, { top: topH + SCAN_BOX, left: 0, right: 0, bottom: 0 }]} />
+        <View
+          style={[styles.overlay, { top: 0, left: 0, right: 0, height: topH }]}
+        />
+        <View
+          style={[
+            styles.overlay,
+            { top: topH, left: 0, width: sideW, height: SCAN_BOX },
+          ]}
+        />
+        <View
+          style={[
+            styles.overlay,
+            { top: topH, right: 0, width: sideW, height: SCAN_BOX },
+          ]}
+        />
+        <View
+          style={[
+            styles.overlay,
+            { top: topH + SCAN_BOX, left: 0, right: 0, bottom: 0 },
+          ]}
+        />
 
         <View
-          style={{ position: 'absolute', top: topH, left: sideW, width: SCAN_BOX, height: SCAN_BOX }}
+          style={{
+            position: 'absolute',
+            top: topH,
+            left: sideW,
+            width: SCAN_BOX,
+            height: SCAN_BOX,
+          }}
         >
           <View style={[styles.corner, styles.cTL]} />
           <View style={[styles.corner, styles.cTR]} />
           <View style={[styles.corner, styles.cBL]} />
           <View style={[styles.corner, styles.cBR]} />
           <Animated.View
-            style={[styles.scanLine, { transform: [{ translateY: scanTranslate }] }]}
+            style={[
+              styles.scanLine,
+              { transform: [{ translateY: scanTranslate }] },
+            ]}
           />
         </View>
 
-        <View style={[styles.closeRow, { top: insets.top + 12, left: 0, right: 0 }]}>
+        <View
+          style={[styles.closeRow, { top: insets.top + 12, left: 0, right: 0 }]}
+        >
           <Pressable
-            style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
+            style={({ pressed }) => [
+              styles.closeBtn,
+              pressed && { opacity: 0.7 },
+            ]}
             onPress={onClose}
             hitSlop={12}
           >
@@ -182,8 +251,14 @@ function CameraScanner({
         </View>
 
         <View style={[styles.instructionRow, { top: topH + SCAN_BOX + 28 }]}>
-          <Ionicons name="qr-code-outline" size={16} color={theme.colors.primary} />
-          <Text style={styles.instructionText}>Aponte para o QR Code do dispositivo</Text>
+          <Ionicons
+            name="qr-code-outline"
+            size={16}
+            color={theme.colors.primary}
+          />
+          <Text style={styles.instructionText}>
+            Aponte para o QR Code do dispositivo
+          </Text>
         </View>
       </Animated.View>
     </Modal>
@@ -208,31 +283,46 @@ const styles = StyleSheet.create({
     height: CORNER,
   },
   cTL: {
-    top: 0, left: 0,
-    borderTopWidth: CORNER_T, borderLeftWidth: CORNER_T,
-    borderColor: theme.colors.primary, borderTopLeftRadius: 4,
+    top: 0,
+    left: 0,
+    borderTopWidth: CORNER_T,
+    borderLeftWidth: CORNER_T,
+    borderColor: theme.colors.primary,
+    borderTopLeftRadius: 4,
   },
   cTR: {
-    top: 0, right: 0,
-    borderTopWidth: CORNER_T, borderRightWidth: CORNER_T,
-    borderColor: theme.colors.primary, borderTopRightRadius: 4,
+    top: 0,
+    right: 0,
+    borderTopWidth: CORNER_T,
+    borderRightWidth: CORNER_T,
+    borderColor: theme.colors.primary,
+    borderTopRightRadius: 4,
   },
   cBL: {
-    bottom: 0, left: 0,
-    borderBottomWidth: CORNER_T, borderLeftWidth: CORNER_T,
-    borderColor: theme.colors.primary, borderBottomLeftRadius: 4,
+    bottom: 0,
+    left: 0,
+    borderBottomWidth: CORNER_T,
+    borderLeftWidth: CORNER_T,
+    borderColor: theme.colors.primary,
+    borderBottomLeftRadius: 4,
   },
   cBR: {
-    bottom: 0, right: 0,
-    borderBottomWidth: CORNER_T, borderRightWidth: CORNER_T,
-    borderColor: theme.colors.primary, borderBottomRightRadius: 4,
+    bottom: 0,
+    right: 0,
+    borderBottomWidth: CORNER_T,
+    borderRightWidth: CORNER_T,
+    borderColor: theme.colors.primary,
+    borderBottomRightRadius: 4,
   },
   scanLine: {
     position: 'absolute',
-    left: 6, right: 6, height: 2,
+    left: 6,
+    right: 6,
+    height: 2,
     backgroundColor: theme.colors.primary,
     shadowColor: theme.colors.primary,
-    shadowOpacity: 0.9, shadowRadius: 6,
+    shadowOpacity: 0.9,
+    shadowRadius: 6,
     shadowOffset: { width: 0, height: 0 },
     elevation: 4,
   },
@@ -242,14 +332,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   closeBtn: {
-    width: 38, height: 38, borderRadius: 999,
+    width: 38,
+    height: 38,
+    borderRadius: 999,
     backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   instructionRow: {
     position: 'absolute',
-    left: 0, right: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -257,33 +352,49 @@ const styles = StyleSheet.create({
   },
   instructionText: {
     color: 'rgba(229,250,255,0.80)',
-    fontSize: 13, fontWeight: '600', letterSpacing: 0.2,
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
   permissionBg: {
     flex: 1,
     backgroundColor: 'rgba(4,13,18,0.92)',
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 24,
   },
   permissionCard: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 24, borderWidth: 1, borderColor: theme.colors.border,
-    padding: 24, alignItems: 'center', gap: 12,
-    width: '100%', maxWidth: 340,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 24,
+    alignItems: 'center',
+    gap: 12,
+    width: '100%',
+    maxWidth: 340,
   },
   permissionIcon: {
-    width: 64, height: 64, borderRadius: 20,
+    width: 64,
+    height: 64,
+    borderRadius: 20,
     backgroundColor: theme.colors.primarySoft,
-    borderWidth: 1, borderColor: `${theme.colors.primary}33`,
-    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: `${theme.colors.primary}33`,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   permissionTitle: {
-    color: theme.colors.text, fontSize: 17,
-    fontWeight: '800', letterSpacing: -0.3,
+    color: theme.colors.text,
+    fontSize: 17,
+    fontWeight: '800',
+    letterSpacing: -0.3,
   },
   permissionSub: {
-    color: theme.colors.muted, fontSize: 13,
-    textAlign: 'center', lineHeight: 20,
+    color: theme.colors.muted,
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   code: {
     color: theme.colors.primary,
@@ -291,10 +402,15 @@ const styles = StyleSheet.create({
   },
   permissionBtn: {
     backgroundColor: theme.colors.primary,
-    borderRadius: 999, paddingVertical: 12, paddingHorizontal: 32, marginTop: 4,
+    borderRadius: 999,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    marginTop: 4,
   },
   permissionBtnText: {
-    color: '#040D12', fontSize: 15, fontWeight: '800',
+    color: '#040D12',
+    fontSize: 15,
+    fontWeight: '800',
   },
   cancelBtn: { paddingVertical: 8 },
   cancelText: { color: theme.colors.muted, fontSize: 13, fontWeight: '600' },

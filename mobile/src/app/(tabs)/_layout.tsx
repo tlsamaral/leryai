@@ -28,7 +28,10 @@ export default function TabsLayout() {
     return <Redirect href="/auth" />
   }
 
-  if (profileData && (!profileData.profile || !profileData.profile.nativeLanguage)) {
+  if (
+    profileData &&
+    (!profileData.profile || !profileData.profile.nativeLanguage)
+  ) {
     return <Redirect href="/onboarding" />
   }
 

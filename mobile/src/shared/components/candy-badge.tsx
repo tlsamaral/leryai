@@ -5,7 +5,14 @@ import { theme } from '../theme'
 
 type IconName = ComponentProps<typeof Ionicons>['name']
 
-export type CandyBadgeTone = 'orange' | 'cyan' | 'mint' | 'amber' | 'danger' | 'default' | 'dark'
+export type CandyBadgeTone =
+  | 'orange'
+  | 'cyan'
+  | 'mint'
+  | 'amber'
+  | 'danger'
+  | 'default'
+  | 'dark'
 
 interface CandyBadgeProps {
   label: string
@@ -56,10 +63,15 @@ const toneMap = {
     innerBorder: '#0A1B23',
     bg: 'rgba(4,210,255,0.08)',
     text: theme.colors.primary,
-  }
+  },
 }
 
-export function CandyBadge({ label, icon, tone = 'cyan', size = 'default' }: CandyBadgeProps) {
+export function CandyBadge({
+  label,
+  icon,
+  tone = 'cyan',
+  size = 'default',
+}: CandyBadgeProps) {
   const t = toneMap[tone]
 
   const sizes = {
@@ -118,12 +130,7 @@ export function CandyBadge({ label, icon, tone = 'cyan', size = 'default' }: Can
         ]}
       >
         {icon && <Ionicons name={icon} size={s.iconSize} color={t.text} />}
-        <Text
-          style={[
-            styles.text,
-            { color: t.text, fontSize: s.fontSize },
-          ]}
-        >
+        <Text style={[styles.text, { color: t.text, fontSize: s.fontSize }]}>
           {label}
         </Text>
       </View>

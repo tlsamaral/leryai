@@ -44,21 +44,36 @@ const toneMap: Record<
   },
 }
 
-export function StatCard({ icon, label, value, hint, tone = 'default' }: StatCardProps) {
+export function StatCard({
+  icon,
+  label,
+  value,
+  hint,
+  tone = 'default',
+}: StatCardProps) {
   const t = toneMap[tone]
   return (
     <AppCard tone={t.cardTone} padding={14} radius={22} style={styles.card}>
       <View style={styles.inner}>
         <View style={styles.header}>
-          <Text style={styles.label} numberOfLines={1}>{label}</Text>
+          <Text style={styles.label} numberOfLines={1}>
+            {label}
+          </Text>
           <View style={[styles.iconWrap, { backgroundColor: t.iconBg }]}>
             <Ionicons name={icon} size={18} color={t.iconColor} />
           </View>
         </View>
         <View style={styles.body}>
-          <Text style={[styles.value, { color: t.valueColor }]} numberOfLines={1}>{value}</Text>
+          <Text
+            style={[styles.value, { color: t.valueColor }]}
+            numberOfLines={1}
+          >
+            {value}
+          </Text>
           {hint ? (
-            <Text style={styles.hint} numberOfLines={1}>{hint}</Text>
+            <Text style={styles.hint} numberOfLines={1}>
+              {hint}
+            </Text>
           ) : null}
         </View>
       </View>

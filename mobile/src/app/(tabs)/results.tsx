@@ -1,5 +1,12 @@
 import { Ionicons } from '@expo/vector-icons'
-import { Dimensions, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import {
+  Dimensions,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { FeedbackCard } from '../../features/results/components/feedback-card'
 import { useResultsViewModel } from '../../features/results/viewmodels/use-results-view-model'
@@ -23,7 +30,9 @@ export default function ResultsTab() {
   const totalSessions = items.reduce((sum, i) => sum + i.attempts, 0)
   const avgScore =
     items.length > 0
-      ? Math.round(items.reduce((sum, i) => sum + i.latestScore, 0) / items.length)
+      ? Math.round(
+          items.reduce((sum, i) => sum + i.latestScore, 0) / items.length,
+        )
       : 0
   const strongCount = items.filter((i) => i.latestScore >= 70).length
 
@@ -73,7 +82,11 @@ export default function ResultsTab() {
                 <Text style={styles.aggSideLabel}>sessões</Text>
               </View>
               <View style={styles.aggSideRow}>
-                <Ionicons name="checkmark-circle" size={14} color={theme.colors.mint} />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={14}
+                  color={theme.colors.mint}
+                />
                 <Text style={styles.aggSideValue}>{strongCount}</Text>
                 <Text style={styles.aggSideLabel}>fortes</Text>
               </View>

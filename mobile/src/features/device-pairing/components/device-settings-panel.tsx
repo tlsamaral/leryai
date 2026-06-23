@@ -1,7 +1,7 @@
 import Slider from '@react-native-community/slider'
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native'
-import { theme } from '../../../shared/theme'
 import { AppCard } from '../../../shared/components/app-card'
+import { theme } from '../../../shared/theme'
 import type { DeviceSettings, LeryVoiceTone } from '../../../shared/types/api'
 
 interface DeviceSettingsPanelProps {
