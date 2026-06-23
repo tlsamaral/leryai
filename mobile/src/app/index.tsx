@@ -2,23 +2,17 @@ import { Ionicons } from '@expo/vector-icons'
 import { BlurView } from 'expo-blur'
 import { Redirect, useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import { useEffect } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { useSignIn } from '../features/auth/hooks/use-sign-in'
 import { useSessionStore } from '../features/auth/store/session-store'
-import { useAuthViewModel } from '../features/auth/viewmodels/use-auth-view-model'
 import { LoadingState } from '../shared/components/loading-state'
 import { ScreenContainer } from '../shared/components/screen-container'
 
 export default function IndexPage() {
   const router = useRouter()
-  const bootstrap = useSessionStore((state) => state.bootstrap)
   const isBootstrapped = useSessionStore((state) => state.isBootstrapped)
   const isAuthenticated = useSessionStore((state) => state.isAuthenticated)
-  const { signInWithGoogle, isLoading } = useAuthViewModel()
-
-  useEffect(() => {
-    void bootstrap()
-  }, [bootstrap])
+  const { signIn, isPending } = useSignIn()
 
   if (!isBootstrapped) {
     return (
@@ -66,20 +60,15 @@ export default function IndexPage() {
             style={({ pressed }) => [
               styles.primaryButton,
               pressed && styles.pressed,
+              isPending && styles.disabled,
             ]}
-            onPress={signInWithGoogle}
+            onPress={signIn}
+            disabled={isPending}
           >
             <Ionicons name="logo-google" size={18} color="#040D12" />
             <Text style={styles.primaryButtonText}>
-              {isLoading ? 'Conectando...' : 'Continuar com Google'}
+              {isPending ? 'Conectando...' : 'Continuar com Google'}
             </Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.previewLink}
-            onPress={() => router.push('/auth')}
-          >
-            <Text style={styles.previewText}>Entrar com e-mail e senha</Text>
           </Pressable>
         </View>
       </View>
@@ -215,18 +204,12 @@ const styles = StyleSheet.create({
     opacity: 0.84,
     transform: [{ scale: 0.97 }],
   },
+  disabled: {
+    opacity: 0.6,
+  },
   primaryButtonText: {
     color: '#040D12',
     fontSize: 16,
     fontWeight: '800',
-  },
-  previewLink: {
-    alignSelf: 'center',
-    paddingVertical: 4,
-  },
-  previewText: {
-    color: '#5A6E78',
-    fontSize: 13,
-    fontWeight: '600',
   },
 })
