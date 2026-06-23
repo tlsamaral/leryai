@@ -12,8 +12,12 @@ import { progressIndex } from './routes/progress/index.js'
 import { sessionsIndex } from './routes/sessions/index.js'
 import { subscriptionsIndex } from './routes/subscriptions/index.js'
 import { usersIndex } from './routes/users/index.js'
+import { getMe } from './routes/users/me.js'
 
 export async function appRoutes(app: FastifyInstance) {
+  // Top-level identity endpoint — kept at root so mobile / web can hit /me
+  app.register(getMe)
+
   app.register(authRoutes, { prefix: '/auth' })
   app.register(devicesIndex, { prefix: '/devices' })
   app.register(languagesIndex, { prefix: '/languages' })
