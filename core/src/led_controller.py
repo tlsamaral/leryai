@@ -76,11 +76,11 @@ class LEDController:
     def _led_worker(self):
         t = 0.0
         last_state = None
-        
+
         while self._running:
             state = self.current_state
             r, g, b = COLORS.get(state, COLORS['IDLE'])
-            
+
             if state == 'LISTENING':
                 # Pulsação suave
                 factor = 0.2 + 0.8 * (0.5 + 0.5 * math.sin(t))
@@ -102,15 +102,15 @@ class LEDController:
                         self._set_all_pixels(r, g, b)
                         if self.use_gpio:
                             GPIO.output(LED_PIN, GPIO.HIGH)
-                
+
                 # Se não estiver animando, descansa um pouco mais pra não gastar CPU atoa
                 time.sleep(0.1)
-                
+
             last_state = state
 
     def set_state(self, state):
         self.current_state = state
-        
+
         state_labels = {
             'IDLE': 'Idle',
             'LISTENING': 'Listening',
