@@ -63,7 +63,6 @@ export class Tutor {
         await sleep(wait)
       }
     }
-
     throw new Error(
       `Tutor failed after ${env.TUTOR_MAX_RETRIES} attempts: ${lastErr}`,
     )
