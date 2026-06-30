@@ -4,6 +4,7 @@ export class AgentError extends Error {
     public readonly statusCode = 500,
   ) {
     super(message)
+
     this.name = 'AgentError'
   }
 }
