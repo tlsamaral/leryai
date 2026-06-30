@@ -16,19 +16,15 @@ export interface SessionState {
 
 class SessionStore {
   private readonly sessions = new Map<string, SessionState>()
-
   set(state: SessionState): void {
     this.sessions.set(state.agentSessionId, state)
   }
-
   get(agentSessionId: string): SessionState | undefined {
     return this.sessions.get(agentSessionId)
   }
-
   delete(agentSessionId: string): boolean {
     return this.sessions.delete(agentSessionId)
   }
-
   size(): number {
     return this.sessions.size
   }
