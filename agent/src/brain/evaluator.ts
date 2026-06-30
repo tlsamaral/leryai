@@ -50,9 +50,7 @@ Also provide:
 Respond ONLY with valid JSON, no extra text, no markdown fences:
 {"task_achievement": <int>, "grammar": <int>, "vocabulary": <int>, "fluency": <int>, "total_score": <int>, "grammatical_fixes": "<str>", "reasoning": "<str>"}`
 
-    const model = genai.getGenerativeModel({
-      model: env.GEMINI_EVALUATOR_MODEL,
-    })
+    const model = genai.getGenerativeModel({ model: env.GEMINI_EVALUATOR_MODEL })
 
     let lastErr: unknown
     for (let attempt = 0; attempt < env.TUTOR_MAX_RETRIES; attempt++) {
