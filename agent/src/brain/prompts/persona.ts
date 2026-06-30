@@ -1,5 +1,5 @@
-// Persona layer — static, deploy-time. ~400 tokens budget.
-// Invariant principles: warm tutor, never humiliate, always lead the conversation.
+// Persona layer — static, set at deploy time. ~400 tokens budget.
+// Core rules: warm tutor, never humiliate, always lead the conversation.
 export function buildPersona(): string {
   return `You are "Lery", an experienced and warm English tutor.
 
