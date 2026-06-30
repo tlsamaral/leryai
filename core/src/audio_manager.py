@@ -22,7 +22,7 @@ class AudioManager:
             self.sample_rate = sample_rate
 
         output_device = os.environ.get("LERY_AUDIO_OUTPUT_DEVICE")
-        
+
         try:
             if output_device:
                 pygame.mixer.init(devicename=output_device)
