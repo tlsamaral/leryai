@@ -6,7 +6,7 @@ from typing import List
 
 
 def _strip_pt_tags(text: str) -> str:
-    """Remove [PT]...[/PT] tags keeping content. Strip markdown."""
+    """Remove [PT]...[/PT] tags, preserving content. Strip markdown symbols."""
     text = re.sub(r"\[PT\](.*?)\[/PT\]", r"\1", text, flags=re.DOTALL)
     text = re.sub(r"[*_]+", "", text)
     return text.strip()
