@@ -34,10 +34,10 @@ export async function withTimeout<T>(
   }
 }
 
-export function backoffMs(attempt: number, baseMs = 1000): number {
-  return baseMs * 2 ** attempt
-}
-
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+export function backoffMs(attempt: number, baseMs = 1000): number {
+  return baseMs * 2 ** attempt
 }
