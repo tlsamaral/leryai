@@ -27,12 +27,7 @@ app.setErrorHandler(
       })
     }
 
-    if (error instanceof Error) {
-      app.log.error({ err: error }, 'Unhandled error')
-      return reply.status(500).send({ message: 'Internal server error' })
-    }
-
-    app.log.error({ err: error }, 'Unknown error')
+    app.log.error({ err: error }, error instanceof Error ? 'Unhandled error' : 'Unknown error')
     return reply.status(500).send({ message: 'Internal server error' })
   },
 )
