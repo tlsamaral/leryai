@@ -19,7 +19,7 @@ export async function healthRoute(app: FastifyInstance) {
         },
       },
     },
-    async (_request, reply) => {
+    async (_req, reply) => {
       return reply.status(200).send({
         status: 'ok' as const,
         activeSessions: sessionStore.size(),
