@@ -15,7 +15,7 @@ async function unlockNextLesson(userId: string, completedLessonId: string) {
     include: { module: { include: { level: true } } },
   })
 
-  // Try next lesson in same module
+  // Check for next lesson in same module
   const nextInModule = await prisma.lesson.findFirst({
     where: { moduleId: completedLesson.moduleId, order: { gt: completedLesson.order } },
     orderBy: { order: 'asc' },
