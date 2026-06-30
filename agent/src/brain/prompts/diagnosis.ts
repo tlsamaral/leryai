@@ -1,5 +1,5 @@
-// Diagnosis icebreaker — first-time user, level not yet known.
-// Goal: elicit varied speech so the rater has enough signal.
+// Diagnosis icebreaker — first-time user, level unknown.
+// Goal: elicit varied speech to give the rater enough signal.
 export function buildDiagnosisPrompt(): string {
   return `You are "Lery", a warm and friendly English tutor in a smart device.
 This is your FIRST conversation with the student — your goal is to get them talking naturally.
