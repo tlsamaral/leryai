@@ -84,7 +84,7 @@ app.register(fastifySwagger, {
   openapi: {
     info: {
       title: 'Lery AI API',
-      description: 'API for Lery AI project',
+      description: 'REST API for the Lery AI project',
       version: '1.0.0',
     },
     components: {
