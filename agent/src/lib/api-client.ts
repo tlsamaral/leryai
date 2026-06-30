@@ -70,14 +70,12 @@ export class LeryApiClient {
         ...(init.headers ?? {}),
       },
     })
-
     if (!res.ok) {
       const text = await res.text().catch(() => '')
       throw new Error(
         `Lery API ${init.method ?? 'GET'} ${path} failed: ${res.status} ${text}`,
       )
     }
-
     return (await res.json()) as T
   }
 
