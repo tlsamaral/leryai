@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-_RETRYABLE_CODES = {503, 429, 500}
+_RETRYABLE_CODES = {429, 500, 503}
 _MAX_RETRIES = 4
 _BACKOFF_BASE = 2  # seconds — doubles each attempt (2, 4, 8, 16)
 _SLOW_THRESHOLD = 3   # seconds before playing hmm sound
