@@ -499,3 +499,353 @@ class TestRun:
         lery.run()
 
         assert call_count == 2  # two wake cycles
+
+
+# ── transcribe_audio ──────────────────────────────────────────────────────────
+
+@pytest.mark.unit
+class TestTranscribeAudio:
+    def test_returns_none_when_file_not_exists(self, lery):
+        result = lery.transcribe_audio('/tmp/does_not_exist_lery_test.wav')
+        assert result is None
+
+    def test_returns_transcription_text(self, mocker, lery, tmp_path):
+        audio_file = tmp_path / 'input.wav'
+        audio_file.write_bytes(b'RIFF')
+
+        mock_transcription = MagicMock()
+        mock_transcription.text = 'Hello world'
+        mock_client = MagicMock()
+        mock_client.audio.transcriptions.create.return_value = mock_transcription
+        mocker.patch('main.client', mock_client)
+
+        result = lery.transcribe_audio(str(audio_file))
+        assert result == 'Hello world'
+
+    def test_returns_none_on_exception(self, mocker, lery, tmp_path):
+        audio_file = tmp_path / 'input.wav'
+        audio_file.write_bytes(b'RIFF')
+
+        mock_client = MagicMock()
+        mock_client.audio.transcriptions.create.side_effect = Exception('API error')
+        mocker.patch('main.client', mock_client)
+
+        result = lery.transcribe_audio(str(audio_file))
+        assert result is None
+        lery._mock_audio.play_error_sound.assert_called_once()
+
+    def test_deletes_file_after_transcription(self, mocker, lery, tmp_path):
+        audio_file = tmp_path / 'input.wav'
+        audio_file.write_bytes(b'RIFF')
+
+        mock_transcription = MagicMock()
+        mock_transcription.text = 'Test'
+        mock_client = MagicMock()
+        mock_client.audio.transcriptions.create.return_value = mock_transcription
+        mocker.patch('main.client', mock_client)
+        mock_remove = mocker.patch('main.os.remove')
+
+        lery.transcribe_audio(str(audio_file))
+        mock_remove.assert_called_once_with(str(audio_file))
+
+    def test_deletes_file_even_on_exception(self, mocker, lery, tmp_path):
+        audio_file = tmp_path / 'input.wav'
+        audio_file.write_bytes(b'RIFF')
+
+        mock_client = MagicMock()
+        mock_client.audio.transcriptions.create.side_effect = Exception('fail')
+        mocker.patch('main.client', mock_client)
+        mock_remove = mocker.patch('main.os.remove')
+
+        lery.transcribe_audio(str(audio_file))
+        mock_remove.assert_called_once_with(str(audio_file))
+
+
+# ── _speak ────────────────────────────────────────────────────────────────────
+
+@pytest.mark.unit
+class TestSpeak:
+    def test_sets_speaking_state(self, lery):
+        lery._mock_tts.synthesize.return_value = []
+        lery._speak('hello')
+        assert lery.state == State.SPEAKING
+
+    def test_plays_each_tts_file(self, lery):
+        lery._mock_tts.synthesize.return_value = ['file1.mp3', 'file2.mp3']
+        lery._speak('Hello there')
+        assert lery._mock_audio.play_audio.call_count == 2
+        lery._mock_audio.play_audio.assert_any_call('file1.mp3')
+        lery._mock_audio.play_audio.assert_any_call('file2.mp3')
+
+    def test_tts_failure_plays_error_sound(self, lery):
+        lery._mock_tts.synthesize.side_effect = Exception('TTS error')
+        # Reset state to IDLE so we can check it doesn't change to SPEAKING
+        lery.state = State.IDLE
+        lery._speak('Hello')
+        lery._mock_audio.play_error_sound.assert_called_once()
+        assert lery.state != State.SPEAKING
+
+
+# ── _run_diagnosis_session ────────────────────────────────────────────────────
+
+@pytest.mark.unit
+class TestRunDiagnosisSession:
+    def _make_lery_with_diagnosis_api(self, mocker):
+        api = MagicMock()
+        api.create_session.return_value = 'diag-sess-1'
+        api.complete_diagnosis.return_value = {'updatedLevel': 'B1'}
+
+        mock_brain_instance = MagicMock()
+        mock_brain_instance.generate_response.return_value = 'Hello, what is your name?'
+        mock_brain_instance.rate_cefr.return_value = 'B1'
+
+        # BrainManager is called twice: once in __init__, once in _run_diagnosis_session
+        # We return the same mock for both (or different — doesn't matter for our tests)
+        mocker.patch('main.BrainManager', return_value=mock_brain_instance)
+        mocker.patch('main.AudioManager', return_value=MagicMock())
+        mocker.patch('main.create_led_controller', return_value=MagicMock())
+        mocker.patch('main.create_tts_provider', return_value=MagicMock())
+        mocker.patch('main.create_wake_word_detector', return_value=MagicMock())
+        mocker.patch('main.create_api_client', return_value=api)
+        mocker.patch('main.time.sleep')
+
+        lery = LeryAI()
+        lery._mock_brain = mock_brain_instance
+        lery._speak = MagicMock()
+        lery.api = api
+        return lery, api, mock_brain_instance
+
+    def test_creates_diagnosis_session_via_api(self, mocker):
+        lery, api, _ = self._make_lery_with_diagnosis_api(mocker)
+        lery._mock_brain_instance = lery._mock_brain
+        # 2 silences → exits diagnosis loop
+        lery.audio_manager.record_audio.return_value = None
+        lery._run_diagnosis_session()
+        api.create_session.assert_called_with(mode='DIAGNOSIS')
+
+    def test_opens_session_and_speaks_opening(self, mocker):
+        lery, api, brain = self._make_lery_with_diagnosis_api(mocker)
+        lery.audio_manager.record_audio.return_value = None
+        lery._run_diagnosis_session()
+        # _speak should be called with the opening response from brain
+        lery._speak.assert_any_call('Hello, what is your name?')
+
+    def test_two_silences_end_diagnosis_loop(self, mocker):
+        lery, api, brain = self._make_lery_with_diagnosis_api(mocker)
+        # All record_audio calls return None (silence)
+        lery.audio_manager.record_audio.return_value = None
+        lery._run_diagnosis_session()
+        # Should return (not hang) — verified by test completing
+        assert True
+
+    def test_exit_keyword_ends_diagnosis_early(self, mocker, tmp_path):
+        lery, api, brain = self._make_lery_with_diagnosis_api(mocker)
+
+        audio_file = tmp_path / 'diag.wav'
+        audio_file.write_bytes(b'RIFF')
+
+        lery.audio_manager.record_audio.return_value = str(audio_file)
+        lery.transcribe_audio = MagicMock(return_value='goodbye')
+
+        lery._run_diagnosis_session()
+
+        # Exit keyword should break the loop after 1 turn
+        assert lery.transcribe_audio.call_count == 1
+
+    def test_collects_student_lines_for_rating(self, mocker, tmp_path):
+        lery, api, brain = self._make_lery_with_diagnosis_api(mocker)
+
+        audio_file = tmp_path / 'diag.wav'
+        audio_file.write_bytes(b'RIFF')
+
+        call_count = 0
+
+        def record_side_effect(**_kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count <= 2:
+                return str(audio_file)
+            return None  # 2 silences end loop
+
+        lery.audio_manager.record_audio.side_effect = record_side_effect
+        lery.transcribe_audio = MagicMock(return_value='I like to travel')
+
+        lery._run_diagnosis_session()
+
+        # rate_cefr should be called with transcript containing student lines
+        brain.rate_cefr.assert_called_once()
+        call_args = brain.rate_cefr.call_args[0][0]
+        assert 'I like to travel' in call_args
+
+    def test_calls_complete_diagnosis_with_estimated_level(self, mocker, tmp_path):
+        lery, api, brain = self._make_lery_with_diagnosis_api(mocker)
+
+        audio_file = tmp_path / 'diag.wav'
+        audio_file.write_bytes(b'RIFF')
+
+        call_count = 0
+
+        def record_side_effect(**_kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return str(audio_file)
+            return None
+
+        lery.audio_manager.record_audio.side_effect = record_side_effect
+        lery.transcribe_audio = MagicMock(return_value='I enjoy reading books')
+        brain.rate_cefr.return_value = 'C1'
+
+        lery._run_diagnosis_session()
+
+        api.complete_diagnosis.assert_called_once_with('diag-sess-1', 'C1')
+
+    def test_fallback_level_when_no_student_lines(self, mocker):
+        lery, api, brain = self._make_lery_with_diagnosis_api(mocker)
+        # All silence → no student lines collected
+        lery.audio_manager.record_audio.return_value = None
+
+        lery._run_diagnosis_session()
+
+        # rate_cefr should NOT be called (no student lines)
+        brain.rate_cefr.assert_not_called()
+        # complete_diagnosis called with fallback 'A2'
+        api.complete_diagnosis.assert_called_once_with('diag-sess-1', 'A2')
+
+
+# ── run() post-session cleanup ────────────────────────────────────────────────
+
+@pytest.mark.unit
+class TestRunPostSession:
+    def test_complete_session_called_after_run_session(self, mocker):
+        api = MagicMock()
+        api.get_session_config.return_value = {
+            'level': 'B1',
+            'diagnosisCompleted': True,
+            'lesson': None,
+            'profile': None,
+        }
+        api.create_session.return_value = 'sess-post-1'
+        lery = _make_lery(mocker, api=api)
+
+        # _run_session sets _session_id; mock it to set the id and return
+        def mock_run_session():
+            lery._session_id = 'sess-post-1'
+
+        lery._run_session = MagicMock(side_effect=mock_run_session)
+        lery._speak = MagicMock()
+
+        wake_calls = 0
+
+        def wake_side():
+            nonlocal wake_calls
+            wake_calls += 1
+            if wake_calls >= 2:
+                raise KeyboardInterrupt
+
+        lery._mock_wake.wait_for_wake_word.side_effect = wake_side
+        lery._mock_audio.play_chime = MagicMock()
+
+        lery.run()
+
+        api.complete_session.assert_called_with('sess-post-1')
+
+    def test_mode_resets_to_free_talk_after_session(self, mocker):
+        api = MagicMock()
+        api.get_session_config.return_value = {
+            'level': 'B1',
+            'diagnosisCompleted': True,
+            'lesson': None,
+            'profile': None,
+        }
+        lery = _make_lery(mocker, api=api)
+
+        def mock_run_session():
+            lery._session_mode = 'GUIDED_LESSON'
+            lery._session_id = None  # no session to complete
+
+        lery._run_session = MagicMock(side_effect=mock_run_session)
+        lery._speak = MagicMock()
+
+        wake_calls = 0
+
+        def wake_side():
+            nonlocal wake_calls
+            wake_calls += 1
+            if wake_calls >= 2:
+                raise KeyboardInterrupt
+
+        lery._mock_wake.wait_for_wake_word.side_effect = wake_side
+        lery._mock_audio.play_chime = MagicMock()
+
+        lery.run()
+
+        assert lery._session_mode == 'FREE_TALK'
+
+    def test_run_calls_diagnosis_on_first_wake_word(self, mocker):
+        api = MagicMock()
+        api.get_session_config.return_value = {
+            'level': 'A1',
+            'diagnosisCompleted': False,
+            'lesson': None,
+            'profile': None,
+        }
+        lery = _make_lery(mocker, api=api)
+        assert lery._needs_diagnosis is True
+
+        lery._run_diagnosis_session = MagicMock()
+        lery._speak = MagicMock()
+
+        wake_calls = 0
+
+        def wake_side():
+            nonlocal wake_calls
+            wake_calls += 1
+            if wake_calls >= 2:
+                raise KeyboardInterrupt
+
+        lery._mock_wake.wait_for_wake_word.side_effect = wake_side
+        lery._mock_audio.play_chime = MagicMock()
+
+        lery.run()
+
+        lery._run_diagnosis_session.assert_called_once()
+
+    def test_diagnosis_reloads_config_after_completion(self, mocker):
+        api = MagicMock()
+        fresh_config = {
+            'level': 'B1',
+            'diagnosisCompleted': True,
+            'lesson': None,
+            'profile': None,
+        }
+        api.get_session_config.return_value = {
+            'level': 'A1',
+            'diagnosisCompleted': False,
+            'lesson': None,
+            'profile': None,
+        }
+        lery = _make_lery(mocker, api=api)
+        assert lery._needs_diagnosis is True
+
+        # After diagnosis, get_session_config returns fresh config
+        api.get_session_config.return_value = fresh_config
+
+        lery._run_diagnosis_session = MagicMock()
+        lery._speak = MagicMock()
+
+        wake_calls = 0
+
+        def wake_side():
+            nonlocal wake_calls
+            wake_calls += 1
+            if wake_calls >= 2:
+                raise KeyboardInterrupt
+
+        lery._mock_wake.wait_for_wake_word.side_effect = wake_side
+        lery._mock_audio.play_chime = MagicMock()
+
+        lery.run()
+
+        # get_session_config called once during __init__ and once after diagnosis
+        assert api.get_session_config.call_count >= 2
