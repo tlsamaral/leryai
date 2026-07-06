@@ -340,7 +340,7 @@ class LeryAI:
             if _matches_keywords(user_text, _EXIT_KEYWORDS):
                 break
 
-            lery_reply = diagnosis_brain.generate_response(user_text, on_retry=on_retry)
+            lery_reply = diagnosis_brain.generate_response(user_text, on_slow=on_slow)
             print(f'[Diagnosis] Lery: {lery_reply}')
 
             if self.api and session_id:
