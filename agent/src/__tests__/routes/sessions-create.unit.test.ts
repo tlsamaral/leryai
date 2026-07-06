@@ -223,4 +223,21 @@ describe('POST /v1/sessions', () => {
 
     expect(res.statusCode).toBe(500)
   })
+
+  it('DIAGNOSIS mode returns 201 with mode: DIAGNOSIS', async () => {
+    mockApiClient.getSessionConfig.mockResolvedValue(makeConfig())
+    mockApiClient.getLearnerSnapshot.mockResolvedValue(null)
+    mockApiClient.listSessionInsights.mockResolvedValue({ insights: [] })
+    mockApiClient.createSession.mockResolvedValue({ id: 'api-sess-diag' })
+
+    const res = await app.inject({ method: 'POST', url: '/v1/sessions', body: { mode: 'DIAGNOSIS' } })
+
+    expect(res.statusCode).toBe(201)
+    const body = res.json()
+    expect(body.mode).toBe('DIAGNOSIS')
+    expect(body.agentSessionId).toBeTruthy()
+    expect(body.apiSessionId).toBe('api-sess-diag')
+
+    sessionStore.delete(body.agentSessionId)
+  })
 })
