@@ -1,0 +1,20 @@
+{
+  "description": "Very short, minimal response — low fluency and vocabulary expected",
+  "input": {
+    "userInput": "Yes.",
+    "leryResponse": "Do you enjoy studying English?",
+    "lessonObjectives": null
+  },
+  "expect": {
+    "pillar_ranges": {
+      "task_achievement": [5, 20],
+      "grammar": [10, 25],
+      "vocabulary": [0, 14],
+      "fluency": [0, 14]
+    },
+    "total_score_min": 15,
+    "total_score_max": 73,
+    "grammatical_fixes_not_empty": false,
+    "reasoning_min_words": 5
+  }
+}

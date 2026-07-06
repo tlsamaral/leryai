@@ -1,0 +1,20 @@
+{
+  "description": "C1 student gives a sophisticated, multi-clause response with no errors",
+  "input": {
+    "userInput": "I've been contemplating whether to pursue a career in software engineering or academia. The intellectual challenges are compelling in both fields, though the stability and financial prospects differ considerably.",
+    "leryResponse": "That's a thoughtful dilemma! What specific aspects of each path draw you in the most?",
+    "lessonObjectives": null
+  },
+  "expect": {
+    "pillar_ranges": {
+      "task_achievement": [17, 25],
+      "grammar": [17, 25],
+      "vocabulary": [17, 25],
+      "fluency": [17, 25]
+    },
+    "total_score_min": 72,
+    "total_score_max": 100,
+    "grammatical_fixes_not_empty": false,
+    "reasoning_min_words": 5
+  }
+}

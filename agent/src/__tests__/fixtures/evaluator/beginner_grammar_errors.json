@@ -1,0 +1,20 @@
+{
+  "description": "A1 student with clear tense errors (go→went, eated→ate)",
+  "input": {
+    "userInput": "Yesterday I go to school and I eated lunch with my friend.",
+    "leryResponse": "That sounds fun! Let's practice: we say 'went' and 'ate'. Can you try again?",
+    "lessonObjectives": null
+  },
+  "expect": {
+    "pillar_ranges": {
+      "task_achievement": [13, 23],
+      "grammar": [2, 14],
+      "vocabulary": [10, 22],
+      "fluency": [8, 20]
+    },
+    "total_score_min": 33,
+    "total_score_max": 79,
+    "grammatical_fixes_not_empty": true,
+    "reasoning_min_words": 5
+  }
+}

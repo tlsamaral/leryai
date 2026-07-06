@@ -1,0 +1,20 @@
+{
+  "description": "B1 student asked to describe a past event but responds about something completely unrelated",
+  "input": {
+    "userInput": "I like pizza very much.",
+    "leryResponse": "Tell me about something interesting that happened to you last week.",
+    "lessonObjectives": "Student should use past tense to describe a recent personal event."
+  },
+  "expect": {
+    "pillar_ranges": {
+      "task_achievement": [0, 10],
+      "grammar": [14, 25],
+      "vocabulary": [10, 22],
+      "fluency": [10, 22]
+    },
+    "total_score_min": 34,
+    "total_score_max": 79,
+    "grammatical_fixes_not_empty": false,
+    "reasoning_min_words": 5
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "description": "Grammatically perfect sentence — grammatical_fixes should say 'No corrections needed.'",
+  "input": {
+    "userInput": "I went to the park yesterday and played football with my friends.",
+    "leryResponse": "Great! Did you win the game?",
+    "lessonObjectives": null
+  },
+  "expect": {
+    "pillar_ranges": {
+      "task_achievement": [15, 25],
+      "grammar": [18, 25],
+      "vocabulary": [12, 25],
+      "fluency": [14, 25]
+    },
+    "total_score_min": 59,
+    "total_score_max": 100,
+    "grammatical_fixes_not_empty": false,
+    "reasoning_min_words": 5
+  }
+}

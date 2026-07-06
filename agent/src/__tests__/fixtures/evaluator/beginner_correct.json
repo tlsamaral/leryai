@@ -1,0 +1,20 @@
+{
+  "description": "A1 student gives a simple, grammatically correct short answer",
+  "input": {
+    "userInput": "My name is Ana. I live in Brazil.",
+    "leryResponse": "Nice to meet you, Ana! Do you like living in Brazil?",
+    "lessonObjectives": null
+  },
+  "expect": {
+    "pillar_ranges": {
+      "task_achievement": [15, 25],
+      "grammar": [17, 25],
+      "vocabulary": [12, 25],
+      "fluency": [12, 25]
+    },
+    "total_score_min": 60,
+    "total_score_max": 100,
+    "grammatical_fixes_not_empty": false,
+    "reasoning_min_words": 5
+  }
+}

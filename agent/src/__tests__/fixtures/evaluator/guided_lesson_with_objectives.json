@@ -1,0 +1,20 @@
+{
+  "description": "GUIDED_LESSON — student correctly completes the communicative task set by objectives",
+  "input": {
+    "userInput": "Last summer I traveled to Portugal with my family. We visited Lisbon and tried the local food.",
+    "leryResponse": "Wonderful! What was the most memorable part of the trip?",
+    "lessonObjectives": "Student should use the simple past tense to describe a past travel experience and include at least one specific detail."
+  },
+  "expect": {
+    "pillar_ranges": {
+      "task_achievement": [18, 25],
+      "grammar": [16, 25],
+      "vocabulary": [14, 25],
+      "fluency": [14, 25]
+    },
+    "total_score_min": 65,
+    "total_score_max": 100,
+    "grammatical_fixes_not_empty": false,
+    "reasoning_min_words": 5
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "description": "Student with multiple grammar errors — subject-verb, article, preposition",
+  "input": {
+    "userInput": "She don't goes to the school on monday. She stay at home with she mother.",
+    "leryResponse": "I understand! Let's work on some grammar. We say 'doesn't go' and 'her mother'. Can you try again?",
+    "lessonObjectives": null
+  },
+  "expect": {
+    "pillar_ranges": {
+      "task_achievement": [12, 23],
+      "grammar": [0, 12],
+      "vocabulary": [8, 20],
+      "fluency": [5, 18]
+    },
+    "total_score_min": 25,
+    "total_score_max": 73,
+    "grammatical_fixes_not_empty": true,
+    "reasoning_min_words": 5
+  }
+}
