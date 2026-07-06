@@ -1,0 +1,23 @@
+import json
+import os
+from pathlib import Path
+
+import pytest
+
+
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
+
+
+@pytest.fixture(autouse=True)
+def fake_env(monkeypatch):
+    """Inject dummy API keys so imports that read env at module level don't fail."""
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-google-key")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
+    monkeypatch.setenv("LERY_API_URL", "http://localhost:3333")
+    monkeypatch.setenv("LERY_DEVICE_API_KEY", "test-device-key")
+
+
+def load_fixture(subdir: str, name: str) -> dict:
+    path = FIXTURES_DIR / subdir / name
+    with open(path) as f:
+        return json.load(f)
