@@ -7,7 +7,12 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsup src/server.ts --format esm --clean",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "test": "vitest run --project unit",
+    "test:eval": "vitest run --project eval",
+    "test:all": "vitest run",
+    "test:watch": "vitest --project unit",
+    "test:coverage": "vitest run --project unit --coverage"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -19,8 +24,10 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.5",
     "@types/node": "^25.3.0",
+    "@vitest/coverage-v8": "^4.1.10",
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
   }
 }
