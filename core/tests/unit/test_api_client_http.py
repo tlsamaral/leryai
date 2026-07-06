@@ -108,3 +108,80 @@ class TestHighLevelMethods:
         assert 'grammar' not in body
         assert 'fluency' not in body
         assert body['userAudioTrans'] == 'hello'
+
+    def test_get_session_config_returns_dict(self, client, mocker):
+        config = {
+            'level': 'B2',
+            'diagnosisCompleted': True,
+            'lesson': None,
+            'profile': None,
+        }
+        mocker.patch('api_client.request.urlopen', return_value=make_response(config))
+        result = client.get_session_config()
+        assert result == config
+
+    def test_get_session_config_returns_none_on_failure(self, client, mocker):
+        from urllib import error as urllib_error
+        mock_err = urllib_error.URLError('connection refused')
+        mocker.patch('api_client.request.urlopen', side_effect=mock_err)
+        result = client.get_session_config()
+        assert result is None
+
+    def test_create_session_returns_id_string(self, client, mocker):
+        mocker.patch('api_client.request.urlopen', return_value=make_response({'id': 'sess-1'}))
+        result = client.create_session(mode='FREE_TALK')
+        assert result == 'sess-1'
+
+    def test_create_session_includes_lesson_id_when_provided(self, client, mocker):
+        mock_urlopen = mocker.patch('api_client.request.urlopen', return_value=make_response({'id': 'sess-2'}))
+        client.create_session(mode='GUIDED_LESSON', lesson_id='lesson-99')
+        req = mock_urlopen.call_args[0][0]
+        body = json.loads(req.data.decode())
+        assert body['lessonId'] == 'lesson-99'
+
+    def test_create_session_omits_lesson_id_when_none(self, client, mocker):
+        mock_urlopen = mocker.patch('api_client.request.urlopen', return_value=make_response({'id': 'sess-3'}))
+        client.create_session(mode='FREE_TALK', lesson_id=None)
+        req = mock_urlopen.call_args[0][0]
+        body = json.loads(req.data.decode())
+        assert 'lessonId' not in body
+
+    def test_create_log_sends_all_scores(self, client, mocker):
+        mock_urlopen = mocker.patch('api_client.request.urlopen', return_value=make_response({'id': 'log-2', 'progressStatus': 'PASSED'}))
+        client.create_log(
+            session_id='sess-1',
+            user_audio_trans='I went to the store.',
+            lery_response='Great sentence!',
+            grammatical_fixes='None.',
+            task_achievement=20,
+            grammar=18,
+            vocabulary=17,
+            fluency=19,
+            total_score=74,
+            evaluation_reasoning='Well done.',
+        )
+        req = mock_urlopen.call_args[0][0]
+        body = json.loads(req.data.decode())
+        assert body['taskAchievement'] == 20
+        assert body['grammar'] == 18
+        assert body['vocabulary'] == 17
+        assert body['fluency'] == 19
+        assert body['totalScore'] == 74
+        assert body['grammaticalFixes'] == 'None.'
+        assert body['evaluationReasoning'] == 'Well done.'
+
+    def test_complete_session_calls_patch(self, client, mocker):
+        mock_urlopen = mocker.patch('api_client.request.urlopen', return_value=make_response({'id': 'sess-x', 'finalScore': 90, 'progressStatus': 'PASSED'}))
+        client.complete_session('sess-x')
+        req = mock_urlopen.call_args[0][0]
+        assert req.method == 'PATCH'
+        assert 'sess-x' in req.full_url
+        assert 'complete' in req.full_url
+
+    def test_complete_diagnosis_sends_level(self, client, mocker):
+        mock_urlopen = mocker.patch('api_client.request.urlopen', return_value=make_response({'id': 'sess-d', 'updatedLevel': 'C1'}))
+        client.complete_diagnosis('sess-d', 'C1')
+        req = mock_urlopen.call_args[0][0]
+        body = json.loads(req.data.decode())
+        assert body['estimatedLevel'] == 'C1'
+        assert req.method == 'PATCH'
