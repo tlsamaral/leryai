@@ -127,6 +127,47 @@ describe('LeryApiClient', () => {
     })
   })
 
+  describe('createSessionInsight', () => {
+    it('sends POST to /core/session-insights with correct body', async () => {
+      fetchSpy = mockFetch({ id: 'insight-1' })
+      await client.createSessionInsight({
+        sessionId: 'sess-1',
+        topError: 'subject-verb agreement',
+        topProgress: 'past tense usage',
+        openTopic: 'weekend plans',
+      })
+      const call = fetchSpy.mock.calls[0]
+      expect((call[1] as RequestInit).method).toBe('POST')
+      expect((call[0] as string).endsWith('/core/session-insights')).toBe(true)
+      const body = JSON.parse((call[1] as RequestInit).body as string)
+      expect(body.sessionId).toBe('sess-1')
+      expect(body.topError).toBe('subject-verb agreement')
+      expect(body.topProgress).toBe('past tense usage')
+      expect(body.openTopic).toBe('weekend plans')
+    })
+
+    it('returns { id } on success', async () => {
+      fetchSpy = mockFetch({ id: 'insight-42' })
+      const result = await client.createSessionInsight({
+        sessionId: 'sess-2',
+        topError: 'article usage',
+        topProgress: 'conditional sentences',
+      })
+      expect(result.id).toBe('insight-42')
+    })
+
+    it('omits openTopic from body when not provided', async () => {
+      fetchSpy = mockFetch({ id: 'insight-3' })
+      await client.createSessionInsight({
+        sessionId: 'sess-3',
+        topError: 'prepositions',
+        topProgress: 'vocabulary range',
+      })
+      const body = JSON.parse((fetchSpy.mock.calls[0][1] as RequestInit).body as string)
+      expect('openTopic' in body).toBe(false)
+    })
+  })
+
   describe('error on non-ok', () => {
     it('error message includes method, path, and status', async () => {
       fetchSpy = mockFetch('not found', false, 404)
