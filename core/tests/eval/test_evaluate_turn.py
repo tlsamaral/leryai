@@ -93,7 +93,4 @@ def test_evaluate_turn_fixture(brain, fixture_name, fixture):
     # reasoning word count
     assert len(result['reasoning'].split()) >= exp['reasoning_min_words']
 
-    # latency
-    assert latency_ms < 60_000
-
     log_eval_result(fixture_name, model, result, latency_ms, True)

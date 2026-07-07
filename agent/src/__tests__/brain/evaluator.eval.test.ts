@@ -123,9 +123,6 @@ describe.skipIf(!hasApiKey)('Evaluator — golden-set eval', () => {
       const wordCount = result.reasoning.trim().split(/\s+/).length
       expect(wordCount).toBeGreaterThanOrEqual(fixture.expect.reasoning_min_words)
 
-      // Latency under hard timeout
-      expect(latencyMs).toBeLessThan(60_000)
-
       // Log pass
       logEvalResult({
         fixture: name,

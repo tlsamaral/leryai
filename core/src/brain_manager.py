@@ -13,6 +13,14 @@ from google.genai import types
 _RETRYABLE_CODES = {429, 500, 503}
 _MAX_RETRIES = 4
 _BACKOFF_BASE = 2  # seconds — doubles each attempt (2, 4, 8, 16)
+
+
+def _wait_seconds(exc: Exception, attempt: int) -> float:
+    """Respect the API's suggested retry delay for 429; else use exponential backoff."""
+    match = re.search(r'retry in (\d+(?:\.\d+)?)s', str(exc), re.IGNORECASE)
+    if match:
+        return float(match.group(1)) + 2  # +2s buffer
+    return _BACKOFF_BASE ** attempt
 _SLOW_THRESHOLD = 3   # seconds before playing hmm sound
 _HARD_TIMEOUT = 10    # seconds per attempt before giving up
 
@@ -89,7 +97,7 @@ class BrainManager:
                 hmm_timer.cancel()
 
             if should_retry:
-                wait = _BACKOFF_BASE ** attempt
+                wait = _wait_seconds(last_exc, attempt)
                 print(f"[BrainManager] Retrying in {wait}s (attempt {attempt + 1}/{_MAX_RETRIES}): {last_exc}")
                 time.sleep(wait)
 
@@ -144,7 +152,7 @@ Respond ONLY with a valid JSON object, no extra text, no markdown:
             except Exception as e:
                 last_exc = e
                 if self._is_retryable(e) and attempt < _MAX_RETRIES - 1:
-                    wait = _BACKOFF_BASE ** attempt
+                    wait = _wait_seconds(e, attempt)
                     print(f'[BrainManager] CEFR rating failed (attempt {attempt + 1}/{_MAX_RETRIES}), retrying in {wait}s...')
                     time.sleep(wait)
                 else:
@@ -225,7 +233,7 @@ Respond ONLY with valid JSON, no extra text, no markdown fences:
             except Exception as e:
                 last_exc = e
                 if self._is_retryable(e) and attempt < _MAX_RETRIES - 1:
-                    wait = _BACKOFF_BASE ** attempt
+                    wait = _wait_seconds(e, attempt)
                     print(f'[BrainManager] evaluate_turn failed (attempt {attempt + 1}/{_MAX_RETRIES}), retrying in {wait}s...')
                     time.sleep(wait)
                 else:

@@ -85,10 +85,14 @@ Respond ONLY with valid JSON, no extra text, no markdown fences:
       } catch (err) {
         lastErr = err
         if (!isRetryable(err) || attempt === env.TUTOR_MAX_RETRIES - 1) break
-        await sleep(backoffMs(attempt))
+        const suggestedMatch = /retry in (\d+(?:\.\d+)?)s/i.exec(String(err))
+        const waitMs = suggestedMatch
+          ? (Math.ceil(parseFloat(suggestedMatch[1])) + 2) * 1000
+          : backoffMs(attempt)
         console.warn(
-          `[Evaluator] retry ${attempt + 1}/${env.TUTOR_MAX_RETRIES}: ${err}`,
+          `[Evaluator] retry ${attempt + 1}/${env.TUTOR_MAX_RETRIES} (wait ${waitMs}ms): ${err}`,
         )
+        await sleep(waitMs)
       }
     }
 

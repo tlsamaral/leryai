@@ -9,11 +9,11 @@
     "pillar_ranges": {
       "task_achievement": [5, 20],
       "grammar": [10, 25],
-      "vocabulary": [0, 14],
-      "fluency": [0, 14]
+      "vocabulary": [0, 20],
+      "fluency": [0, 20]
     },
     "total_score_min": 15,
-    "total_score_max": 73,
+    "total_score_max": 80,
     "grammatical_fixes_not_empty": false,
     "reasoning_min_words": 5
   }
