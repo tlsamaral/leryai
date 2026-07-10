@@ -61,8 +61,7 @@ export class HttpClient {
       if (refreshed) {
         return this.request<T>(path, { ...options, __retry: true })
       }
-      useSessionStore.getState().clearSession()
-      void clearStoredRefreshToken()
+      await useSessionStore.getState().clearSession()
       throw new HttpError(401, 'Session expired')
     }
 
