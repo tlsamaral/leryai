@@ -37,10 +37,10 @@ export function AsyncBoundary<T>({
     )
   }
 
-  const data = query.data as T
-  if (isEmpty?.(data)) {
+  const data = query.data
+  if (data == null || isEmpty?.(data as T)) {
     return <>{emptyState ?? <EmptyState message={emptyMessage} />}</>
   }
 
-  return <>{children(data)}</>
+  return <>{children(data as T)}</>
 }
