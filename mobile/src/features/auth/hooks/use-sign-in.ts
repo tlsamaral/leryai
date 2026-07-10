@@ -28,14 +28,14 @@ export function useSignIn() {
           anonymous: true,
         },
       )
-      return auth
-    },
-    onSuccess: async (auth) => {
       await setSession({
         accessToken: auth.accessToken,
         refreshToken: auth.refreshToken,
         user: auth.user,
       })
+      return auth
+    },
+    onSuccess: (auth) => {
       qc.setQueryData(['me'], auth.user)
       router.replace('/(tabs)/home')
     },
