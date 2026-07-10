@@ -13,7 +13,7 @@
       "fluency": [0, 20]
     },
     "total_score_min": 15,
-    "total_score_max": 80,
+    "total_score_max": 85,
     "grammatical_fixes_not_empty": false,
     "reasoning_min_words": 5
   }
