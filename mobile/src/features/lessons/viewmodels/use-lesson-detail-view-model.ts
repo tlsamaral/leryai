@@ -36,7 +36,11 @@ export function useLessonDetailViewModel(lessonId: string) {
   const [promptValue, setPromptValue] = useState('')
 
   const hydratedPrompt =
-    promptValue || currentQuery.data?.lesson?.systemPrompt || ''
+    promptValue ||
+    (currentQuery.data?.lesson?.id === lessonId
+      ? (currentQuery.data.lesson.systemPrompt ?? '')
+      : '') ||
+    ''
 
   const saveMutation = useMutation({
     mutationFn: (prompt: string) =>
