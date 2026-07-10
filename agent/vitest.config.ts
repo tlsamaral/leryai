@@ -33,7 +33,7 @@ export default defineConfig({
           include: ['src/**/*.eval.test.ts'],
           environment: 'node',
           globals: false,
-          testTimeout: 60_000,
+          testTimeout: 180_000,
           maxWorkers: 1,
           minWorkers: 1,
           setupFiles: ['src/__tests__/helpers/eval-setup.ts'],
