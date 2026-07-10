@@ -303,6 +303,35 @@ export default function PairLeryPage() {
           )}
         </AppCard>
 
+        {/* WiFi provisioning */}
+        {selectedDeviceId ? (
+          <AppCard tone="default" padding={16} radius={22}>
+            <View style={styles.cardHeader}>
+              <View style={styles.cardIconWrap}>
+                <Ionicons
+                  name="wifi-outline"
+                  size={18}
+                  color={theme.colors.primary}
+                />
+              </View>
+              <View style={styles.cardHeaderTexts}>
+                <Text style={styles.cardTitle}>Conexão WiFi</Text>
+                <Text style={styles.cardSub}>
+                  Configure o Lery na sua rede sem fio
+                </Text>
+              </View>
+            </View>
+            <View style={{ marginTop: 12 }}>
+              <PrimaryButton
+                label="Configurar WiFi"
+                onPress={() => router.push('/wifi-provision')}
+                icon="wifi"
+                tone="cyan"
+              />
+            </View>
+          </AppCard>
+        ) : null}
+
         {/* Settings panel */}
         {selectedDeviceId ? (
           <DeviceSettingsPanel

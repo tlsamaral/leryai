@@ -36,6 +36,14 @@ export default function RootLayout() {
             options={{ headerShown: false }}
           />
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="wifi-provision"
+            options={{
+              headerShown: false,
+              presentation: 'transparentModal',
+              animation: 'fade',
+            }}
+          />
         </Stack>
       </AuthGuard>
     </QueryClientProvider>
