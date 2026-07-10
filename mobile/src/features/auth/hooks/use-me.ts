@@ -16,8 +16,6 @@ interface MeResponse {
 }
 
 export function useMe(enabled = true) {
-  const setUser = useSessionStore((s) => s.setUser)
-
   return useQuery({
     queryKey: queryKeys.me,
     enabled,
@@ -29,7 +27,16 @@ export function useMe(enabled = true) {
         email: data.email,
         avatarUrl: data.avatarUrl,
       }
-      setUser(user)
+      const current = useSessionStore.getState().user
+      if (
+        !current ||
+        current.id !== user.id ||
+        current.name !== user.name ||
+        current.email !== user.email ||
+        current.avatarUrl !== user.avatarUrl
+      ) {
+        useSessionStore.getState().setUser(user)
+      }
       return user
     },
     staleTime: 5 * 60 * 1000,
