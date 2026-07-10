@@ -36,9 +36,9 @@ function scoreTone(score: number) {
 
 function has4Pillars(log: InteractionLog) {
   return (
-    log.taskAchievement !== null ||
-    log.grammar !== null ||
-    log.vocabulary !== null ||
+    log.taskAchievement !== null &&
+    log.grammar !== null &&
+    log.vocabulary !== null &&
     log.fluency !== null
   )
 }
