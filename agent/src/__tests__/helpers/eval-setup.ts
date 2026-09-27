@@ -6,4 +6,5 @@ import { config } from 'dotenv'
 config()
 
 if (!process.env.GOOGLE_API_KEY) process.env.GOOGLE_API_KEY = '__dummy__'
-if (!process.env.LERY_DEVICE_API_KEY) process.env.LERY_DEVICE_API_KEY = '__dummy__'
+if (!process.env.LERY_DEVICE_API_KEY)
+  process.env.LERY_DEVICE_API_KEY = '__dummy__'

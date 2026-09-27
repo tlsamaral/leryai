@@ -31,6 +31,9 @@ vi.mock('@/lib/gemini.js', () => ({
   sleep: mockSleep,
   backoffMs: vi.fn().mockReturnValue(0),
   withTimeout: vi.fn().mockImplementation((p: Promise<unknown>) => p),
+  extractTokenUsage: vi
+    .fn()
+    .mockReturnValue({ inputTokens: 10, outputTokens: 5, totalTokens: 15 }),
 }))
 
 import { Tutor } from '@/brain/tutor.js'
@@ -111,8 +114,14 @@ describe('Tutor.reply', () => {
     })
     const callArg = mockStartChat.mock.calls[0][0]
     expect(callArg.history).toHaveLength(2)
-    expect(callArg.history[0]).toEqual({ role: 'user', parts: [{ text: 'Hello' }] })
-    expect(callArg.history[1]).toEqual({ role: 'model', parts: [{ text: 'Hi there!' }] })
+    expect(callArg.history[0]).toEqual({
+      role: 'user',
+      parts: [{ text: 'Hello' }],
+    })
+    expect(callArg.history[1]).toEqual({
+      role: 'model',
+      parts: [{ text: 'Hi there!' }],
+    })
   })
 
   it('passes empty history when no seed history provided', () => {

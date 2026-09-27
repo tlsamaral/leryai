@@ -1,6 +1,6 @@
-import { describe, expect, it, beforeEach } from 'vitest'
-import { sessionStore } from '@/session-store/index.js'
+import { beforeEach, describe, expect, it } from 'vitest'
 import type { SessionState } from '@/session-store/index.js'
+import { sessionStore } from '@/session-store/index.js'
 
 function makeState(id: string): SessionState {
   return {
@@ -13,6 +13,8 @@ function makeState(id: string): SessionState {
     lessonObjectives: null,
     startedAt: Date.now(),
     turnCount: 0,
+    lastActivityAt: Date.now(),
+    interactions: [],
   }
 }
 

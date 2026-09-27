@@ -21,7 +21,9 @@ vi.mock('@/env.js', () => ({
 
 vi.mock('@/lib/gemini.js', () => ({
   genai: {
-    getGenerativeModel: vi.fn().mockReturnValue({ generateContent: mockGenerateContent }),
+    getGenerativeModel: vi
+      .fn()
+      .mockReturnValue({ generateContent: mockGenerateContent }),
   },
   isRetryable: (err: unknown) => {
     const msg = err instanceof Error ? err.message : String(err)
@@ -29,6 +31,9 @@ vi.mock('@/lib/gemini.js', () => ({
   },
   sleep: mockSleep,
   backoffMs: vi.fn().mockReturnValue(0),
+  extractTokenUsage: vi
+    .fn()
+    .mockReturnValue({ inputTokens: 10, outputTokens: 5, totalTokens: 15 }),
 }))
 
 import { Evaluator } from '@/brain/evaluator.js'
@@ -74,9 +79,15 @@ describe('Evaluator.evaluateTurn', () => {
     mockGenerateContent.mockResolvedValueOnce(
       makeResponse({ ...VALID_SCORES, total_score: 999 }),
     )
-    const result = await evaluator.evaluateTurn({ userInput: 'test', leryResponse: 'ok' })
+    const result = await evaluator.evaluateTurn({
+      userInput: 'test',
+      leryResponse: 'ok',
+    })
     expect(result?.total_score).toBe(
-      result!.task_achievement + result!.grammar + result!.vocabulary + result!.fluency,
+      result!.task_achievement +
+        result!.grammar +
+        result!.vocabulary +
+        result!.fluency,
     )
   })
 
@@ -84,7 +95,10 @@ describe('Evaluator.evaluateTurn', () => {
     mockGenerateContent.mockResolvedValueOnce(
       makeResponse({ ...VALID_SCORES, grammar: 999 }),
     )
-    const result = await evaluator.evaluateTurn({ userInput: 'test', leryResponse: 'ok' })
+    const result = await evaluator.evaluateTurn({
+      userInput: 'test',
+      leryResponse: 'ok',
+    })
     expect(result?.grammar).toBe(25)
   })
 
@@ -92,21 +106,40 @@ describe('Evaluator.evaluateTurn', () => {
     mockGenerateContent.mockResolvedValueOnce(
       makeResponse({ ...VALID_SCORES, fluency: -5 }),
     )
-    const result = await evaluator.evaluateTurn({ userInput: 'test', leryResponse: 'ok' })
+    const result = await evaluator.evaluateTurn({
+      userInput: 'test',
+      leryResponse: 'ok',
+    })
     expect(result?.fluency).toBe(0)
   })
 
-  it('strips markdown code fences from JSON response', async () => {
-    const raw = '```json\n' + JSON.stringify(VALID_SCORES) + '\n```'
-    mockGenerateContent.mockResolvedValueOnce({ response: { text: () => raw } })
-    const result = await evaluator.evaluateTurn({ userInput: 'test', leryResponse: 'ok' })
-    expect(result).not.toBeNull()
-    expect(result?.grammar).toBe(18)
+  it('configures model with native structured output (responseMimeType + responseSchema)', async () => {
+    mockGenerateContent.mockResolvedValueOnce(makeResponse(VALID_SCORES))
+    await evaluator.evaluateTurn({ userInput: 'test', leryResponse: 'ok' })
+    const { genai } = await import('@/lib/gemini.js')
+    expect(genai.getGenerativeModel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        generationConfig: expect.objectContaining({
+          responseMimeType: 'application/json',
+          responseSchema: expect.objectContaining({
+            properties: expect.objectContaining({
+              task_achievement: expect.any(Object),
+              grammar: expect.any(Object),
+            }),
+          }),
+        }),
+      }),
+    )
   })
 
   it('returns null on non-JSON response', async () => {
-    mockGenerateContent.mockResolvedValueOnce({ response: { text: () => 'plain prose here' } })
-    const result = await evaluator.evaluateTurn({ userInput: 'test', leryResponse: 'ok' })
+    mockGenerateContent.mockResolvedValueOnce({
+      response: { text: () => 'plain prose here' },
+    })
+    const result = await evaluator.evaluateTurn({
+      userInput: 'test',
+      leryResponse: 'ok',
+    })
     expect(result).toBeNull()
   })
 
@@ -133,7 +166,10 @@ describe('Evaluator.evaluateTurn', () => {
     mockGenerateContent
       .mockRejectedValueOnce(new Error('429 rate limit'))
       .mockResolvedValueOnce(makeResponse(VALID_SCORES))
-    const result = await evaluator.evaluateTurn({ userInput: 'test', leryResponse: 'ok' })
+    const result = await evaluator.evaluateTurn({
+      userInput: 'test',
+      leryResponse: 'ok',
+    })
     expect(result).not.toBeNull()
     expect(mockGenerateContent).toHaveBeenCalledTimes(2)
   })
@@ -143,20 +179,29 @@ describe('Evaluator.evaluateTurn', () => {
       .mockRejectedValueOnce(new Error('503 service unavailable'))
       .mockRejectedValueOnce(new Error('500 internal error'))
       .mockResolvedValueOnce(makeResponse(VALID_SCORES))
-    const result = await evaluator.evaluateTurn({ userInput: 'test', leryResponse: 'ok' })
+    const result = await evaluator.evaluateTurn({
+      userInput: 'test',
+      leryResponse: 'ok',
+    })
     expect(result).not.toBeNull()
   })
 
   it('does not retry on non-retryable error', async () => {
     mockGenerateContent.mockRejectedValueOnce(new Error('404 not found'))
-    const result = await evaluator.evaluateTurn({ userInput: 'test', leryResponse: 'ok' })
+    const result = await evaluator.evaluateTurn({
+      userInput: 'test',
+      leryResponse: 'ok',
+    })
     expect(result).toBeNull()
     expect(mockGenerateContent).toHaveBeenCalledTimes(1)
   })
 
   it('returns null after exhausting all retries', async () => {
     mockGenerateContent.mockRejectedValue(new Error('503 always fails'))
-    const result = await evaluator.evaluateTurn({ userInput: 'test', leryResponse: 'ok' })
+    const result = await evaluator.evaluateTurn({
+      userInput: 'test',
+      leryResponse: 'ok',
+    })
     expect(result).toBeNull()
     expect(mockGenerateContent).toHaveBeenCalledTimes(3) // TUTOR_MAX_RETRIES = 3
   })
@@ -164,7 +209,10 @@ describe('Evaluator.evaluateTurn', () => {
   it('grammatical_fixes defaults to "No corrections needed." when missing', async () => {
     const { grammatical_fixes: _, ...rest } = VALID_SCORES
     mockGenerateContent.mockResolvedValueOnce(makeResponse(rest))
-    const result = await evaluator.evaluateTurn({ userInput: 'test', leryResponse: 'ok' })
+    const result = await evaluator.evaluateTurn({
+      userInput: 'test',
+      leryResponse: 'ok',
+    })
     expect(result?.grammatical_fixes).toBe('No corrections needed.')
   })
 })

@@ -25,13 +25,21 @@ describe('buildSessionState', () => {
   })
 
   it('includes level rule for known level', () => {
-    const out = buildSessionState(makeConfig({ level: 'A1' }), 'FREE_TALK', null)
+    const out = buildSessionState(
+      makeConfig({ level: 'A1' }),
+      'FREE_TALK',
+      null,
+    )
     expect(out).toContain('A1')
     expect(out).toContain('LANGUAGE RULE FOR LEVEL A1')
   })
 
   it('falls back to A1 rule for unknown level', () => {
-    const out = buildSessionState(makeConfig({ level: 'X9' }), 'FREE_TALK', null)
+    const out = buildSessionState(
+      makeConfig({ level: 'X9' }),
+      'FREE_TALK',
+      null,
+    )
     expect(out).toContain('LANGUAGE RULE FOR LEVEL X9')
     expect(out).toContain('complete beginner')
   })
@@ -42,7 +50,11 @@ describe('buildSessionState', () => {
   })
 
   it('falls back to B1 response limit for unknown level', () => {
-    const out = buildSessionState(makeConfig({ level: 'Z0' }), 'FREE_TALK', null)
+    const out = buildSessionState(
+      makeConfig({ level: 'Z0' }),
+      'FREE_TALK',
+      null,
+    )
     expect(out).toContain('2 sentences maximum')
   })
 
@@ -79,7 +91,11 @@ describe('buildSessionState', () => {
   })
 
   it('includes rolling summary when provided', () => {
-    const out = buildSessionState(makeConfig(), 'FREE_TALK', 'Student discussed travel.')
+    const out = buildSessionState(
+      makeConfig(),
+      'FREE_TALK',
+      'Student discussed travel.',
+    )
     expect(out).toContain('ROLLING SUMMARY OF EARLIER TURNS')
     expect(out).toContain('Student discussed travel.')
   })

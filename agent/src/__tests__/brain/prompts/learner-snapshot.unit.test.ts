@@ -15,7 +15,9 @@ function makeConfig(overrides: Partial<SessionConfig> = {}): SessionConfig {
   }
 }
 
-function makeSnapshot(overrides: Partial<LearnerSnapshot> = {}): LearnerSnapshot {
+function makeSnapshot(
+  overrides: Partial<LearnerSnapshot> = {},
+): LearnerSnapshot {
   return {
     userId: 'user-1',
     recentErrors: [],
@@ -81,7 +83,11 @@ describe('buildLearnerSnapshot', () => {
   it('includes recent errors from snapshot', () => {
     const snapshot = makeSnapshot({
       recentErrors: [
-        { pattern: 'subject-verb agreement', exampleCount: 5, lastSeen: '2026-07-01' },
+        {
+          pattern: 'subject-verb agreement',
+          exampleCount: 5,
+          lastSeen: '2026-07-01',
+        },
       ],
     })
     const out = buildLearnerSnapshot(makeConfig(), snapshot, [])
@@ -131,7 +137,9 @@ describe('buildLearnerSnapshot', () => {
 
   it('includes open topics from snapshot', () => {
     const snapshot = makeSnapshot({
-      openTopics: [{ topic: 'traveling to Japan', lastMentioned: '2026-06-30' }],
+      openTopics: [
+        { topic: 'traveling to Japan', lastMentioned: '2026-06-30' },
+      ],
     })
     const out = buildLearnerSnapshot(makeConfig(), snapshot, [])
     expect(out).toContain('OPEN TOPICS FROM PAST CONVERSATIONS')

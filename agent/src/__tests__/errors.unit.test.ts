@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  AgentError,
-  BadRequestError,
-  SessionNotFoundError,
-} from '@/errors.js'
+import { AgentError, BadRequestError, SessionNotFoundError } from '@/errors.js'
 
 describe('AgentError', () => {
   it('sets message and default statusCode 500', () => {

@@ -1,5 +1,13 @@
 import type { FastifyInstance } from 'fastify'
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 
 // ── Mocks (hoisted) ───────────────────────────────────────────────────────────
 
@@ -30,7 +38,11 @@ vi.mock('@/env.js', () => ({
 }))
 
 vi.mock('@/lib/gemini.js', () => ({
-  genai: { getGenerativeModel: vi.fn().mockReturnValue({ startChat: vi.fn().mockReturnValue({ sendMessage: vi.fn() }) }) },
+  genai: {
+    getGenerativeModel: vi.fn().mockReturnValue({
+      startChat: vi.fn().mockReturnValue({ sendMessage: vi.fn() }),
+    }),
+  },
   isRetryable: vi.fn().mockReturnValue(false),
   sleep: vi.fn().mockResolvedValue(undefined),
   backoffMs: vi.fn().mockReturnValue(0),
@@ -56,8 +68,8 @@ vi.mock('@/brain/evaluator.js', () => ({
 
 // ── Imports ───────────────────────────────────────────────────────────────────
 
-import { buildTestApp } from '../helpers/test-app.js'
 import { sessionStore } from '@/session-store/index.js'
+import { buildTestApp } from '../helpers/test-app.js'
 
 // ── Suite ─────────────────────────────────────────────────────────────────────
 

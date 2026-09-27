@@ -1,15 +1,13 @@
-import { readFileSync, readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { beforeAll, describe, expect, it, test } from 'vitest'
 import { Evaluator } from '@/brain/evaluator.js'
-import {
-  assertPillarInRange,
-  logEvalResult,
-} from '../helpers/eval-logger.js'
+import { assertPillarInRange, logEvalResult } from '../helpers/eval-logger.js'
 
 // Skip when key is absent or is the dummy placeholder set by eval-setup.ts
 const hasApiKey =
-  Boolean(process.env.GOOGLE_API_KEY) && process.env.GOOGLE_API_KEY !== '__dummy__'
+  Boolean(process.env.GOOGLE_API_KEY) &&
+  process.env.GOOGLE_API_KEY !== '__dummy__'
 
 interface Fixture {
   description: string
@@ -47,7 +45,10 @@ async function evalWithRetry(
   evaluator: Evaluator,
   fixture: Fixture,
   fixtureName: string,
-): Promise<{ result: NonNullable<Awaited<ReturnType<Evaluator['evaluateTurn']>>>; latencyMs: number }> {
+): Promise<{
+  result: NonNullable<Awaited<ReturnType<Evaluator['evaluateTurn']>>>
+  latencyMs: number
+}> {
   for (let attempt = 0; attempt < 2; attempt++) {
     const start = Date.now()
     const result = await evaluator.evaluateTurn({
@@ -60,10 +61,20 @@ async function evalWithRetry(
     if (!result) continue
 
     const pillars: Array<keyof typeof fixture.expect.pillar_ranges> = [
-      'task_achievement', 'grammar', 'vocabulary', 'fluency',
+      'task_achievement',
+      'grammar',
+      'vocabulary',
+      'fluency',
     ]
     const failures = pillars
-      .map((p) => assertPillarInRange(fixtureName, p, result[p], fixture.expect.pillar_ranges[p]))
+      .map((p) =>
+        assertPillarInRange(
+          fixtureName,
+          p,
+          result[p],
+          fixture.expect.pillar_ranges[p],
+        ),
+      )
       .filter(Boolean)
 
     if (failures.length === 0) return { result, latencyMs }
@@ -95,10 +106,19 @@ describe.skipIf(!hasApiKey)('Evaluator — golden-set eval', () => {
 
   for (const { name, fixture } of fixtures) {
     it(fixture.description, async () => {
-      const { result, latencyMs } = await evalWithRetry(evaluator, fixture, name)
+      const { result, latencyMs } = await evalWithRetry(
+        evaluator,
+        fixture,
+        name,
+      )
 
       // Pillar range assertions (already checked in evalWithRetry, but keep for test output)
-      const pillars = ['task_achievement', 'grammar', 'vocabulary', 'fluency'] as const
+      const pillars = [
+        'task_achievement',
+        'grammar',
+        'vocabulary',
+        'fluency',
+      ] as const
       for (const p of pillars) {
         const [min, max] = fixture.expect.pillar_ranges[p]
         expect(result[p], `${p} out of range`).toBeGreaterThanOrEqual(min)
@@ -106,8 +126,12 @@ describe.skipIf(!hasApiKey)('Evaluator — golden-set eval', () => {
       }
 
       // Total score range
-      expect(result.total_score).toBeGreaterThanOrEqual(fixture.expect.total_score_min)
-      expect(result.total_score).toBeLessThanOrEqual(fixture.expect.total_score_max)
+      expect(result.total_score).toBeGreaterThanOrEqual(
+        fixture.expect.total_score_min,
+      )
+      expect(result.total_score).toBeLessThanOrEqual(
+        fixture.expect.total_score_max,
+      )
 
       // total_score invariant: always equals sum of 4 pillars
       const computedTotal = pillars.reduce((sum, p) => sum + result[p], 0)
@@ -121,7 +145,9 @@ describe.skipIf(!hasApiKey)('Evaluator — golden-set eval', () => {
 
       // reasoning word count
       const wordCount = result.reasoning.trim().split(/\s+/).length
-      expect(wordCount).toBeGreaterThanOrEqual(fixture.expect.reasoning_min_words)
+      expect(wordCount).toBeGreaterThanOrEqual(
+        fixture.expect.reasoning_min_words,
+      )
 
       // Log pass
       logEvalResult({
@@ -139,7 +165,10 @@ describe.skipIf(!hasApiKey)('Evaluator — golden-set eval', () => {
   test('no_corrections_needed fixture returns correct grammatical_fixes text', async () => {
     const fixture = JSON.parse(
       readFileSync(
-        join(import.meta.dirname, '../fixtures/evaluator/no_corrections_needed.json'),
+        join(
+          import.meta.dirname,
+          '../fixtures/evaluator/no_corrections_needed.json',
+        ),
         'utf8',
       ),
     ) as Fixture

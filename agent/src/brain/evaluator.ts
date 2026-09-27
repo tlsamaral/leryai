@@ -1,10 +1,14 @@
+import { SchemaType } from '@google/generative-ai'
 import { env } from '@/env.js'
-import { backoffMs, genai, isRetryable, sleep } from '@/lib/gemini.js'
+import {
+  backoffMs,
+  extractTokenUsage,
+  genai,
+  isRetryable,
+  sleep,
+} from '@/lib/gemini.js'
+import { wrapWithTelemetry } from '@/lib/telemetry.js'
 import type { EvaluationResult } from './types.js'
-
-function stripCodeFences(s: string): string {
-  return s.replace(/^```(?:json)?\s*|\s*```$/gm, '').trim()
-}
 
 function clamp(value: unknown, min: number, max: number): number {
   const n =
@@ -12,6 +16,29 @@ function clamp(value: unknown, min: number, max: number): number {
   if (Number.isNaN(n)) return min
   return Math.max(min, Math.min(max, n))
 }
+
+// Gemini native response schema — guarantees valid JSON shape without fences.
+const EVALUATION_SCHEMA = {
+  type: SchemaType.OBJECT,
+  properties: {
+    task_achievement: { type: SchemaType.INTEGER },
+    grammar: { type: SchemaType.INTEGER },
+    vocabulary: { type: SchemaType.INTEGER },
+    fluency: { type: SchemaType.INTEGER },
+    total_score: { type: SchemaType.INTEGER },
+    grammatical_fixes: { type: SchemaType.STRING },
+    reasoning: { type: SchemaType.STRING },
+  },
+  required: [
+    'task_achievement',
+    'grammar',
+    'vocabulary',
+    'fluency',
+    'total_score',
+    'grammatical_fixes',
+    'reasoning',
+  ],
+} as const
 
 export interface EvaluateTurnInput {
   userInput: string
@@ -45,20 +72,31 @@ Score the student's response on 4 pillars. Each pillar is worth 0–25 points (t
 
 Also provide:
 - grammatical_fixes: Rewrite the student's sentence with all errors corrected. If no errors, write "No corrections needed."
-- reasoning: One sentence summarizing the key strength and main area to improve.
+- reasoning: One sentence summarizing the key strength and main area to improve.`
 
-Respond ONLY with valid JSON, no extra text, no markdown fences:
-{"task_achievement": <int>, "grammar": <int>, "vocabulary": <int>, "fluency": <int>, "total_score": <int>, "grammatical_fixes": "<str>", "reasoning": "<str>"}`
-
-    const model = genai.getGenerativeModel({ model: env.GEMINI_EVALUATOR_MODEL })
+    const model = genai.getGenerativeModel({
+      model: env.GEMINI_EVALUATOR_MODEL,
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: EVALUATION_SCHEMA,
+      },
+    })
 
     let lastErr: unknown
     for (let attempt = 0; attempt < env.TUTOR_MAX_RETRIES; attempt++) {
       try {
-        const res = await model.generateContent(prompt)
-        const raw = stripCodeFences(res.response.text())
-        const data = JSON.parse(raw) as Partial<EvaluationResult>
+        const { result: res } = await wrapWithTelemetry(
+          'evaluator',
+          env.GEMINI_EVALUATOR_MODEL,
+          null,
+          () => model.generateContent(prompt),
+          (r) => extractTokenUsage(r.response),
+        )
+        const data = JSON.parse(
+          res.response.text(),
+        ) as Partial<EvaluationResult>
 
+        // Defensive clamp — even with schema, model may return out-of-range ints.
         const pillars: (keyof EvaluationResult)[] = [
           'task_achievement',
           'grammar',

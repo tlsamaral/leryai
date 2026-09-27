@@ -21,7 +21,10 @@ const RESULTS_DIR = join(process.cwd(), 'eval-results')
 
 export function logEvalResult(record: EvalRecord): void {
   mkdirSync(RESULTS_DIR, { recursive: true })
-  const filename = join(RESULTS_DIR, `eval-${new Date().toISOString().slice(0, 10)}.jsonl`)
+  const filename = join(
+    RESULTS_DIR,
+    `eval-${new Date().toISOString().slice(0, 10)}.jsonl`,
+  )
   appendFileSync(filename, JSON.stringify(record) + '\n', 'utf8')
 }
 

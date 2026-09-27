@@ -41,3 +41,38 @@ export function sleep(ms: number): Promise<void> {
 export function backoffMs(attempt: number, baseMs = 1000): number {
   return baseMs * 2 ** attempt
 }
+
+export interface TokenUsage {
+  inputTokens: number | null
+  outputTokens: number | null
+  totalTokens: number | null
+}
+
+export interface GeminiResponseLike {
+  usageMetadata?: {
+    promptTokenCount?: number
+    candidatesTokenCount?: number
+    totalTokenCount?: number
+  } | null
+}
+
+export function extractTokenUsage(
+  response: GeminiResponseLike | null | undefined,
+): TokenUsage {
+  const usage = response?.usageMetadata
+  if (!usage) {
+    return { inputTokens: null, outputTokens: null, totalTokens: null }
+  }
+  return {
+    inputTokens:
+      typeof usage.promptTokenCount === 'number'
+        ? usage.promptTokenCount
+        : null,
+    outputTokens:
+      typeof usage.candidatesTokenCount === 'number'
+        ? usage.candidatesTokenCount
+        : null,
+    totalTokens:
+      typeof usage.totalTokenCount === 'number' ? usage.totalTokenCount : null,
+  }
+}
