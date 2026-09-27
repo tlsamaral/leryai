@@ -7,3 +7,8 @@ __pycache__/
 venv/
 core/data/audio/*.wav
 core/data/audio/*.mp3
+
+# OS & Reports
+.DS_Store
+*/.DS_Store
+agent/simulation-report.html

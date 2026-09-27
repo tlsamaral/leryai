@@ -1,0 +1,37 @@
+Prompt Engineering está morto. O que separa um brinquedo de um produto em produção é Context Engineering.
+
+Durante a concepção do meu TCC — desenvolvendo o Lery AI, um ecossistema de tutoria de inglês que une hardware IoT (Smart Speaker sem tela) a modelos de linguagem —, me deparei com um abismo entre a teoria acadêmica e a engenharia de software real:
+
+Na linguística aplicada, a "Hipótese do Filtro Afetivo" de Stephen Krashen e a "Foreign Language Speaking Anxiety" provam que o medo do julgamento paralisa o aluno iniciante. A promessa da IA é ser o ambiente perfeito de "baixo julgamento".
+
+Mas sabe o que acontece na prática com 90% das aplicações de GenAI?
+
+O desenvolvedor cola um prompt monolítico de 3.000 tokens no modelo, coloca um aluno nível A1 (básico) para falar e a IA responde com três parágrafos rebuscados em nível B2/C1. 
+O filtro afetivo vai às alturas. O aluno trava. O produto morre.
+
+Modelos de linguagem não são naturalmente bons professores. Eles são máquinas de predição estatística complacentes. Para transformá-los em tutores pedagógicos reais, tivemos que desenhar uma arquitetura de Context Engineering estrita na nossa codebase:
+
+1. O Fim do Prompt Monolítico (Arquitetura em 4 Camadas)
+Dividimos o context window em budgets rígidos de tokens:
+• Camada 1: Persona Estática (~400 tokens) — identidade empática e diretrizes de scaffolding.
+• Camada 2: Learner Profile Snapshot (~600 tokens) — persistência de erros recorrentes e estruturas dominadas.
+• Camada 3: Session State (~400 tokens) — restrições duras por nível CEFR (ex: para A1, teto de 1 frase curta + 1 pergunta sim/não, proibindo orações subordinadas e voz passiva).
+• Camada 4: Turn Buffer (~200 tokens) — diálogo imediato.
+
+2. Padrão Evaluator-Optimizer (Quality Gatekeeper)
+A IA não tem permissão para falar com o aluno sem validação. O Tutor gera um draft; antes do áudio ir para o pipeline de síntese de voz, um Compliance Evaluator inspeciona a resposta contra a matriz do CEFR. Se a IA violar o limite do nível A1, um loop de auto-correção força a regeneração instantânea com feedback da violação. O aluno nunca é exposto a uma resposta intimidadora.
+
+3. Structured Output Nativo (Chega de regex em JSON)
+Zero parsing manual com regex de markdown fences. Implementamos o `responseSchema` nativo do Gemini SDK com tipos estritos no Evaluator. Previsibilidade determinística de schema em 100% das chamadas.
+
+4. Memória Longitudinal com Worker Assíncrono
+Ao término da aula, um worker em background sintetiza um "Insight Card" de 3 pontos: principal erro gramatical observado, maior progresso e ganchos informais de vida pessoal. Na próxima sessão, a IA retoma a conversa exatamente de onde parou.
+
+5. Simulação com Aluno Sintético (Testes E2E sem falar no microfone)
+Para validar a robustez desse ecossistema, criei um simulador automatizado onde um agente persona assume o papel de um estudante brasileiro, comete deslizes gramaticais realistas turno a turno e estressa a matriz de pontuação dos 4 pilares do CEFR (Task Achievement, Grammar, Vocabulary e Fluency).
+
+Engenharia de IA em produção não é sobre "acertar a palavra mágica no prompt". É sobre orquestração de microsserviços, controle de latência, governança de tokens e arquitetura de sistemas orientada a métricas pedagógicas científicas.
+
+Como vocês têm estruturado a engenharia de contexto e guardrails nas aplicações de IA da empresa de vocês?
+
+#ContextEngineering #ArtificialIntelligence #SoftwareArchitecture #GenAI #EdTech #SystemDesign #MachineLearning #LLM
