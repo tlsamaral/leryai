@@ -6,6 +6,7 @@ import { buildDiagnosisPrompt } from '@/brain/prompts/diagnosis.js'
 import { buildLearnerSnapshot } from '@/brain/prompts/learner-snapshot.js'
 import { buildPersona } from '@/brain/prompts/persona.js'
 import { buildSessionState } from '@/brain/prompts/session-state.js'
+import { PEDAGOGICAL_TOOL_DECLARATIONS } from '@/brain/tools/pedagogical-tools.js'
 import { Tutor } from '@/brain/tutor.js'
 import { apiClient } from '@/lib/api-client.js'
 import { sessionStore } from '@/session-store/index.js'
@@ -80,7 +81,16 @@ export async function createSessionRoute(app: FastifyInstance) {
               .filter(Boolean)
               .join('\n\n')
 
-      const tutor = new Tutor({ systemInstruction })
+      const tutor = new Tutor({
+        systemInstruction,
+        tools: PEDAGOGICAL_TOOL_DECLARATIONS,
+        toolContext: {
+          recentErrors: snapshot?.recentErrors,
+          dominatedStructures: snapshot?.dominatedStructures,
+          openTopics: snapshot?.openTopics,
+          completedObjectives: [],
+        },
+      })
 
       const agentSessionId = randomUUID()
 
@@ -94,6 +104,8 @@ export async function createSessionRoute(app: FastifyInstance) {
         lessonObjectives,
         startedAt: Date.now(),
         turnCount: 0,
+        lastActivityAt: Date.now(),
+        interactions: [],
       })
 
       return reply.status(201).send({

@@ -1,5 +1,13 @@
 import type { FastifyInstance } from 'fastify'
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 
 // ── Mocks (hoisted) ───────────────────────────────────────────────────────────
 
@@ -31,7 +39,11 @@ vi.mock('@/env.js', () => ({
 }))
 
 vi.mock('@/lib/gemini.js', () => ({
-  genai: { getGenerativeModel: vi.fn().mockReturnValue({ startChat: vi.fn().mockReturnValue({ sendMessage: vi.fn() }) }) },
+  genai: {
+    getGenerativeModel: vi.fn().mockReturnValue({
+      startChat: vi.fn().mockReturnValue({ sendMessage: vi.fn() }),
+    }),
+  },
   isRetryable: vi.fn().mockReturnValue(false),
   sleep: vi.fn().mockResolvedValue(undefined),
   backoffMs: vi.fn().mockReturnValue(0),
@@ -57,9 +69,9 @@ vi.mock('@/brain/evaluator.js', () => ({
 
 // ── Imports ───────────────────────────────────────────────────────────────────
 
-import { buildTestApp } from '../helpers/test-app.js'
-import { sessionStore } from '@/session-store/index.js'
 import type { SessionConfig } from '@/lib/api-client.js'
+import { sessionStore } from '@/session-store/index.js'
+import { buildTestApp } from '../helpers/test-app.js'
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -98,11 +110,21 @@ describe('POST /v1/sessions', () => {
 
   it('returns 201 with correct shape on FREE_TALK', async () => {
     mockApiClient.getSessionConfig.mockResolvedValue(makeConfig())
-    mockApiClient.getLearnerSnapshot.mockResolvedValue({ userId: 'u', recentErrors: [], dominatedStructures: [], openTopics: [], updatedAt: null })
+    mockApiClient.getLearnerSnapshot.mockResolvedValue({
+      userId: 'u',
+      recentErrors: [],
+      dominatedStructures: [],
+      openTopics: [],
+      updatedAt: null,
+    })
     mockApiClient.listSessionInsights.mockResolvedValue({ insights: [] })
     mockApiClient.createSession.mockResolvedValue({ id: 'api-sess-1' })
 
-    const res = await app.inject({ method: 'POST', url: '/v1/sessions', body: { mode: 'FREE_TALK' } })
+    const res = await app.inject({
+      method: 'POST',
+      url: '/v1/sessions',
+      body: { mode: 'FREE_TALK' },
+    })
 
     expect(res.statusCode).toBe(201)
     const body = res.json()
@@ -121,7 +143,11 @@ describe('POST /v1/sessions', () => {
     mockApiClient.listSessionInsights.mockResolvedValue({ insights: [] })
     mockApiClient.createSession.mockResolvedValue({ id: 'api-sess-2' })
 
-    const res = await app.inject({ method: 'POST', url: '/v1/sessions', body: {} })
+    const res = await app.inject({
+      method: 'POST',
+      url: '/v1/sessions',
+      body: {},
+    })
 
     expect(res.statusCode).toBe(201)
     expect(res.json().mode).toBe('FREE_TALK')
@@ -134,7 +160,11 @@ describe('POST /v1/sessions', () => {
     mockApiClient.listSessionInsights.mockResolvedValue({ insights: [] })
     mockApiClient.createSession.mockRejectedValue(new Error('API down'))
 
-    const res = await app.inject({ method: 'POST', url: '/v1/sessions', body: { mode: 'FREE_TALK' } })
+    const res = await app.inject({
+      method: 'POST',
+      url: '/v1/sessions',
+      body: { mode: 'FREE_TALK' },
+    })
 
     expect(res.statusCode).toBe(201)
     expect(res.json().apiSessionId).toBeNull()
@@ -143,11 +173,17 @@ describe('POST /v1/sessions', () => {
 
   it('session created even when getLearnerSnapshot throws', async () => {
     mockApiClient.getSessionConfig.mockResolvedValue(makeConfig())
-    mockApiClient.getLearnerSnapshot.mockRejectedValue(new Error('snapshot unavailable'))
+    mockApiClient.getLearnerSnapshot.mockRejectedValue(
+      new Error('snapshot unavailable'),
+    )
     mockApiClient.listSessionInsights.mockResolvedValue({ insights: [] })
     mockApiClient.createSession.mockResolvedValue({ id: 'sess-ok' })
 
-    const res = await app.inject({ method: 'POST', url: '/v1/sessions', body: { mode: 'FREE_TALK' } })
+    const res = await app.inject({
+      method: 'POST',
+      url: '/v1/sessions',
+      body: { mode: 'FREE_TALK' },
+    })
 
     expect(res.statusCode).toBe(201)
     sessionStore.delete(res.json().agentSessionId)
@@ -156,10 +192,16 @@ describe('POST /v1/sessions', () => {
   it('session created even when listSessionInsights throws', async () => {
     mockApiClient.getSessionConfig.mockResolvedValue(makeConfig())
     mockApiClient.getLearnerSnapshot.mockResolvedValue(null)
-    mockApiClient.listSessionInsights.mockRejectedValue(new Error('insights unavailable'))
+    mockApiClient.listSessionInsights.mockRejectedValue(
+      new Error('insights unavailable'),
+    )
     mockApiClient.createSession.mockResolvedValue({ id: 'sess-ok' })
 
-    const res = await app.inject({ method: 'POST', url: '/v1/sessions', body: { mode: 'FREE_TALK' } })
+    const res = await app.inject({
+      method: 'POST',
+      url: '/v1/sessions',
+      body: { mode: 'FREE_TALK' },
+    })
 
     expect(res.statusCode).toBe(201)
     sessionStore.delete(res.json().agentSessionId)
@@ -167,14 +209,25 @@ describe('POST /v1/sessions', () => {
 
   it('stores lessonObjectives when mode is GUIDED_LESSON and lesson has objectives', async () => {
     const config = makeConfig({
-      lesson: { id: 'l1', title: 'At the Airport', scenario: 'Check-in', systemPrompt: 'guide', objectives: 'Use travel vocab.', order: 1 },
+      lesson: {
+        id: 'l1',
+        title: 'At the Airport',
+        scenario: 'Check-in',
+        systemPrompt: 'guide',
+        objectives: 'Use travel vocab.',
+        order: 1,
+      },
     })
     mockApiClient.getSessionConfig.mockResolvedValue(config)
     mockApiClient.getLearnerSnapshot.mockResolvedValue(null)
     mockApiClient.listSessionInsights.mockResolvedValue({ insights: [] })
     mockApiClient.createSession.mockResolvedValue({ id: 'sess-guided' })
 
-    const res = await app.inject({ method: 'POST', url: '/v1/sessions', body: { mode: 'GUIDED_LESSON' } })
+    const res = await app.inject({
+      method: 'POST',
+      url: '/v1/sessions',
+      body: { mode: 'GUIDED_LESSON' },
+    })
 
     expect(res.statusCode).toBe(201)
     const { agentSessionId } = res.json()
@@ -185,14 +238,25 @@ describe('POST /v1/sessions', () => {
 
   it('lessonObjectives is null in FREE_TALK even if lesson present', async () => {
     const config = makeConfig({
-      lesson: { id: 'l1', title: 'Test', scenario: 's', systemPrompt: 'p', objectives: 'some obj', order: 1 },
+      lesson: {
+        id: 'l1',
+        title: 'Test',
+        scenario: 's',
+        systemPrompt: 'p',
+        objectives: 'some obj',
+        order: 1,
+      },
     })
     mockApiClient.getSessionConfig.mockResolvedValue(config)
     mockApiClient.getLearnerSnapshot.mockResolvedValue(null)
     mockApiClient.listSessionInsights.mockResolvedValue({ insights: [] })
     mockApiClient.createSession.mockResolvedValue({ id: 'sess-free' })
 
-    const res = await app.inject({ method: 'POST', url: '/v1/sessions', body: { mode: 'FREE_TALK' } })
+    const res = await app.inject({
+      method: 'POST',
+      url: '/v1/sessions',
+      body: { mode: 'FREE_TALK' },
+    })
 
     const { agentSessionId } = res.json()
     expect(sessionStore.get(agentSessionId)?.lessonObjectives).toBeNull()
@@ -205,7 +269,11 @@ describe('POST /v1/sessions', () => {
     mockApiClient.listSessionInsights.mockResolvedValue({ insights: [] })
     mockApiClient.createSession.mockResolvedValue({ id: 'sess-store' })
 
-    const res = await app.inject({ method: 'POST', url: '/v1/sessions', body: { mode: 'FREE_TALK' } })
+    const res = await app.inject({
+      method: 'POST',
+      url: '/v1/sessions',
+      body: { mode: 'FREE_TALK' },
+    })
 
     const { agentSessionId } = res.json()
     const state = sessionStore.get(agentSessionId)
@@ -219,7 +287,11 @@ describe('POST /v1/sessions', () => {
   it('returns 500 when getSessionConfig throws', async () => {
     mockApiClient.getSessionConfig.mockRejectedValue(new Error('DB error'))
 
-    const res = await app.inject({ method: 'POST', url: '/v1/sessions', body: { mode: 'FREE_TALK' } })
+    const res = await app.inject({
+      method: 'POST',
+      url: '/v1/sessions',
+      body: { mode: 'FREE_TALK' },
+    })
 
     expect(res.statusCode).toBe(500)
   })
@@ -230,7 +302,11 @@ describe('POST /v1/sessions', () => {
     mockApiClient.listSessionInsights.mockResolvedValue({ insights: [] })
     mockApiClient.createSession.mockResolvedValue({ id: 'api-sess-diag' })
 
-    const res = await app.inject({ method: 'POST', url: '/v1/sessions', body: { mode: 'DIAGNOSIS' } })
+    const res = await app.inject({
+      method: 'POST',
+      url: '/v1/sessions',
+      body: { mode: 'DIAGNOSIS' },
+    })
 
     expect(res.statusCode).toBe(201)
     const body = res.json()

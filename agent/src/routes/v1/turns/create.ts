@@ -1,12 +1,14 @@
 import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
+import { ComplianceEvaluator } from '@/brain/compliance.js'
 import { Evaluator } from '@/brain/evaluator.js'
 import { BadRequestError, SessionNotFoundError } from '@/errors.js'
 import { apiClient } from '@/lib/api-client.js'
 import { sessionStore } from '@/session-store/index.js'
 
 const evaluator = new Evaluator()
+const complianceEvaluator = new ComplianceEvaluator()
 
 export async function createTurnRoute(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
@@ -21,6 +23,7 @@ export async function createTurnRoute(app: FastifyInstance) {
           agentSessionId: z.string(),
           userText: z.string().min(1),
           evaluate: z.boolean().optional(),
+          enforceCompliance: z.boolean().optional(),
         }),
         response: {
           200: z.object({
@@ -44,7 +47,8 @@ export async function createTurnRoute(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const { agentSessionId, userText, evaluate } = request.body
+      const { agentSessionId, userText, evaluate, enforceCompliance } =
+        request.body
       const state = sessionStore.get(agentSessionId)
       if (!state) throw new SessionNotFoundError(agentSessionId)
 
@@ -52,11 +56,51 @@ export async function createTurnRoute(app: FastifyInstance) {
         throw new BadRequestError('userText cannot be empty')
       }
 
-      // ── Tutor reply ────────────────────────────────────────────────────
-      const tutorReply = await state.tutor.reply(userText)
+      // ── 1. Tutor reply (draft) ─────────────────────────────────────────
+      let tutorReply = await state.tutor.reply(userText, agentSessionId)
       state.turnCount += 1
 
-      // ── Evaluator (only when explicitly requested or in GUIDED_LESSON) ─
+      // ── 2. Evaluator-Optimizer Gatekeeper (Level Compliance) ───────────
+      const shouldCheckCompliance =
+        enforceCompliance ??
+        (state.config.level === 'A1' || state.config.level === 'A2')
+
+      if (shouldCheckCompliance) {
+        const compliance = await complianceEvaluator.check({
+          tutorReply: tutorReply.text,
+          studentLevel: state.config.level,
+          userInput: userText,
+          lessonObjectives: state.lessonObjectives,
+        })
+
+        if (!compliance.compliant && compliance.violations.length > 0) {
+          const feedback = compliance.violations
+            .map(
+              (v) =>
+                `- [${v.type}] on "${v.snippet}": ${v.reason}. Suggestion: ${v.suggestion}`,
+            )
+            .join('\n')
+
+          try {
+            const revised = await state.tutor.retryWithFeedback(
+              feedback,
+              agentSessionId,
+            )
+            tutorReply = {
+              text: revised.text,
+              attempts: tutorReply.attempts + revised.attempts,
+              latencyMs: tutorReply.latencyMs + revised.latencyMs,
+            }
+          } catch (retryErr) {
+            app.log.warn(
+              { retryErr },
+              'Tutor compliance retry failed — proceeding with original draft',
+            )
+          }
+        }
+      }
+
+      // ── 3. Student Evaluator (only when requested or in GUIDED_LESSON) ──
       const shouldEvaluate = evaluate ?? state.mode === 'GUIDED_LESSON'
       const evaluation = shouldEvaluate
         ? await evaluator.evaluateTurn({
@@ -87,6 +131,13 @@ export async function createTurnRoute(app: FastifyInstance) {
           app.log.warn({ err }, 'Failed to persist interaction log')
         }
       }
+
+      // ── 4. Record interaction for Session Summarizer ───────────────────
+      state.interactions.push({
+        userInput: userText,
+        leryResponse: tutorReply.text,
+        grammaticalFixes: evaluation?.grammatical_fixes,
+      })
 
       return reply.status(200).send({
         reply: tutorReply.text,

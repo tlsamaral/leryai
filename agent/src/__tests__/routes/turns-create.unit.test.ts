@@ -1,12 +1,31 @@
 import type { FastifyInstance } from 'fastify'
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
-const { mockTutorReply, mockEvaluatorTurn, mockCreateLog } = vi.hoisted(() => ({
+const {
+  mockTutorReply,
+  mockTutorRetry,
+  mockEvaluatorTurn,
+  mockCreateLog,
+  mockComplianceCheck,
+} = vi.hoisted(() => ({
   mockTutorReply: vi.fn(),
+  mockTutorRetry: vi.fn(),
   mockEvaluatorTurn: vi.fn(),
   mockCreateLog: vi.fn(),
+  mockComplianceCheck: vi
+    .fn()
+    .mockResolvedValue({ compliant: true, violations: [] }),
 }))
 
 vi.mock('@/env.js', () => ({
@@ -24,7 +43,11 @@ vi.mock('@/env.js', () => ({
 }))
 
 vi.mock('@/lib/gemini.js', () => ({
-  genai: { getGenerativeModel: vi.fn().mockReturnValue({ startChat: vi.fn().mockReturnValue({ sendMessage: vi.fn() }) }) },
+  genai: {
+    getGenerativeModel: vi.fn().mockReturnValue({
+      startChat: vi.fn().mockReturnValue({ sendMessage: vi.fn() }),
+    }),
+  },
   isRetryable: vi.fn().mockReturnValue(false),
   sleep: vi.fn().mockResolvedValue(undefined),
   backoffMs: vi.fn().mockReturnValue(0),
@@ -45,7 +68,7 @@ vi.mock('@/lib/api-client.js', () => ({
 
 vi.mock('@/brain/tutor.js', () => ({
   Tutor: vi.fn().mockImplementation(function MockTutor(this: unknown) {
-    return { reply: mockTutorReply }
+    return { reply: mockTutorReply, retryWithFeedback: mockTutorRetry }
   }),
 }))
 
@@ -55,11 +78,19 @@ vi.mock('@/brain/evaluator.js', () => ({
   }),
 }))
 
+vi.mock('@/brain/compliance.js', () => ({
+  ComplianceEvaluator: vi
+    .fn()
+    .mockImplementation(function MockComplianceEvaluator(this: unknown) {
+      return { check: mockComplianceCheck }
+    }),
+}))
+
 // ── Imports ───────────────────────────────────────────────────────────────────
 
-import { buildTestApp } from '../helpers/test-app.js'
-import { sessionStore } from '@/session-store/index.js'
 import type { SessionState } from '@/session-store/index.js'
+import { sessionStore } from '@/session-store/index.js'
+import { buildTestApp } from '../helpers/test-app.js'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -71,11 +102,24 @@ function makeState(overrides: Partial<SessionState> = {}): SessionState {
     apiSessionId: 'api-sess-1',
     userId: 'user-1',
     mode: 'FREE_TALK',
-    tutor: { reply: mockTutorReply } as never,
-    config: { level: 'B1', userId: 'user-1', deviceId: 'd', diagnosisCompleted: true, lesson: null, module: null, profile: null },
+    tutor: {
+      reply: mockTutorReply,
+      retryWithFeedback: mockTutorRetry,
+    } as never,
+    config: {
+      level: 'B1',
+      userId: 'user-1',
+      deviceId: 'd',
+      diagnosisCompleted: true,
+      lesson: null,
+      module: null,
+      profile: null,
+    },
     lessonObjectives: null,
     startedAt: Date.now(),
     turnCount: 0,
+    lastActivityAt: Date.now(),
+    interactions: [],
     ...overrides,
   }
 }
@@ -104,7 +148,11 @@ describe('POST /v1/turns', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockTutorReply.mockResolvedValue({ text: 'Hello!', attempts: 1, latencyMs: 100 })
+    mockTutorReply.mockResolvedValue({
+      text: 'Hello!',
+      attempts: 1,
+      latencyMs: 100,
+    })
     mockEvaluatorTurn.mockResolvedValue(EVAL_RESULT)
     mockCreateLog.mockResolvedValue({ id: 'log-1', progressStatus: null })
     sessionStore.set(makeState())
@@ -139,7 +187,9 @@ describe('POST /v1/turns', () => {
   })
 
   it('calls evaluator in GUIDED_LESSON automatically', async () => {
-    sessionStore.set(makeState({ mode: 'GUIDED_LESSON', lessonObjectives: 'Use past tense.' }))
+    sessionStore.set(
+      makeState({ mode: 'GUIDED_LESSON', lessonObjectives: 'Use past tense.' }),
+    )
 
     const res = await app.inject({
       method: 'POST',
@@ -164,7 +214,12 @@ describe('POST /v1/turns', () => {
   })
 
   it('passes lessonObjectives to evaluator', async () => {
-    sessionStore.set(makeState({ mode: 'GUIDED_LESSON', lessonObjectives: 'Use present perfect.' }))
+    sessionStore.set(
+      makeState({
+        mode: 'GUIDED_LESSON',
+        lessonObjectives: 'Use present perfect.',
+      }),
+    )
 
     await app.inject({
       method: 'POST',
@@ -178,8 +233,16 @@ describe('POST /v1/turns', () => {
   })
 
   it('turnCount increments after each turn', async () => {
-    await app.inject({ method: 'POST', url: '/v1/turns', body: { agentSessionId: SESSION_ID, userText: 'turn 1' } })
-    await app.inject({ method: 'POST', url: '/v1/turns', body: { agentSessionId: SESSION_ID, userText: 'turn 2' } })
+    await app.inject({
+      method: 'POST',
+      url: '/v1/turns',
+      body: { agentSessionId: SESSION_ID, userText: 'turn 1' },
+    })
+    await app.inject({
+      method: 'POST',
+      url: '/v1/turns',
+      body: { agentSessionId: SESSION_ID, userText: 'turn 2' },
+    })
 
     expect(sessionStore.get(SESSION_ID)?.turnCount).toBe(2)
   })
@@ -192,7 +255,10 @@ describe('POST /v1/turns', () => {
     })
 
     expect(mockCreateLog).toHaveBeenCalledWith(
-      expect.objectContaining({ sessionId: 'api-sess-1', userAudioTrans: 'test' }),
+      expect.objectContaining({
+        sessionId: 'api-sess-1',
+        userAudioTrans: 'test',
+      }),
     )
   })
 
@@ -249,5 +315,113 @@ describe('POST /v1/turns', () => {
     })
 
     expect(res.statusCode).toBe(400)
+  })
+
+  it('triggers compliance check and retries with feedback when A1 level draft has violations', async () => {
+    sessionStore.set(
+      makeState({
+        config: {
+          level: 'A1',
+          userId: 'user-1',
+          deviceId: 'd',
+          diagnosisCompleted: true,
+          lesson: null,
+          module: null,
+          profile: null,
+        },
+      }),
+    )
+
+    mockComplianceCheck.mockResolvedValueOnce({
+      compliant: false,
+      violations: [
+        {
+          type: 'GRAMMAR_TOO_ADVANCED',
+          snippet: 'If I had been there',
+          reason: 'Too complex for A1',
+          suggestion: 'Use simple present',
+        },
+      ],
+    })
+
+    mockTutorRetry.mockResolvedValueOnce({
+      text: 'I am happy. Do you like school?',
+      attempts: 1,
+      latencyMs: 80,
+    })
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/v1/turns',
+      body: { agentSessionId: SESSION_ID, userText: 'Hello teacher' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(mockComplianceCheck).toHaveBeenCalledOnce()
+    expect(mockTutorRetry).toHaveBeenCalledOnce()
+    expect(res.json().reply).toBe('I am happy. Do you like school?')
+  })
+
+  it('does not retry when A1 draft is already compliant', async () => {
+    sessionStore.set(
+      makeState({
+        config: {
+          level: 'A1',
+          userId: 'user-1',
+          deviceId: 'd',
+          diagnosisCompleted: true,
+          lesson: null,
+          module: null,
+          profile: null,
+        },
+      }),
+    )
+
+    mockComplianceCheck.mockResolvedValueOnce({
+      compliant: true,
+      violations: [],
+    })
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/v1/turns',
+      body: { agentSessionId: SESSION_ID, userText: 'Hello teacher' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(mockComplianceCheck).toHaveBeenCalledOnce()
+    expect(mockTutorRetry).not.toHaveBeenCalled()
+  })
+
+  it('enforces compliance check when enforceCompliance is true even on B1', async () => {
+    sessionStore.set(
+      makeState({
+        config: {
+          level: 'B1',
+          userId: 'user-1',
+          deviceId: 'd',
+          diagnosisCompleted: true,
+          lesson: null,
+          module: null,
+          profile: null,
+        },
+      }),
+    )
+    mockComplianceCheck.mockResolvedValueOnce({
+      compliant: true,
+      violations: [],
+    })
+
+    await app.inject({
+      method: 'POST',
+      url: '/v1/turns',
+      body: {
+        agentSessionId: SESSION_ID,
+        userText: 'Hello',
+        enforceCompliance: true,
+      },
+    })
+
+    expect(mockComplianceCheck).toHaveBeenCalledOnce()
   })
 })
