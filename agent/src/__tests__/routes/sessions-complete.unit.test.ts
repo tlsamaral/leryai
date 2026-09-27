@@ -1,11 +1,27 @@
 import type { FastifyInstance } from 'fastify'
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
-const { mockCompleteSession } = vi.hoisted(() => ({
-  mockCompleteSession: vi.fn(),
-}))
+const { mockCompleteSession, mockSummarizeSession, mockCreateSessionInsight } =
+  vi.hoisted(() => ({
+    mockCompleteSession: vi.fn(),
+    mockSummarizeSession: vi.fn().mockResolvedValue({
+      topError: 'past tense',
+      topProgress: 'fluent',
+      openTopic: null,
+    }),
+    mockCreateSessionInsight: vi.fn().mockResolvedValue({ id: 'insight-1' }),
+  }))
 
 vi.mock('@/env.js', () => ({
   env: {
@@ -22,11 +38,18 @@ vi.mock('@/env.js', () => ({
 }))
 
 vi.mock('@/lib/gemini.js', () => ({
-  genai: { getGenerativeModel: vi.fn().mockReturnValue({ startChat: vi.fn().mockReturnValue({ sendMessage: vi.fn() }) }) },
+  genai: {
+    getGenerativeModel: vi.fn().mockReturnValue({
+      startChat: vi.fn().mockReturnValue({ sendMessage: vi.fn() }),
+    }),
+  },
   isRetryable: vi.fn().mockReturnValue(false),
   sleep: vi.fn().mockResolvedValue(undefined),
   backoffMs: vi.fn().mockReturnValue(0),
   withTimeout: vi.fn().mockImplementation((p: Promise<unknown>) => p),
+  extractTokenUsage: vi
+    .fn()
+    .mockReturnValue({ inputTokens: 10, outputTokens: 5, totalTokens: 15 }),
 }))
 
 vi.mock('@/lib/api-client.js', () => ({
@@ -38,6 +61,7 @@ vi.mock('@/lib/api-client.js', () => ({
     createSession: vi.fn(),
     createLog: vi.fn(),
     completeSession: mockCompleteSession,
+    createSessionInsight: mockCreateSessionInsight,
   },
 }))
 
@@ -53,11 +77,19 @@ vi.mock('@/brain/evaluator.js', () => ({
   }),
 }))
 
+vi.mock('@/brain/summarizer.js', () => ({
+  Summarizer: vi.fn().mockImplementation(function MockSummarizer(
+    this: unknown,
+  ) {
+    return { summarizeSession: mockSummarizeSession }
+  }),
+}))
+
 // ── Imports ───────────────────────────────────────────────────────────────────
 
-import { buildTestApp } from '../helpers/test-app.js'
-import { sessionStore } from '@/session-store/index.js'
 import type { SessionState } from '@/session-store/index.js'
+import { sessionStore } from '@/session-store/index.js'
+import { buildTestApp } from '../helpers/test-app.js'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -70,10 +102,20 @@ function makeState(overrides: Partial<SessionState> = {}): SessionState {
     userId: 'user-1',
     mode: 'GUIDED_LESSON',
     tutor: { reply: vi.fn() } as never,
-    config: { level: 'B1', userId: 'user-1', deviceId: 'd', diagnosisCompleted: true, lesson: null, module: null, profile: null },
+    config: {
+      level: 'B1',
+      userId: 'user-1',
+      deviceId: 'd',
+      diagnosisCompleted: true,
+      lesson: null,
+      module: null,
+      profile: null,
+    },
     lessonObjectives: null,
     startedAt: Date.now(),
     turnCount: 7,
+    lastActivityAt: Date.now(),
+    interactions: [],
     ...overrides,
   }
 }
@@ -92,7 +134,11 @@ describe('PATCH /v1/sessions/:agentSessionId/complete', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockCompleteSession.mockResolvedValue({ id: 'api-sess-1', finalScore: 82, progressStatus: 'PASSED' })
+    mockCompleteSession.mockResolvedValue({
+      id: 'api-sess-1',
+      finalScore: 82,
+      progressStatus: 'PASSED',
+    })
     sessionStore.set(makeState())
   })
 
@@ -114,12 +160,18 @@ describe('PATCH /v1/sessions/:agentSessionId/complete', () => {
   })
 
   it('removes session from store after completion', async () => {
-    await app.inject({ method: 'PATCH', url: `/v1/sessions/${SESSION_ID}/complete` })
+    await app.inject({
+      method: 'PATCH',
+      url: `/v1/sessions/${SESSION_ID}/complete`,
+    })
     expect(sessionStore.get(SESSION_ID)).toBeUndefined()
   })
 
   it('calls apiClient.completeSession with the apiSessionId', async () => {
-    await app.inject({ method: 'PATCH', url: `/v1/sessions/${SESSION_ID}/complete` })
+    await app.inject({
+      method: 'PATCH',
+      url: `/v1/sessions/${SESSION_ID}/complete`,
+    })
     expect(mockCompleteSession).toHaveBeenCalledWith('api-sess-1')
   })
 
@@ -139,7 +191,10 @@ describe('PATCH /v1/sessions/:agentSessionId/complete', () => {
   it('session still deleted from store even when apiClient throws', async () => {
     mockCompleteSession.mockRejectedValue(new Error('API error'))
 
-    await app.inject({ method: 'PATCH', url: `/v1/sessions/${SESSION_ID}/complete` })
+    await app.inject({
+      method: 'PATCH',
+      url: `/v1/sessions/${SESSION_ID}/complete`,
+    })
 
     expect(sessionStore.get(SESSION_ID)).toBeUndefined()
   })
@@ -147,7 +202,10 @@ describe('PATCH /v1/sessions/:agentSessionId/complete', () => {
   it('does not call apiClient when apiSessionId is null', async () => {
     sessionStore.set(makeState({ apiSessionId: null }))
 
-    await app.inject({ method: 'PATCH', url: `/v1/sessions/${SESSION_ID}/complete` })
+    await app.inject({
+      method: 'PATCH',
+      url: `/v1/sessions/${SESSION_ID}/complete`,
+    })
 
     expect(mockCompleteSession).not.toHaveBeenCalled()
   })
@@ -171,5 +229,31 @@ describe('PATCH /v1/sessions/:agentSessionId/complete', () => {
     })
 
     expect(res.json().turnCount).toBe(12)
+  })
+
+  it('triggers summarizer and creates session insight when interactions exist', async () => {
+    sessionStore.set(
+      makeState({
+        apiSessionId: 'api-sess-1',
+        interactions: [
+          {
+            userInput: 'Yesterday I go to school',
+            leryResponse: 'We say "went". What did you learn?',
+            grammaticalFixes: 'Yesterday I went to school',
+          },
+        ],
+      }),
+    )
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/v1/sessions/${SESSION_ID}/complete`,
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(mockSummarizeSession).toHaveBeenCalledWith(
+      'api-sess-1',
+      expect.any(Array),
+    )
   })
 })

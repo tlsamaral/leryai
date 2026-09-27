@@ -1,9 +1,12 @@
 import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
+import { Summarizer } from '@/brain/summarizer.js'
 import { SessionNotFoundError } from '@/errors.js'
 import { apiClient } from '@/lib/api-client.js'
 import { sessionStore } from '@/session-store/index.js'
+
+const summarizer = new Summarizer()
 
 export async function completeSessionRoute(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().patch(
@@ -42,6 +45,27 @@ export async function completeSessionRoute(app: FastifyInstance) {
         } catch (err) {
           app.log.warn({ err }, 'completeSession against API failed')
         }
+      }
+
+      // ── Summarizer worker: compact memory into SessionInsight card ─────
+      if (state.apiSessionId && state.interactions.length > 0) {
+        const apiSessionId = state.apiSessionId
+        const interactions = [...state.interactions]
+        void summarizer
+          .summarizeSession(apiSessionId, interactions)
+          .then(async (insight) => {
+            if (insight) {
+              await apiClient.createSessionInsight({
+                sessionId: apiSessionId,
+                topError: insight.topError,
+                topProgress: insight.topProgress,
+                openTopic: insight.openTopic,
+              })
+            }
+          })
+          .catch((err) => {
+            app.log.warn({ err }, 'Summarizer worker failed in background')
+          })
       }
 
       sessionStore.delete(agentSessionId)
