@@ -12,10 +12,12 @@
     "test:eval": "vitest run --project eval",
     "test:all": "vitest run",
     "test:watch": "vitest --project unit",
-    "test:coverage": "vitest run --project unit --coverage"
+    "test:coverage": "vitest run --project unit --coverage",
+    "simulate": "tsx scripts/simulate-session.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "agent": "link:",
     "dotenv": "^17.3.1",
     "fastify": "^5.7.4",
     "fastify-type-provider-zod": "^6.1.0",

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lery AI — Eval Report: core/ vs agent/</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; padding: 32px; }
+  h1 { font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .subtitle { color: #64748b; font-size: 0.875rem; margin-bottom: 40px; }
+  h2 { font-size: 1rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  .card { background: #1e2433; border: 1px solid #2d3748; border-radius: 12px; padding: 24px; }
+  .card.full { grid-column: 1 / -1; }
+  canvas { max-height: 280px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: #161b27; color: #94a3b8; text-align: left; padding: 10px 14px; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 10px 14px; border-top: 1px solid #2d3748; vertical-align: middle; }
+  tr:hover td { background: #1a2234; }
+  .pass { color: #34d399; font-weight: 600; }
+  .fail { color: #f87171; font-weight: 600; }
+  .na { color: #475569; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 0.72rem; font-weight: 600; }
+  .pill-green { background: #064e3b; color: #6ee7b7; }
+  .pill-blue { background: #1e3a5f; color: #7dd3fc; }
+  .pill-purple { background: #3b1f5e; color: #c4b5fd; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 2rem; font-weight: 700; color: #fff; }
+  .stat-label { font-size: 0.75rem; color: #64748b; margin-top: 4px; }
+  .verdict { background: linear-gradient(135deg, #1a2f1a, #1e2433); border: 1px solid #22543d; border-radius: 12px; padding: 24px; margin-bottom: 32px; }
+  .verdict h2 { color: #34d399; margin-bottom: 12px; }
+  .verdict p { color: #cbd5e1; line-height: 1.7; font-size: 0.9rem; }
+  .verdict strong { color: #fff; }
+  .delta-pos { color: #34d399; }
+  .delta-neg { color: #f87171; }
+  .delta-neu { color: #94a3b8; }
+  @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<h1>Lery AI — Eval Report</h1>
+<p class="subtitle">core/ (Python · google-genai) vs agent/ (TypeScript · @google/generative-ai) · gemini-2.5-flash · 2026-07-09/10</p>
+
+<!-- KPI row -->
+<div class="grid-3" style="margin-bottom:32px">
+  <div class="card stat">
+    <div class="stat-value" style="color:#34d399">11/11</div>
+    <div class="stat-label">core/ eval pass rate</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value" style="color:#fbbf24">8/9</div>
+    <div class="stat-label">agent/ eval pass rate (1× quota timeout)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value" style="color:#7dd3fc">~$0.0001</div>
+    <div class="stat-label">cost per evaluation call</div>
+  </div>
+</div>
+
+<!-- Verdict -->
+<div class="verdict">
+  <h2>Veredicto</h2>
+  <p>
+    Os prompts são <strong>idênticos</strong> em ambas as implementações — qualquer diferença de score é <strong>variância do modelo</strong> (não-determinismo do LLM), não diferença de implementação.
+    O custo por chamada é o mesmo (~$0.0001). A estratégia recomendada é manter a avaliação no <strong>agent/ (server-side)</strong>:
+    o Pi 3 fica responsável só pelo pipeline de voz; o servidor agrega resultados no banco e pode evoluir prompts sem re-deploy no device.
+  </p>
+</div>
+
+<!-- Chart 1: Total scores -->
+<div class="card full" style="margin-bottom:24px">
+  <h2>Total Score por Fixture (0–100)</h2>
+  <canvas id="chartTotals"></canvas>
+</div>
+
+<!-- Charts 2 & 3 -->
+<div class="grid-2" style="margin-bottom:24px">
+  <div class="card">
+    <h2>Latência por Fixture (ms)</h2>
+    <canvas id="chartLatency"></canvas>
+  </div>
+  <div class="card">
+    <h2>Variância core/ (run-to-run delta)</h2>
+    <canvas id="chartVariance"></canvas>
+  </div>
+</div>
+
+<!-- Charts 4 & 5 -->
+<div class="grid-2" style="margin-bottom:24px">
+  <div class="card">
+    <h2>Pilar grammar — comparativo</h2>
+    <canvas id="chartGrammar"></canvas>
+  </div>
+  <div class="card">
+    <h2>Pilar task_achievement — comparativo</h2>
+    <canvas id="chartTask"></canvas>
+  </div>
+</div>
+
+<!-- Raw data table -->
+<div class="card full" style="margin-bottom:24px">
+  <h2 style="margin-bottom:16px">Scores brutos por pilar</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Fixture</th>
+        <th>Impl</th>
+        <th>task</th>
+        <th>grammar</th>
+        <th>vocab</th>
+        <th>fluency</th>
+        <th>total</th>
+        <th>latency (ms)</th>
+        <th>pass</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- advanced_fluent -->
+      <tr>
+        <td>advanced_fluent</td><td><span class="pill pill-green">core D-1</span></td>
+        <td>24</td><td>25</td><td>25</td><td>25</td><td><strong>99</strong></td><td>6,384</td><td class="pass">✓</td>
+      </tr>
+      <tr>
+        <td></td><td><span class="pill pill-blue">core hoje</span></td>
+        <td>24</td><td>25</td><td>25</td><td>25</td><td><strong>99</strong></td><td>6,205</td><td class="pass">✓</td>
+      </tr>
+      <tr>
+        <td></td><td><span class="pill pill-purple">agent/</span></td>
+        <td>25</td><td>25</td><td>25</td><td>25</td><td><strong>100</strong></td><td>5,752</td><td class="pass">✓</td>
+      </tr>
+      <!-- beginner_grammar_errors -->
+      <tr style="border-top:2px solid #2d3748">
+        <td>beginner_grammar_errors</td><td><span class="pill pill-green">core D-1</span></td>
+        <td>23</td><td>8</td><td>15</td><td>18</td><td><strong>64</strong></td><td>6,174</td><td class="pass">✓</td>
+      </tr>
+      <tr>
+        <td></td><td><span class="pill pill-blue">core hoje</span></td>
+        <td>23</td><td>8</td><td>20</td><td>20</td><td><strong>71</strong></td><td>6,476</td><td class="pass">✓</td>
+      </tr>
+      <tr>
+        <td></td><td><span class="pill pill-purple">agent/</span></td>
+        <td>22</td><td>5</td><td>18</td><td>18</td><td><strong>63</strong></td><td>7,858</td><td class="pass">✓</td>
+      </tr>
+      <!-- empty_short_response -->
+      <tr style="border-top:2px solid #2d3748">
+        <td>empty_short_response</td><td><span class="pill pill-green">core D-1</span></td>
+        <td>10</td><td>25</td><td>5</td><td>12</td><td><strong>52</strong></td><td>15,407</td><td class="pass">✓</td>
+      </tr>
+      <tr>
+        <td></td><td><span class="pill pill-blue">core hoje</span></td>
+        <td>12</td><td>20</td><td>20</td><td>10</td><td><strong>62</strong></td><td>8,440</td><td class="pass">✓</td>
+      </tr>
+      <tr>
+        <td></td><td><span class="pill pill-purple">agent/</span></td>
+        <td>5</td><td>25</td><td>5</td><td>5</td><td><strong>40</strong></td><td>13,884</td><td class="pass">✓</td>
+      </tr>
+      <!-- guided_lesson_with_objectives -->
+      <tr style="border-top:2px solid #2d3748">
+        <td>guided_lesson_with_objectives</td><td><span class="pill pill-green">core D-1</span></td>
+        <td>25</td><td>25</td><td>23</td><td>25</td><td><strong>98</strong></td><td>4,883</td><td class="pass">✓</td>
+      </tr>
+      <tr>
+        <td></td><td><span class="pill pill-blue">core hoje</span></td>
+        <td>25</td><td>25</td><td>20</td><td>25</td><td><strong>95</strong></td><td>5,718</td><td class="pass">✓</td>
+      </tr>
+      <tr>
+        <td></td><td><span class="pill pill-purple">agent/</span></td>
+        <td>25</td><td>25</td><td>20</td><td>25</td><td><strong>95</strong></td><td>4,569</td><td class="pass">✓</td>
+      </tr>
+      <!-- intermediate_task_failure -->
+      <tr style="border-top:2px solid #2d3748">
+        <td>intermediate_task_failure</td><td><span class="pill pill-green">core D-1</span></td>
+        <td>0</td><td>25</td><td>20</td><td>20</td><td><strong>65</strong></td><td>14,382</td><td class="pass">✓</td>
+      </tr>
+      <tr>
+        <td></td><td><span class="pill pill-blue">core hoje</span></td>
+        <td>0</td><td>20</td><td>15</td><td>20</td><td><strong>55</strong></td><td>9,160</td><td class="pass">✓</td>
+      </tr>
+      <tr>
+        <td></td><td><span class="pill pill-purple">agent/</span></td>
+        <td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td class="fail">timeout</td>
+      </tr>
+      <!-- multiple_errors -->
+      <tr style="border-top:2px solid #2d3748">
+        <td>multiple_errors</td><td><span class="pill pill-green">core D-1</span></td>
+        <td>20</td><td>5</td><td>20</td><td>15</td><td><strong>60</strong></td><td>52,548</td><td class="pass">✓</td>
+      </tr>
+      <tr>
+        <td></td><td><span class="pill pill-blue">core hoje</span></td>
+        <td>22</td><td>5</td><td>15</td><td>10</td><td><strong>52</strong></td><td>75,794</td><td class="pass">✓</td>
+      </tr>
+      <tr>
+        <td></td><td><span class="pill pill-purple">agent/</span></td>
+        <td>20</td><td>5</td><td>15</td><td>15</td><td><strong>55</strong></td><td>5,867</td><td class="pass">✓</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Cost table -->
+<div class="card full">
+  <h2 style="margin-bottom:16px">Análise de custo — gemini-2.5-flash</h2>
+  <table>
+    <thead>
+      <tr><th>Operação</th><th>Input tokens (est.)</th><th>Output tokens (est.)</th><th>Custo por chamada</th><th>1.000 calls/mês</th><th>10.000 calls/mês</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>evaluate_turn</td><td>~700</td><td>~150</td><td>$0.000097</td><td><strong>$0.10</strong></td><td><strong>$0.97</strong></td>
+      </tr>
+      <tr>
+        <td>generate_response</td><td>~1.200</td><td>~200</td><td>$0.000150</td><td><strong>$0.15</strong></td><td><strong>$1.50</strong></td>
+      </tr>
+      <tr>
+        <td>rate_cefr</td><td>~900</td><td>~80</td><td>$0.000091</td><td><strong>$0.09</strong></td><td><strong>$0.91</strong></td>
+      </tr>
+      <tr style="background:#161b27;font-weight:600">
+        <td>Total por sessão (3 ops)</td><td>~2.800</td><td>~430</td><td>$0.000338</td><td><strong>$0.34</strong></td><td><strong>$3.38</strong></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="color:#64748b;font-size:0.75rem;margin-top:12px">
+    Preços: $0.075/M input tokens · $0.30/M output tokens (gemini-2.5-flash, sem cache). Custo de infraestrutura (Pi, servidor) não incluído.
+  </p>
+</div>
+
+<script>
+const FIXTURES = ['advanced_fluent', 'beginner_grammar_errors', 'empty_short_response', 'guided_lesson_with_objectives', 'intermediate_task_failure', 'multiple_errors']
+const FIXTURES_SHORT = ['adv_fluent', 'beg_grammar', 'empty_resp', 'guided_lesson', 'inter_fail', 'multi_err']
+
+const coreD1   = { total: [99, 64, 52, 98, 65, 60], grammar: [25, 8, 25, 25, 25, 5], task: [24, 23, 10, 25, 0, 20], latency: [6384, 6174, 15407, 4883, 14382, 52548] }
+const coreHoje = { total: [99, 71, 62, 95, 55, 52], grammar: [25, 8, 20, 25, 20, 5], task: [24, 23, 12, 25, 0, 22], latency: [6205, 6476, 8440, 5718, 9160, 75794] }
+const agentV1  = { total: [100, 63, 40, 95, null, 55], grammar: [25, 5, 25, 25, null, 5], task: [25, 22, 5, 25, null, 20], latency: [5752, 7858, 13884, 4569, null, 5867] }
+
+const C = { green: '#34d399', blue: '#38bdf8', purple: '#a78bfa', greenBg: '#34d39933', blueBg: '#38bdf833', purpleBg: '#a78bfa33' }
+
+// Chart 1: Total scores
+new Chart(document.getElementById('chartTotals'), {
+  type: 'bar',
+  data: {
+    labels: FIXTURES_SHORT,
+    datasets: [
+      { label: 'core D-1', data: coreD1.total, backgroundColor: C.greenBg, borderColor: C.green, borderWidth: 2 },
+      { label: 'core hoje', data: coreHoje.total, backgroundColor: C.blueBg, borderColor: C.blue, borderWidth: 2 },
+      { label: 'agent/', data: agentV1.total, backgroundColor: C.purpleBg, borderColor: C.purple, borderWidth: 2 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: true,
+    plugins: { legend: { labels: { color: '#94a3b8' } } },
+    scales: {
+      x: { ticks: { color: '#64748b' }, grid: { color: '#1e2433' } },
+      y: { min: 0, max: 100, ticks: { color: '#64748b' }, grid: { color: '#2d3748' } }
+    }
+  }
+})
+
+// Chart 2: Latency
+new Chart(document.getElementById('chartLatency'), {
+  type: 'bar',
+  data: {
+    labels: FIXTURES_SHORT,
+    datasets: [
+      { label: 'core D-1', data: coreD1.latency.map(v => Math.round(v/1000)), backgroundColor: C.greenBg, borderColor: C.green, borderWidth: 2 },
+      { label: 'core hoje', data: coreHoje.latency.map(v => Math.round(v/1000)), backgroundColor: C.blueBg, borderColor: C.blue, borderWidth: 2 },
+      { label: 'agent/', data: agentV1.latency.map(v => v ? Math.round(v/1000) : null), backgroundColor: C.purpleBg, borderColor: C.purple, borderWidth: 2 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: true,
+    plugins: { legend: { labels: { color: '#94a3b8' } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.raw}s` } } },
+    scales: {
+      x: { ticks: { color: '#64748b' }, grid: { color: '#1e2433' } },
+      y: { ticks: { color: '#64748b', callback: v => v + 's' }, grid: { color: '#2d3748' } }
+    }
+  }
+})
+
+// Chart 3: Variance (core D-1 vs core hoje delta)
+const deltas = coreD1.total.map((v, i) => coreHoje.total[i] - v)
+new Chart(document.getElementById('chartVariance'), {
+  type: 'bar',
+  data: {
+    labels: FIXTURES_SHORT,
+    datasets: [{
+      label: 'Δ total_score (hoje − D-1)',
+      data: deltas,
+      backgroundColor: deltas.map(d => d > 0 ? '#34d39944' : d < 0 ? '#f8717144' : '#64748b44'),
+      borderColor: deltas.map(d => d > 0 ? C.green : d < 0 ? '#f87171' : '#64748b'),
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: true,
+    plugins: { legend: { labels: { color: '#94a3b8' } } },
+    scales: {
+      x: { ticks: { color: '#64748b' }, grid: { color: '#1e2433' } },
+      y: { ticks: { color: '#64748b' }, grid: { color: '#2d3748' } }
+    }
+  }
+})
+
+// Chart 4: Grammar pillar
+new Chart(document.getElementById('chartGrammar'), {
+  type: 'bar',
+  data: {
+    labels: FIXTURES_SHORT,
+    datasets: [
+      { label: 'core D-1', data: coreD1.grammar, backgroundColor: C.greenBg, borderColor: C.green, borderWidth: 2 },
+      { label: 'core hoje', data: coreHoje.grammar, backgroundColor: C.blueBg, borderColor: C.blue, borderWidth: 2 },
+      { label: 'agent/', data: agentV1.grammar, backgroundColor: C.purpleBg, borderColor: C.purple, borderWidth: 2 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: true,
+    plugins: { legend: { labels: { color: '#94a3b8' } } },
+    scales: {
+      x: { ticks: { color: '#64748b' }, grid: { color: '#1e2433' } },
+      y: { min: 0, max: 25, ticks: { color: '#64748b' }, grid: { color: '#2d3748' } }
+    }
+  }
+})
+
+// Chart 5: Task achievement pillar
+new Chart(document.getElementById('chartTask'), {
+  type: 'bar',
+  data: {
+    labels: FIXTURES_SHORT,
+    datasets: [
+      { label: 'core D-1', data: coreD1.task, backgroundColor: C.greenBg, borderColor: C.green, borderWidth: 2 },
+      { label: 'core hoje', data: coreHoje.task, backgroundColor: C.blueBg, borderColor: C.blue, borderWidth: 2 },
+      { label: 'agent/', data: agentV1.task, backgroundColor: C.purpleBg, borderColor: C.purple, borderWidth: 2 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: true,
+    plugins: { legend: { labels: { color: '#94a3b8' } } },
+    scales: {
+      x: { ticks: { color: '#64748b' }, grid: { color: '#1e2433' } },
+      y: { min: 0, max: 25, ticks: { color: '#64748b' }, grid: { color: '#2d3748' } }
+    }
+  }
+})
+</script>
+</body>
+</html>
