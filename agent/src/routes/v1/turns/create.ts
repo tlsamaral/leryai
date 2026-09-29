@@ -1,3 +1,4 @@
+import { trace } from '@opentelemetry/api'
 import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
@@ -9,6 +10,7 @@ import { sessionStore } from '@/session-store/index.js'
 
 const evaluator = new Evaluator()
 const complianceEvaluator = new ComplianceEvaluator()
+const tracer = trace.getTracer('lery-agent')
 
 export async function createTurnRoute(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
@@ -56,95 +58,117 @@ export async function createTurnRoute(app: FastifyInstance) {
         throw new BadRequestError('userText cannot be empty')
       }
 
-      // ── 1. Tutor reply (draft) ─────────────────────────────────────────
-      let tutorReply = await state.tutor.reply(userText, agentSessionId)
-      state.turnCount += 1
+      // Root span for the whole turn — tutor/compliance/evaluator spans
+      // (emitted by wrapWithTelemetry) nest under it automatically via
+      // OTel's async context, giving a waterfall of exactly where a
+      // turn's latency goes when viewed in Jaeger.
+      return tracer.startActiveSpan('agent.turn', async (span) => {
+        span.setAttribute('lery.session_id', agentSessionId)
+        span.setAttribute('lery.mode', state.mode)
+        span.setAttribute('lery.level', state.config.level)
 
-      // ── 2. Evaluator-Optimizer Gatekeeper (Level Compliance) ───────────
-      const shouldCheckCompliance =
-        enforceCompliance ??
-        (state.config.level === 'A1' || state.config.level === 'A2')
+        try {
+          // ── 1. Tutor reply (draft) ───────────────────────────────────
+          let tutorReply = await state.tutor.reply(userText, agentSessionId)
+          state.turnCount += 1
 
-      if (shouldCheckCompliance) {
-        const compliance = await complianceEvaluator.check({
-          tutorReply: tutorReply.text,
-          studentLevel: state.config.level,
-          userInput: userText,
-          lessonObjectives: state.lessonObjectives,
-        })
+          // ── 2 & 3. Compliance gate + Student Evaluator, concurrently ──
+          // Both only depend on the draft reply, not on each other —
+          // running them serially was one full extra Gemini round-trip
+          // on every GUIDED_LESSON turn. Parallelizing collapses that to
+          // the slower of the two instead of the sum.
+          const shouldCheckCompliance =
+            enforceCompliance ??
+            (state.config.level === 'A1' || state.config.level === 'A2')
+          const shouldEvaluate = evaluate ?? state.mode === 'GUIDED_LESSON'
 
-        if (!compliance.compliant && compliance.violations.length > 0) {
-          const feedback = compliance.violations
-            .map(
-              (v) =>
-                `- [${v.type}] on "${v.snippet}": ${v.reason}. Suggestion: ${v.suggestion}`,
-            )
-            .join('\n')
+          const [compliance, evaluation] = await Promise.all([
+            shouldCheckCompliance
+              ? complianceEvaluator.check({
+                  tutorReply: tutorReply.text,
+                  studentLevel: state.config.level,
+                  userInput: userText,
+                  lessonObjectives: state.lessonObjectives,
+                })
+              : Promise.resolve(null),
+            shouldEvaluate
+              ? evaluator.evaluateTurn({
+                  userInput: userText,
+                  leryResponse: tutorReply.text,
+                  lessonObjectives: state.lessonObjectives ?? undefined,
+                })
+              : Promise.resolve(null),
+          ])
 
-          try {
-            const revised = await state.tutor.retryWithFeedback(
-              feedback,
-              agentSessionId,
-            )
-            tutorReply = {
-              text: revised.text,
-              attempts: tutorReply.attempts + revised.attempts,
-              latencyMs: tutorReply.latencyMs + revised.latencyMs,
+          if (
+            compliance &&
+            !compliance.compliant &&
+            compliance.violations.length > 0
+          ) {
+            const feedback = compliance.violations
+              .map(
+                (v) =>
+                  `- [${v.type}] on "${v.snippet}": ${v.reason}. Suggestion: ${v.suggestion}`,
+              )
+              .join('\n')
+
+            try {
+              const revised = await state.tutor.retryWithFeedback(
+                feedback,
+                agentSessionId,
+              )
+              tutorReply = {
+                text: revised.text,
+                attempts: tutorReply.attempts + revised.attempts,
+                latencyMs: tutorReply.latencyMs + revised.latencyMs,
+              }
+            } catch (retryErr) {
+              app.log.warn(
+                { retryErr },
+                'Tutor compliance retry failed — proceeding with original draft',
+              )
             }
-          } catch (retryErr) {
-            app.log.warn(
-              { retryErr },
-              'Tutor compliance retry failed — proceeding with original draft',
-            )
           }
-        }
-      }
 
-      // ── 3. Student Evaluator (only when requested or in GUIDED_LESSON) ──
-      const shouldEvaluate = evaluate ?? state.mode === 'GUIDED_LESSON'
-      const evaluation = shouldEvaluate
-        ? await evaluator.evaluateTurn({
+          // ── Persist log ─────────────────────────────────────────────
+          let logId: string | null = null
+          if (state.apiSessionId) {
+            try {
+              const logRes = await apiClient.createLog({
+                sessionId: state.apiSessionId,
+                userAudioTrans: userText,
+                leryResponse: tutorReply.text,
+                grammaticalFixes: evaluation?.grammatical_fixes,
+                taskAchievement: evaluation?.task_achievement,
+                grammar: evaluation?.grammar,
+                vocabulary: evaluation?.vocabulary,
+                fluency: evaluation?.fluency,
+                totalScore: evaluation?.total_score,
+                evaluationReasoning: evaluation?.reasoning,
+              })
+              logId = logRes.id
+            } catch (err) {
+              app.log.warn({ err }, 'Failed to persist interaction log')
+            }
+          }
+
+          // ── 4. Record interaction for Session Summarizer ────────────
+          state.interactions.push({
             userInput: userText,
             leryResponse: tutorReply.text,
-            lessonObjectives: state.lessonObjectives ?? undefined,
-          })
-        : null
-
-      // ── Persist log ────────────────────────────────────────────────────
-      let logId: string | null = null
-      if (state.apiSessionId) {
-        try {
-          const logRes = await apiClient.createLog({
-            sessionId: state.apiSessionId,
-            userAudioTrans: userText,
-            leryResponse: tutorReply.text,
             grammaticalFixes: evaluation?.grammatical_fixes,
-            taskAchievement: evaluation?.task_achievement,
-            grammar: evaluation?.grammar,
-            vocabulary: evaluation?.vocabulary,
-            fluency: evaluation?.fluency,
-            totalScore: evaluation?.total_score,
-            evaluationReasoning: evaluation?.reasoning,
           })
-          logId = logRes.id
-        } catch (err) {
-          app.log.warn({ err }, 'Failed to persist interaction log')
+
+          return reply.status(200).send({
+            reply: tutorReply.text,
+            attempts: tutorReply.attempts,
+            latencyMs: tutorReply.latencyMs,
+            evaluation,
+            logId,
+          })
+        } finally {
+          span.end()
         }
-      }
-
-      // ── 4. Record interaction for Session Summarizer ───────────────────
-      state.interactions.push({
-        userInput: userText,
-        leryResponse: tutorReply.text,
-        grammaticalFixes: evaluation?.grammatical_fixes,
-      })
-
-      return reply.status(200).send({
-        reply: tutorReply.text,
-        attempts: tutorReply.attempts,
-        latencyMs: tutorReply.latencyMs,
-        evaluation,
-        logId,
       })
     },
   )

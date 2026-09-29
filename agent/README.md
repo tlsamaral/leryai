@@ -19,7 +19,7 @@ Ainda **não** implementa: Guard, Router, Summarizer worker (insight cards), too
 
 - Node 22+
 - `api/` rodando localmente (`cd api && pnpm dev`)
-- Banco rodando (`docker compose up -d` na raiz)
+- Banco + Jaeger rodando (`docker compose up -d` na raiz)
 - `GOOGLE_API_KEY` válida
 - Device API key cadastrada no banco (`lery_*`) — usada pelo agente pra autenticar contra `iot/*`. Para testar local, pode reusar a mesma key que o Pi usa.
 
@@ -97,6 +97,23 @@ Cada `agentSessionId` mantém em memória:
 
 Sessão é **stateful in-memory** — reboot do agent perde sessões abertas. Aceitável no MVP. Próximo passo: persistir snapshot do chat history se sessão durar muito.
 
+## Telemetria (OpenTelemetry + Jaeger)
+
+Toda chamada Gemini (Tutor/Compliance/Evaluator/Summarizer) passa por `wrapWithTelemetry` (`src/lib/telemetry.ts`), que gera:
+
+1. **Span OTel**, filho do span raiz `agent.turn` (criado em `routes/v1/turns/create.ts`) — dá pra ver no Jaeger, como waterfall, exatamente quanto tempo cada etapa do turno consumiu e quais rodaram em paralelo.
+2. **Linha JSONL** em `telemetry/metrics-<data>.jsonl` — agregável offline com `pnpm telemetry:report [--date=YYYY-MM-DD]` (p50/p95/success rate por role, sem precisar do Jaeger no ar).
+
+Setup:
+
+```bash
+docker compose up -d          # sobe Postgres + Jaeger (raiz do monorepo)
+cd agent && pnpm dev
+# gere um turno via /v1/turns e abra http://localhost:16686 (UI do Jaeger)
+```
+
+100% self-hosted e gratuito — `@opentelemetry/*` é Apache-2.0, `jaegertracing/all-in-one` é OSS. Desliga com `OTEL_ENABLED=false` no `.env` se não precisar (spans viram no-op via `@opentelemetry/api`, sem custo).
+
 ## Convenções
 
 - Path alias: `@/*` → `src/*`
@@ -107,10 +124,8 @@ Sessão é **stateful in-memory** — reboot do agent perde sessões abertas. Ac
 
 ## Próximos passos (alinhados ao doc Context Engineering)
 
-1. Telemetria de tokens por bucket (system/history/output)
-2. Summarizer worker — gera `SessionInsight` ao final de cada sessão
-3. Tools `recall_*` via function calling do Gemini (substitui injeção upfront de snapshot/insights)
-4. Guard + Router como camadas isoladas (Flash-Lite)
-5. Job de agregação que popula `LearnerProfileSnapshot` pós-sessão
+1. ~~Telemetria de tokens por bucket~~ — feito: spans OTel + JSONL, ver seção Telemetria acima.
+2. Guard + Router como camadas isoladas (Flash-Lite)
+3. Job de agregação que popula `LearnerProfileSnapshot` pós-sessão
 
 Não migrar `core/` para chamar o Agent até esse MVP estar validado end-to-end.

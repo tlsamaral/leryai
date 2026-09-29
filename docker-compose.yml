@@ -12,5 +12,16 @@ services:
     volumes:
       - lery_pgdata:/var/lib/postgresql/data
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: lery_jaeger
+    restart: always
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686" # UI — http://localhost:16686
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP (used by agent/)
+
 volumes:
   lery_pgdata:

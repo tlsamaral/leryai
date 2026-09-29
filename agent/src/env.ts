@@ -11,6 +11,11 @@ const envSchema = z.object({
   LERY_DEVICE_API_KEY: z.string().min(1, 'LERY_DEVICE_API_KEY is required'),
   TUTOR_HARD_TIMEOUT_MS: z.coerce.number().int().default(10000),
   TUTOR_MAX_RETRIES: z.coerce.number().int().default(4),
+  OTEL_ENABLED: z.coerce.boolean().default(true),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z
+    .string()
+    .url()
+    .default('http://localhost:4318'),
 })
 
 const parsed = envSchema.safeParse(process.env)

@@ -13,10 +13,16 @@
     "test:all": "vitest run",
     "test:watch": "vitest --project unit",
     "test:coverage": "vitest run --project unit --coverage",
-    "simulate": "tsx scripts/simulate-session.ts"
+    "simulate": "tsx scripts/simulate-session.ts",
+    "telemetry:report": "tsx scripts/telemetry-report.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.222.0",
+    "@opentelemetry/resources": "^2.11.0",
+    "@opentelemetry/sdk-node": "^0.222.0",
+    "@opentelemetry/semantic-conventions": "^1.43.0",
     "agent": "link:",
     "dotenv": "^17.3.1",
     "fastify": "^5.7.4",
