@@ -1,37 +1,25 @@
 Prompt Engineering está morto. O que separa um brinquedo de um produto em produção é Context Engineering.
 
-Durante a concepção do meu TCC — desenvolvendo o Lery AI, um ecossistema de tutoria de inglês que une hardware IoT (Smart Speaker sem tela) a modelos de linguagem —, me deparei com um abismo entre a teoria acadêmica e a engenharia de software real:
+Durante o desenvolvimento do meu TCC — o Lery AI, um tutor de inglês em hardware IoT (Smart Speaker sem tela) —, esbarrei num abismo entre a teoria acadêmica e a engenharia real.
 
-Na linguística aplicada, a "Hipótese do Filtro Afetivo" de Stephen Krashen e a "Foreign Language Speaking Anxiety" provam que o medo do julgamento paralisa o aluno iniciante. A promessa da IA é ser o ambiente perfeito de "baixo julgamento".
+A "Hipótese do Filtro Afetivo" de Stephen Krashen diz que o medo do julgamento trava o aluno iniciante. A IA promete ser o ambiente de baixo julgamento perfeito — mas na prática, a maioria dos devs cola um prompt monolítico de 3.000 tokens, senta um aluno A1 pra conversar, e a IA responde em B2/C1. O filtro afetivo dispara. O aluno trava. O produto morre antes de nascer.
 
-Mas sabe o que acontece na prática com 90% das aplicações de GenAI?
+LLM não é professor por natureza — é uma máquina de predição estatística complacente demais. Pra virar tutor de verdade, tratamos isso como engenharia de sistemas (arquitetura completa no carrossel):
 
-O desenvolvedor cola um prompt monolítico de 3.000 tokens no modelo, coloca um aluno nível A1 (básico) para falar e a IA responde com três parágrafos rebuscados em nível B2/C1. 
-O filtro afetivo vai às alturas. O aluno trava. O produto morre.
+1. Context window em 4 camadas com budget rígido de tokens (persona, learner snapshot, session state, turn buffer) — nada de prompt monolítico.
 
-Modelos de linguagem não são naturalmente bons professores. Eles são máquinas de predição estatística complacentes. Para transformá-los em tutores pedagógicos reais, tivemos que desenhar uma arquitetura de Context Engineering estrita na nossa codebase:
+2. Function calling como context retrieval sob demanda — 4 tools que o Tutor decide quando chamar, em vez de injetar o histórico inteiro em todo turno.
 
-1. O Fim do Prompt Monolítico (Arquitetura em 4 Camadas)
-Dividimos o context window em budgets rígidos de tokens:
-• Camada 1: Persona Estática (~400 tokens) — identidade empática e diretrizes de scaffolding.
-• Camada 2: Learner Profile Snapshot (~600 tokens) — persistência de erros recorrentes e estruturas dominadas.
-• Camada 3: Session State (~400 tokens) — restrições duras por nível CEFR (ex: para A1, teto de 1 frase curta + 1 pergunta sim/não, proibindo orações subordinadas e voz passiva).
-• Camada 4: Turn Buffer (~200 tokens) — diálogo imediato.
+3. Evaluator-Optimizer Gatekeeper — nenhuma resposta chega ao aluno sem passar por um gate de conformidade CEFR. Isso custa uma chamada extra de LLM no caminho crítico, e tutor de voz não perdoa turno lento. Essa semana instrumentei o pipeline com OpenTelemetry (Jaeger self-hosted, 100% gratuito) pra parar de adivinhar e ver o waterfall real de cada turno. Eu tinha escrito o Compliance Gate e o Avaliador em série — fazia sentido pensando em cada etapa isolada, mas o trace deixou óbvio que as duas chamadas Gemini não dependiam uma da outra. Paralelizei e cortei uma chamada inteira do critical path em toda sessão guiada. É assim que venho aprendendo: construo, meço, e só então sei onde cortar.
 
-2. Padrão Evaluator-Optimizer (Quality Gatekeeper)
-A IA não tem permissão para falar com o aluno sem validação. O Tutor gera um draft; antes do áudio ir para o pipeline de síntese de voz, um Compliance Evaluator inspeciona a resposta contra a matriz do CEFR. Se a IA violar o limite do nível A1, um loop de auto-correção força a regeneração instantânea com feedback da violação. O aluno nunca é exposto a uma resposta intimidadora.
+4. Structured output nativo — zero regex em JSON, `responseSchema` tipado em 100% das chamadas.
 
-3. Structured Output Nativo (Chega de regex em JSON)
-Zero parsing manual com regex de markdown fences. Implementamos o `responseSchema` nativo do Gemini SDK com tipos estritos no Evaluator. Previsibilidade determinística de schema em 100% das chamadas.
+5. Memória longitudinal — worker assíncrono gera um Insight Card ao fim da aula, sem travar o encerramento da sessão pro aluno.
 
-4. Memória Longitudinal com Worker Assíncrono
-Ao término da aula, um worker em background sintetiza um "Insight Card" de 3 pontos: principal erro gramatical observado, maior progresso e ganchos informais de vida pessoal. Na próxima sessão, a IA retoma a conversa exatamente de onde parou.
+6. Aluno sintético — persona simula erros reais de A1/B1 e estressa os 4 pilares CEFR antes de qualquer humano testar.
 
-5. Simulação com Aluno Sintético (Testes E2E sem falar no microfone)
-Para validar a robustez desse ecossistema, criei um simulador automatizado onde um agente persona assume o papel de um estudante brasileiro, comete deslizes gramaticais realistas turno a turno e estressa a matriz de pontuação dos 4 pilares do CEFR (Task Achievement, Grammar, Vocabulary e Fluency).
+Engenharia de IA em produção não é acertar a palavra mágica no prompt. É orquestração, controle de latência, e disciplina de medir antes de otimizar.
 
-Engenharia de IA em produção não é sobre "acertar a palavra mágica no prompt". É sobre orquestração de microsserviços, controle de latência, governança de tokens e arquitetura de sistemas orientada a métricas pedagógicas científicas.
+Como vocês estruturam context engineering e guardrails de latência nas aplicações de IA de vocês?
 
-Como vocês têm estruturado a engenharia de contexto e guardrails nas aplicações de IA da empresa de vocês?
-
-#ContextEngineering #ArtificialIntelligence #SoftwareArchitecture #GenAI #EdTech #SystemDesign #MachineLearning #LLM
+#ContextEngineering #ArtificialIntelligence #SoftwareArchitecture #GenAI #EdTech #SystemDesign #Observability #LLM
