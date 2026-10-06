@@ -1,8 +1,13 @@
+import asyncio
+import glob
+import hashlib
+import importlib.util
 import os
 import re
+import shutil
 import time
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Tuple
 
 
 def _strip_pt_tags(text: str) -> str:
@@ -12,7 +17,27 @@ def _strip_pt_tags(text: str) -> str:
     return text.strip()
 
 
+def _split_segments(text: str) -> List[Tuple[str, str]]:
+    """Splits text into (lang, clean_text) segments; [PT]...[/PT] marks Portuguese."""
+    segments = []
+    for part in re.split(r"(\[PT\].*?\[/PT\])", text, flags=re.DOTALL):
+        is_pt = part.startswith("[PT]") and part.endswith("[/PT]")
+        clean = re.sub(r"[*_]+", "", part.replace("[PT]", "").replace("[/PT]", "")).strip()
+        if clean:
+            segments.append(("pt" if is_pt else "en", clean))
+    return segments
+
+
 class TTSProvider(ABC):
+    # True after a synthesize() that was served by a fallback voice, so callers (the cache) don't
+    # keep audio that isn't in the voice that was asked for.
+    fell_back = False
+
+    @property
+    def cache_id(self) -> str:
+        """Identity of the voice — part of the cache key, so changing voice/model invalidates it."""
+        return type(self).__name__
+
     @abstractmethod
     def synthesize(self, text: str, output_dir: str = "data/audio") -> List[str]:
         """
@@ -72,6 +97,7 @@ class GTTSProvider(TTSProvider):
     def synthesize(self, text: str, output_dir: str = "data/audio") -> List[str]:
         from gtts import gTTS
 
+        self.fell_back = False
         os.makedirs(output_dir, exist_ok=True)
         parts = re.split(r"(\[PT\].*?\[/PT\])", text, flags=re.DOTALL)
         files = []
@@ -100,6 +126,7 @@ class GTTSProvider(TTSProvider):
                 except Exception as e:
                     if attempt == len(waits):
                         print(f"[gTTS] All retries failed — switching to offline TTS")
+                        self.fell_back = True
                         return self._offline.synthesize(text, output_dir)
                     wait = waits[attempt]
                     print(f"[gTTS] Rate limited, retrying in {wait}s...")
@@ -119,10 +146,15 @@ class ElevenLabsProvider(TTSProvider):
     def __init__(self, api_key: str, voice_id: str):
         self.api_key = api_key
         self.voice_id = voice_id
-        self._fallback = GTTSProvider()
+        self._fallback = _free_fallback()
         self._offline = Pyttsx3Provider()
 
+    @property
+    def cache_id(self) -> str:
+        return f"elevenlabs:{self.voice_id}"
+
     def synthesize(self, text: str, output_dir: str = "data/audio") -> List[str]:
+        self.fell_back = False
         try:
             from elevenlabs.client import ElevenLabs
             from elevenlabs import save
@@ -145,7 +177,8 @@ class ElevenLabsProvider(TTSProvider):
             return [path]
 
         except Exception as e:
-            print(f"[ElevenLabs] Error: {e} — falling back to gTTS")
+            print(f"[ElevenLabs] Error: {e} — falling back to free voice")
+            self.fell_back = True
             return self._fallback.synthesize(text, output_dir)
 
 
@@ -174,9 +207,15 @@ class OpenAITTSProvider(TTSProvider):
         self.voice = voice
         self.model = model
         self.instructions = instructions
-        self._fallback = GTTSProvider()
+        self._fallback = _free_fallback()
+
+    @property
+    def cache_id(self) -> str:
+        digest = hashlib.sha256((self.instructions or "").encode()).hexdigest()[:8]
+        return f"openai:{self.model}:{self.voice}:{digest}"
 
     def synthesize(self, text: str, output_dir: str = "data/audio") -> List[str]:
+        self.fell_back = False
         clean = _strip_pt_tags(text)
         if not clean:
             return []
@@ -203,15 +242,120 @@ class OpenAITTSProvider(TTSProvider):
             return [path]
 
         except Exception as e:
-            print(f"[OpenAI TTS] Error: {e} — falling back to gTTS")
+            print(f"[OpenAI TTS] Error: {e} — falling back to free voice")
+            self.fell_back = True
             return self._fallback.synthesize(text, output_dir)
 
 
-def create_tts_provider() -> TTSProvider:
+class EdgeTTSProvider(TTSProvider):
     """
-    Factory — reads env vars and returns the provider.
-    LERY_TTS_PROVIDER=openai|elevenlabs|gtts forces one (openai/elevenlabs need their API key,
-    otherwise gTTS is used). Unset: ElevenLabs if ELEVEN_API_KEY is set, else gTTS.
+    Microsoft Edge neural voices via the `edge-tts` package — free, no API key.
+    Unofficial endpoint (it can change without notice), so it falls back to gTTS on any error.
+    Renders [PT] segments with a Brazilian voice and the rest with the English one.
+    """
+
+    DEFAULT_VOICE_EN = "en-US-AvaMultilingualNeural"
+    DEFAULT_VOICE_PT = "pt-BR-ThalitaMultilingualNeural"
+    DEFAULT_RATE = "-5%"  # slightly slower than natural — easier for learners
+    _TIMEOUT_SECONDS = 15
+
+    def __init__(self, voice_en=None, voice_pt=None, rate=None):
+        self.voice_en = voice_en or self.DEFAULT_VOICE_EN
+        self.voice_pt = voice_pt or self.DEFAULT_VOICE_PT
+        self.rate = rate or self.DEFAULT_RATE
+        self._fallback = GTTSProvider()
+
+    @property
+    def cache_id(self) -> str:
+        return f"edge:{self.voice_en}:{self.voice_pt}:{self.rate}"
+
+    async def _render(self, edge_tts, text: str, voice: str, path: str) -> None:
+        await asyncio.wait_for(
+            edge_tts.Communicate(text, voice, rate=self.rate).save(path),
+            timeout=self._TIMEOUT_SECONDS,
+        )
+
+    def synthesize(self, text: str, output_dir: str = "data/audio") -> List[str]:
+        self.fell_back = False
+        segments = _split_segments(text)
+        if not segments:
+            return []
+
+        try:
+            import edge_tts
+
+            os.makedirs(output_dir, exist_ok=True)
+            files = []
+            for i, (lang, clean) in enumerate(segments):
+                path = os.path.join(output_dir, f"output_{i}.mp3")
+                voice = self.voice_pt if lang == "pt" else self.voice_en
+                asyncio.run(self._render(edge_tts, clean, voice, path))
+                files.append(path)
+            return files
+
+        except Exception as e:
+            print(f"[Edge TTS] Error: {e!r} — falling back to gTTS")
+            self.fell_back = True
+            return self._fallback.synthesize(text, output_dir)
+
+
+class CachingTTSProvider(TTSProvider):
+    """
+    Wraps a provider and keeps the audio of SHORT texts on disk (activation phrases, nudges,
+    goodbyes — they repeat in every session). Long replies are unique, so they bypass the cache.
+    Audio served by a fallback voice is never cached.
+    """
+
+    def __init__(self, inner: TTSProvider, cache_dir: str = "data/audio/cache", max_chars: int = 80):
+        self._inner = inner
+        self._cache_dir = cache_dir
+        self._max_chars = max_chars
+
+    @property
+    def cache_id(self) -> str:
+        return self._inner.cache_id
+
+    @property
+    def fell_back(self) -> bool:
+        return self._inner.fell_back
+
+    def synthesize(self, text: str, output_dir: str = "data/audio") -> List[str]:
+        if not text.strip() or len(_strip_pt_tags(text)) > self._max_chars:
+            return self._inner.synthesize(text, output_dir)
+
+        key = hashlib.sha256(f"{self._inner.cache_id}\n{text}".encode()).hexdigest()[:24]
+        hit = sorted(glob.glob(os.path.join(self._cache_dir, f"{key}_*")))
+        if hit:
+            print(f"[TTS] cache hit: {text[:40]!r}")
+            return hit
+
+        files = self._inner.synthesize(text, output_dir)
+        if not files or self._inner.fell_back:
+            return files
+
+        os.makedirs(self._cache_dir, exist_ok=True)
+        cached = []
+        for n, src in enumerate(files):
+            dest = os.path.join(self._cache_dir, f"{key}_{n:02d}{os.path.splitext(src)[1]}")
+            shutil.copyfile(src, dest)
+            cached.append(dest)
+        return cached
+
+
+def _edge_available() -> bool:
+    return importlib.util.find_spec("edge_tts") is not None
+
+
+def _free_fallback() -> TTSProvider:
+    """What paid providers fall back to: Edge neural voices if installed, else gTTS."""
+    return EdgeTTSProvider() if _edge_available() else GTTSProvider()
+
+
+def _select_provider() -> TTSProvider:
+    """
+    LERY_TTS_PROVIDER=edge|gtts|openai|elevenlabs forces one (paid ones need their key, else the
+    free default is used). Unset: ElevenLabs if ELEVEN_API_KEY is set, else Edge (free) if
+    installed, else gTTS.
     """
     choice = (os.getenv("LERY_TTS_PROVIDER") or "").strip().lower()
     eleven_key = os.getenv("ELEVEN_API_KEY")
@@ -221,7 +365,18 @@ def create_tts_provider() -> TTSProvider:
         print("[TTS] Using gTTS")
         return GTTSProvider()
 
-    if choice == "openai":
+    if choice == "edge":
+        if _edge_available():
+            provider = EdgeTTSProvider(
+                voice_en=os.getenv("LERY_EDGE_VOICE_EN"),
+                voice_pt=os.getenv("LERY_EDGE_VOICE_PT"),
+                rate=os.getenv("LERY_EDGE_RATE"),
+            )
+            print(f"[TTS] Using Edge TTS (en={provider.voice_en}, pt={provider.voice_pt}, rate={provider.rate})")
+            return provider
+        print("[TTS] LERY_TTS_PROVIDER=edge but the edge-tts package is not installed")
+
+    elif choice == "openai":
         if openai_key:
             voice = os.getenv("LERY_OPENAI_VOICE", "coral")
             model = os.getenv("LERY_OPENAI_TTS_MODEL", "gpt-4o-mini-tts")
@@ -238,5 +393,31 @@ def create_tts_provider() -> TTSProvider:
     elif choice == "elevenlabs":
         print("[TTS] LERY_TTS_PROVIDER=elevenlabs but ELEVEN_API_KEY is not set")
 
+    if not choice and _edge_available():
+        provider = EdgeTTSProvider(
+            voice_en=os.getenv("LERY_EDGE_VOICE_EN"),
+            voice_pt=os.getenv("LERY_EDGE_VOICE_PT"),
+            rate=os.getenv("LERY_EDGE_RATE"),
+        )
+        print(f"[TTS] Using Edge TTS (free) — en={provider.voice_en}, pt={provider.voice_pt}")
+        return provider
+
     print("[TTS] Using gTTS")
     return GTTSProvider()
+
+
+def create_tts_provider() -> TTSProvider:
+    """
+    Factory used by the app: the selected provider, wrapped in the phrase cache.
+    LERY_TTS_CACHE=0 disables the cache; LERY_TTS_CACHE_MAX_CHARS (default 80) sets the longest
+    text that gets cached.
+    """
+    provider = _select_provider()
+    if os.getenv("LERY_TTS_CACHE", "1") == "0":
+        return provider
+
+    try:
+        max_chars = int(os.getenv("LERY_TTS_CACHE_MAX_CHARS", "80"))
+    except ValueError:
+        max_chars = 80
+    return CachingTTSProvider(provider, max_chars=max_chars)
