@@ -59,7 +59,7 @@ User → Subscription, Device, ConversationSession → InteractionLog
 
 ## Variáveis de ambiente
 
-- `core/.env` — `GOOGLE_API_KEY`, `OPENAI_API_KEY`
+- `core/.env` — `GOOGLE_API_KEY`, `OPENAI_API_KEY`; opcionais: `LERY_AGENT_URL` (usa o `agent/` como cérebro, com `BrainManager` de fallback), `LERY_AGENT_TIMEOUT`, `LERY_AGENT_COOLDOWN`
 - `api/.env` — `DATABASE_URL`, `JWT_SECRET`
 
 ## Commits

@@ -10,7 +10,7 @@ from main import LeryAI, State
 
 # ── Shared fixture ────────────────────────────────────────────────────────────
 
-def _make_lery(mocker, *, api=None):
+def _make_lery(mocker, *, api=None, agent=None):
     """Build a LeryAI instance with all hardware + network deps mocked."""
     mock_audio = MagicMock()
     mock_led = MagicMock()
@@ -25,6 +25,7 @@ def _make_lery(mocker, *, api=None):
     mocker.patch('main.create_tts_provider', return_value=mock_tts)
     mocker.patch('main.create_wake_word_detector', return_value=mock_wake)
     mocker.patch('main.create_api_client', return_value=api)
+    mocker.patch('main.create_agent_client', return_value=agent)
     mocker.patch('main.BrainManager', return_value=mock_brain)
     mocker.patch('main.time.sleep')
 
@@ -607,6 +608,7 @@ class TestRunDiagnosisSession:
         mocker.patch('main.create_tts_provider', return_value=MagicMock())
         mocker.patch('main.create_wake_word_detector', return_value=MagicMock())
         mocker.patch('main.create_api_client', return_value=api)
+        mocker.patch('main.create_agent_client', return_value=None)
         mocker.patch('main.time.sleep')
 
         lery = LeryAI()
@@ -849,3 +851,157 @@ class TestRunPostSession:
 
         # get_session_config called once during __init__ and once after diagnosis
         assert api.get_session_config.call_count >= 2
+
+
+# ── Agent integration (with BrainManager fallback) ────────────────────────────
+
+def _agent_lery(mocker, tmp_path, *, agent, api=None):
+    lery = _make_lery(mocker, api=api, agent=agent)
+    audio_file = tmp_path / 'input.wav'
+    audio_file.write_bytes(b'RIFF')
+    lery._mock_audio.record_audio.side_effect = [str(audio_file), None, None, None]
+    lery.transcribe_audio = MagicMock(return_value='How are you?')
+    lery._speak = MagicMock()
+    return lery
+
+
+def _run_one_turn(lery):
+    with patch('main._matches_keywords', return_value=False), \
+         patch('main._matches_lesson_intent', return_value=False):
+        lery._run_session()
+
+
+def _api_with_session():
+    api = MagicMock()
+    api.get_session_config.return_value = {
+        'level': 'B1', 'diagnosisCompleted': True, 'lesson': None, 'profile': None,
+    }
+    api.create_session.return_value = 'api-sess-1'
+    return api
+
+
+@pytest.mark.unit
+class TestAgentIntegration:
+    def test_turn_runs_on_agent_not_local_brain(self, mocker, tmp_path):
+        agent = MagicMock()
+        agent.open_session.return_value = 'agent-1'
+        agent.turn.return_value = {'reply': 'From agent!', 'evaluation': None}
+        lery = _agent_lery(mocker, tmp_path, agent=agent)
+
+        _run_one_turn(lery)
+
+        agent.open_session.assert_called_once_with('FREE_TALK')
+        assert agent.turn.call_args.args[:2] == ('agent-1', 'How are you?')
+        lery._mock_brain.generate_response.assert_not_called()
+        lery._speak.assert_any_call('From agent!')
+
+    def test_agent_session_does_not_double_log_via_api(self, mocker, tmp_path):
+        agent = MagicMock()
+        agent.open_session.return_value = 'agent-1'
+        agent.turn.return_value = {'reply': 'From agent!'}
+        api = _api_with_session()
+        lery = _agent_lery(mocker, tmp_path, agent=agent, api=api)
+
+        _run_one_turn(lery)
+
+        api.create_log.assert_not_called()
+        api.create_session.assert_not_called()  # the agent owns the API session
+
+    def test_agent_session_completed_when_session_ends(self, mocker, tmp_path):
+        agent = MagicMock()
+        agent.open_session.return_value = 'agent-1'
+        agent.turn.return_value = {'reply': 'Hi'}
+        lery = _agent_lery(mocker, tmp_path, agent=agent)
+        lery._mock_wake.wait_for_wake_word.side_effect = [None, KeyboardInterrupt]
+        lery._needs_diagnosis = False
+
+        lery.run()
+
+        agent.complete_session.assert_called_with('agent-1')
+        assert lery._agent_session_id is None
+
+    def test_open_failure_falls_back_to_local_brain_and_logs_via_api(self, mocker, tmp_path):
+        from agent_client import AgentError
+        agent = MagicMock()
+        agent.open_session.side_effect = AgentError('down')
+        api = _api_with_session()
+        lery = _agent_lery(mocker, tmp_path, agent=agent, api=api)
+        lery._mock_brain.generate_response.return_value = 'Local reply'
+
+        _run_one_turn(lery)
+
+        agent.turn.assert_not_called()
+        lery._speak.assert_any_call('Local reply')
+        api.create_log.assert_called_once()
+
+    def test_turn_failure_falls_back_to_local_brain(self, mocker, tmp_path):
+        from agent_client import AgentError
+        agent = MagicMock()
+        agent.open_session.return_value = 'agent-1'
+        agent.turn.side_effect = AgentError('timeout')
+        api = _api_with_session()
+        lery = _agent_lery(mocker, tmp_path, agent=agent, api=api)
+        lery._mock_brain.generate_response.return_value = 'Local reply'
+
+        _run_one_turn(lery)
+
+        lery._speak.assert_any_call('Local reply')
+        api.create_log.assert_called_once()
+        assert lery._agent_session_id is None
+
+    def test_does_not_retry_agent_again_in_same_session_after_failure(self, mocker, tmp_path):
+        from agent_client import AgentError
+        agent = MagicMock()
+        agent.open_session.side_effect = AgentError('down')
+        lery = _agent_lery(mocker, tmp_path, agent=agent)
+
+        assert lery._open_agent_session() is False
+        assert lery._open_agent_session() is False
+
+        assert agent.open_session.call_count == 1
+
+    def test_next_session_tries_agent_again(self, mocker, tmp_path):
+        from agent_client import AgentError
+        agent = MagicMock()
+        agent.open_session.side_effect = [AgentError('down'), 'agent-2']
+        lery = _agent_lery(mocker, tmp_path, agent=agent)
+
+        assert lery._open_agent_session() is False
+        lery._agent_failed = False  # what _run_session does at the start of each session
+        assert lery._open_agent_session() is True
+        assert lery._agent_session_id == 'agent-2'
+
+    def test_silence_nudge_uses_fixed_phrase_on_agent_session(self, mocker, tmp_path):
+        agent = MagicMock()
+        agent.open_session.return_value = 'agent-1'
+        agent.turn.return_value = {'reply': 'Hi'}
+        lery = _agent_lery(mocker, tmp_path, agent=agent)
+        lery._mock_brain.generate_response.side_effect = AssertionError('local brain must not nudge')
+
+        _run_one_turn(lery)
+
+        spoken = [c.args[0] for c in lery._speak.call_args_list]
+        assert any(s in main_nudges() for s in spoken)
+
+    def test_lesson_intro_sends_student_words_without_evaluation(self, mocker, tmp_path):
+        agent = MagicMock()
+        agent.open_session.return_value = 'agent-1'
+        agent.turn.return_value = {'reply': 'Welcome to the lesson!'}
+        lery = _agent_lery(mocker, tmp_path, agent=agent)
+        lery.transcribe_audio = MagicMock(return_value='start lesson')
+        lery._switch_to_guided_lesson = MagicMock(return_value=True)
+        lery._session_mode = 'FREE_TALK'
+
+        with patch('main._matches_keywords', return_value=False), \
+             patch('main._matches_lesson_intent', return_value=True):
+            lery._run_session()
+
+        args, kwargs = agent.turn.call_args
+        assert args[1] == 'start lesson'
+        assert kwargs['evaluate'] is False
+        lery._speak.assert_any_call('Welcome to the lesson!')
+
+
+def main_nudges():
+    from main import _SILENCE_NUDGES
+    return _SILENCE_NUDGES

@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from urllib import error, request
 
 import pytest
@@ -140,6 +141,13 @@ def portal():
     p.stop()
 
 
+def _wait_for(received, timeout=2.0):
+    # The portal answers 202 first and hands the credentials over right after.
+    deadline = time.monotonic() + timeout
+    while not received and time.monotonic() < deadline:
+        time.sleep(0.01)
+
+
 def _post(portal, body, content_type='application/json'):
     req = request.Request(
         f'http://127.0.0.1:{portal.port}/connect',
@@ -165,11 +173,13 @@ class TestPortal:
     def test_connect_json(self, portal):
         with _post(portal, {'ssid': 'Home', 'password': 'password1'}) as r:
             assert r.status == 202
+        _wait_for(portal.received)
         assert portal.received == [('Home', 'password1')]
 
     def test_connect_form_encoded(self, portal):
         with _post(portal, b'ssid=Home&password=password1', 'application/x-www-form-urlencoded') as r:
             assert r.status == 202
+        _wait_for(portal.received)
         assert portal.received == [('Home', 'password1')]
 
     def test_rejects_short_password(self, portal):

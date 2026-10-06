@@ -9,6 +9,7 @@ from typing import Optional
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from agent_client import AgentError, create_agent_client
 from api_client import create_api_client
 from audio_manager import AudioManager
 from brain_manager import BrainManager
@@ -50,6 +51,14 @@ _PROVISIONING_PHRASES = {
     FAILED: "I could not connect. Please check the password and try again.",
     CONNECTED: "I'm connected! Say, hey Lery, to start.",
 }
+
+# Silence check-ins when the session runs on the agent. The agent logs every turn, so a
+# synthetic "the student is silent" prompt would pollute the log — fixed phrases instead.
+_SILENCE_NUDGES = [
+    "Are you still there?",
+    "Take your time. I'm listening.",
+    "Do you want to keep talking?",
+]
 
 _LESSON_TRIGGER_WORDS = {"lesson", "lição", "aula"}
 _LESSON_ACTION_WORDS = {"start", "begin", "do", "let's", "lets", "vamos", "quero", "iniciar", "começa", "começar"}
@@ -251,6 +260,12 @@ class LeryAI:
         self.wake_detector = create_wake_word_detector()
         self.api = create_api_client()
 
+        # Optional remote brain. When set, FREE_TALK / GUIDED_LESSON turns run on the agent
+        # (which also persists logs); BrainManager stays as the fallback.
+        self.agent = create_agent_client()
+        self._agent_session_id = None
+        self._agent_failed = False  # agent already failed in this session — stay local until it ends
+
         self._config = None
         self._lesson_id = None
         self._lesson_system_prompt = None
@@ -321,6 +336,59 @@ class LeryAI:
             mode=self._session_mode,
             lesson_id=self._lesson_id if self._session_mode == "GUIDED_LESSON" else None,
         )
+
+    def _open_agent_session(self) -> bool:
+        """True when this session runs on the agent (opens it lazily on the first turn)."""
+        if self._agent_session_id:
+            return True
+        if not self.agent or self._agent_failed:
+            return False
+        try:
+            self._agent_session_id = self.agent.open_session(self._session_mode)
+            return True
+        except AgentError as e:
+            print(f"[Agent] Unavailable — using local brain for this session: {e}")
+            self._agent_failed = True
+            return False
+
+    def _close_agent_session(self) -> None:
+        if self.agent and self._agent_session_id:
+            self.agent.complete_session(self._agent_session_id)
+        self._agent_session_id = None
+
+    def _generate_reply(
+        self,
+        user_text: str,
+        local_prompt: Optional[str] = None,
+        evaluate: Optional[bool] = None,
+    ) -> tuple[str, bool]:
+        """
+        Returns (reply, handled_by_agent). handled_by_agent=True means the agent already
+        logged and evaluated the turn, so the caller must not write the log again.
+
+        local_prompt replaces user_text for the BrainManager fallback (synthetic prompts that
+        only make sense without the agent's own context).
+        """
+        if self._open_agent_session():
+            try:
+                result = self.agent.turn(
+                    self._agent_session_id,
+                    user_text,
+                    evaluate=evaluate,
+                    on_slow=self.audio_manager.play_hmm,
+                )
+                return result["reply"], True
+            except AgentError as e:
+                # History lives on the agent, so the local brain restarts without it — accepted
+                # trade-off over leaving the student without an answer.
+                print(f"[Agent] Turn failed — falling back to local brain: {e}")
+                self._agent_session_id = None
+                self._agent_failed = True
+
+        reply = self.brain_manager.generate_response(
+            local_prompt or user_text, on_slow=self.audio_manager.play_hmm
+        )
+        return reply, False
 
     def _run_diagnosis_session(self) -> None:
         """
@@ -420,6 +488,7 @@ class LeryAI:
 
         print("\n[Lery] Switching to GUIDED_LESSON mode...")
 
+        self._close_agent_session()
         if self.api and self._session_id:
             self.api.complete_session(self._session_id)
 
@@ -437,7 +506,9 @@ class LeryAI:
         # Fresh conversation context with lesson prompt
         self.brain_manager = BrainManager(system_prompt=lesson_prompt_with_limit)
 
-        if self.api:
+        # With an agent configured, it opens (and owns) the API session on the first lesson turn;
+        # the local fallback creates one lazily via _ensure_session.
+        if self.api and not self.agent:
             self._session_id = self.api.create_session(
                 mode="GUIDED_LESSON",
                 lesson_id=self._lesson_id,
@@ -497,6 +568,7 @@ class LeryAI:
         """
         self._silence_strikes = 0
         self._session_id = None
+        self._agent_failed = False
         self.set_state(State.LISTENING)
 
         while True:
@@ -519,7 +591,10 @@ class LeryAI:
                     "with a short, encouraging question. Max 1 sentence."
                 )
                 self.set_state(State.THINKING)
-                nudge = self.brain_manager.generate_response(prompt)
+                if self._agent_session_id:
+                    nudge = random.choice(_SILENCE_NUDGES)
+                else:
+                    nudge = self.brain_manager.generate_response(prompt)
                 self._speak(nudge)
                 self.set_state(State.LISTENING)
                 continue
@@ -542,9 +617,15 @@ class LeryAI:
             # ── Lesson intent (FREE_TALK → GUIDED_LESSON) ─────────────
             if self._session_mode == "FREE_TALK" and _matches_lesson_intent(user_text):
                 if self._switch_to_guided_lesson():
-                    intro = self.brain_manager.generate_response(
-                        "The student just asked to start the lesson. "
-                        "Greet them and set the scene for the lesson scenario."
+                    # The agent gets the student's real words (it logs them) and evaluate=False so
+                    # the lesson request isn't scored; the local brain gets an explicit instruction.
+                    intro, _ = self._generate_reply(
+                        user_text,
+                        local_prompt=(
+                            "The student just asked to start the lesson. "
+                            "Greet them and set the scene for the lesson scenario."
+                        ),
+                        evaluate=False,
                     )
                     self._speak(intro)
                 else:
@@ -556,10 +637,9 @@ class LeryAI:
                 continue
 
             # ── Normal turn ───────────────────────────────────────────
-            self._ensure_session()
-            response_text = self.brain_manager.generate_response(
-                user_text, on_slow=self.audio_manager.play_hmm
-            )
+            if not self.agent:
+                self._ensure_session()
+            response_text, agent_logged = self._generate_reply(user_text)
             print(f"Lery: {response_text}")
 
             if response_text == "I'm sorry, I'm having trouble thinking right now.":
@@ -569,7 +649,10 @@ class LeryAI:
                 self.set_state(State.LISTENING)
                 continue
 
-            if self.api and self._session_id:
+            # The agent already persisted this turn (log + scores) — only log locally otherwise.
+            if not agent_logged:
+                self._ensure_session()
+            if not agent_logged and self.api and self._session_id:
                 scores: dict | None = None
                 if self._session_mode == "GUIDED_LESSON":
                     scores = self.brain_manager.evaluate_turn(
@@ -630,6 +713,7 @@ class LeryAI:
                 self._run_session()
 
                 # Session ended — complete API record and reset mode
+                self._close_agent_session()
                 if self.api and self._session_id:
                     self.api.complete_session(self._session_id)
                     self._session_id = None
@@ -642,6 +726,7 @@ class LeryAI:
         except KeyboardInterrupt:
             print("\nExiting Lery AI...")
         finally:
+            self._close_agent_session()
             if self.api and self._session_id:
                 self.api.complete_session(self._session_id)
             self.led_controller.cleanup()
