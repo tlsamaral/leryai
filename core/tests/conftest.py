@@ -20,6 +20,9 @@ def fake_env(monkeypatch):
     if not os.environ.get("OPENAI_API_KEY"):
         monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
     monkeypatch.setenv("LERY_SKIP_WIFI_SETUP", "1")
+    # A developer .env may set these; unit tests must not depend on it.
+    monkeypatch.delenv("LERY_TTS_PROVIDER", raising=False)
+    monkeypatch.delenv("LERY_AGENT_URL", raising=False)
     monkeypatch.setenv("LERY_API_URL", os.environ.get("LERY_API_URL", "http://localhost:3333"))
     monkeypatch.setenv("LERY_DEVICE_API_KEY", os.environ.get("LERY_DEVICE_API_KEY", "test-device-key"))
 

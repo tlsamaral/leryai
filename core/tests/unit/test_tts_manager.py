@@ -4,7 +4,11 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
 
-from tts_manager import _strip_pt_tags, create_tts_provider, GTTSProvider, ElevenLabsProvider
+from unittest.mock import MagicMock, patch
+
+from tts_manager import (
+    _strip_pt_tags, create_tts_provider, GTTSProvider, ElevenLabsProvider, OpenAITTSProvider,
+)
 
 
 @pytest.mark.unit
@@ -54,3 +58,87 @@ class TestCreateTtsProvider:
         monkeypatch.setenv('ELEVEN_VOICE_ID', 'voice-123')
         provider = create_tts_provider()
         assert isinstance(provider, ElevenLabsProvider)
+
+
+@pytest.mark.unit
+class TestOpenAIProviderSelection:
+    def test_explicit_openai_choice(self, monkeypatch):
+        monkeypatch.setenv('LERY_TTS_PROVIDER', 'openai')
+        monkeypatch.setenv('OPENAI_API_KEY', 'sk-test')
+        monkeypatch.setenv('LERY_OPENAI_VOICE', 'nova')
+        provider = create_tts_provider()
+        assert isinstance(provider, OpenAITTSProvider)
+        assert provider.voice == 'nova'
+
+    def test_explicit_openai_wins_over_elevenlabs_key(self, monkeypatch):
+        monkeypatch.setenv('LERY_TTS_PROVIDER', 'openai')
+        monkeypatch.setenv('OPENAI_API_KEY', 'sk-test')
+        monkeypatch.setenv('ELEVEN_API_KEY', 'eleven-key')
+        assert isinstance(create_tts_provider(), OpenAITTSProvider)
+
+    def test_openai_choice_without_key_falls_back_to_gtts(self, monkeypatch):
+        monkeypatch.setenv('LERY_TTS_PROVIDER', 'openai')
+        monkeypatch.delenv('OPENAI_API_KEY', raising=False)
+        assert isinstance(create_tts_provider(), GTTSProvider)
+
+    def test_explicit_gtts_ignores_eleven_key(self, monkeypatch):
+        monkeypatch.setenv('LERY_TTS_PROVIDER', 'gtts')
+        monkeypatch.setenv('ELEVEN_API_KEY', 'eleven-key')
+        assert isinstance(create_tts_provider(), GTTSProvider)
+
+    def test_explicit_elevenlabs_without_key_falls_back_to_gtts(self, monkeypatch):
+        monkeypatch.setenv('LERY_TTS_PROVIDER', 'elevenlabs')
+        monkeypatch.delenv('ELEVEN_API_KEY', raising=False)
+        assert isinstance(create_tts_provider(), GTTSProvider)
+
+
+def _fake_openai(write=b'mp3'):
+    """Patches openai.OpenAI so streaming speech.create writes `write` to the target file."""
+    response = MagicMock()
+    response.stream_to_file.side_effect = lambda path: open(path, 'wb').write(write)
+    cm = MagicMock()
+    cm.__enter__.return_value = response
+    client = MagicMock()
+    client.audio.speech.with_streaming_response.create.return_value = cm
+    return patch('openai.OpenAI', return_value=client), client
+
+
+@pytest.mark.unit
+class TestOpenAITTSProvider:
+    def test_synthesizes_single_mp3_with_tags_stripped(self, tmp_path):
+        patcher, client = _fake_openai()
+        with patcher:
+            files = OpenAITTSProvider('sk-test', voice='coral').synthesize(
+                'Hello [PT]tudo bem[/PT]?', output_dir=str(tmp_path)
+            )
+        assert files == [str(tmp_path / 'output_0.mp3')]
+        kwargs = client.audio.speech.with_streaming_response.create.call_args.kwargs
+        assert kwargs['input'] == 'Hello tudo bem?'
+        assert kwargs['voice'] == 'coral'
+        assert kwargs['response_format'] == 'mp3'
+
+    def test_sends_instructions_to_gpt4o_models(self, tmp_path):
+        patcher, client = _fake_openai()
+        with patcher:
+            OpenAITTSProvider('sk-test', model='gpt-4o-mini-tts').synthesize('Hi', str(tmp_path))
+        assert 'instructions' in client.audio.speech.with_streaming_response.create.call_args.kwargs
+
+    def test_omits_instructions_for_tts1(self, tmp_path):
+        patcher, client = _fake_openai()
+        with patcher:
+            OpenAITTSProvider('sk-test', model='tts-1').synthesize('Hi', str(tmp_path))
+        assert 'instructions' not in client.audio.speech.with_streaming_response.create.call_args.kwargs
+
+    def test_empty_text_returns_no_files_and_makes_no_request(self, tmp_path):
+        patcher, client = _fake_openai()
+        with patcher:
+            assert OpenAITTSProvider('sk-test').synthesize('  ', str(tmp_path)) == []
+        client.audio.speech.with_streaming_response.create.assert_not_called()
+
+    def test_error_falls_back_to_gtts(self, tmp_path):
+        provider = OpenAITTSProvider('sk-test')
+        provider._fallback = MagicMock()
+        provider._fallback.synthesize.return_value = ['gtts.mp3']
+        with patch('openai.OpenAI', side_effect=RuntimeError('quota')):
+            assert provider.synthesize('Hello', str(tmp_path)) == ['gtts.mp3']
+        provider._fallback.synthesize.assert_called_once()

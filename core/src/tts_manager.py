@@ -149,16 +149,94 @@ class ElevenLabsProvider(TTSProvider):
             return self._fallback.synthesize(text, output_dir)
 
 
+_DEFAULT_OPENAI_INSTRUCTIONS = (
+    "You are a warm, patient English tutor talking to a Brazilian learner. "
+    "Speak clearly at a calm, slightly slow pace with natural intonation. "
+    "Pronounce English words precisely; read any Portuguese with a natural Brazilian accent."
+)
+
+
+class OpenAITTSProvider(TTSProvider):
+    """
+    OpenAI TTS — one request per reply, handles EN and PT in the same voice (tags stripped).
+    gpt-4o-mini-tts accepts style `instructions`; tts-1 / tts-1-hd don't, so they're only sent
+    to gpt-4o* models. Falls back to GTTSProvider on any error.
+    """
+
+    def __init__(
+        self,
+        api_key: str,
+        voice: str = "coral",
+        model: str = "gpt-4o-mini-tts",
+        instructions: str = _DEFAULT_OPENAI_INSTRUCTIONS,
+    ):
+        self.api_key = api_key
+        self.voice = voice
+        self.model = model
+        self.instructions = instructions
+        self._fallback = GTTSProvider()
+
+    def synthesize(self, text: str, output_dir: str = "data/audio") -> List[str]:
+        clean = _strip_pt_tags(text)
+        if not clean:
+            return []
+
+        try:
+            from openai import OpenAI
+
+            os.makedirs(output_dir, exist_ok=True)
+            path = os.path.join(output_dir, "output_0.mp3")
+
+            kwargs = {}
+            if self.model.startswith("gpt-4o") and self.instructions:
+                kwargs["instructions"] = self.instructions
+
+            client = OpenAI(api_key=self.api_key, timeout=20)
+            with client.audio.speech.with_streaming_response.create(
+                model=self.model,
+                voice=self.voice,
+                input=clean,
+                response_format="mp3",
+                **kwargs,
+            ) as response:
+                response.stream_to_file(path)
+            return [path]
+
+        except Exception as e:
+            print(f"[OpenAI TTS] Error: {e} — falling back to gTTS")
+            return self._fallback.synthesize(text, output_dir)
+
+
 def create_tts_provider() -> TTSProvider:
     """
-    Factory — reads env vars and returns the best available provider.
-    Priority: ElevenLabs (if key set) → gTTS (always available).
+    Factory — reads env vars and returns the provider.
+    LERY_TTS_PROVIDER=openai|elevenlabs|gtts forces one (openai/elevenlabs need their API key,
+    otherwise gTTS is used). Unset: ElevenLabs if ELEVEN_API_KEY is set, else gTTS.
     """
-    api_key = os.getenv("ELEVEN_API_KEY")
-    if api_key:
+    choice = (os.getenv("LERY_TTS_PROVIDER") or "").strip().lower()
+    eleven_key = os.getenv("ELEVEN_API_KEY")
+    openai_key = os.getenv("OPENAI_API_KEY")
+
+    if choice == "gtts":
+        print("[TTS] Using gTTS")
+        return GTTSProvider()
+
+    if choice == "openai":
+        if openai_key:
+            voice = os.getenv("LERY_OPENAI_VOICE", "coral")
+            model = os.getenv("LERY_OPENAI_TTS_MODEL", "gpt-4o-mini-tts")
+            instructions = os.getenv("LERY_OPENAI_TTS_INSTRUCTIONS", _DEFAULT_OPENAI_INSTRUCTIONS)
+            print(f"[TTS] Using OpenAI (model={model}, voice={voice})")
+            return OpenAITTSProvider(openai_key, voice=voice, model=model, instructions=instructions)
+        print("[TTS] LERY_TTS_PROVIDER=openai but OPENAI_API_KEY is not set")
+
+    elif choice in ("", "elevenlabs") and eleven_key:
         voice_id = os.getenv("ELEVEN_VOICE_ID", "cgSgspJ2msm6clMCkdW9")
         print(f"[TTS] Using ElevenLabs (voice={voice_id})")
-        return ElevenLabsProvider(api_key=api_key, voice_id=voice_id)
+        return ElevenLabsProvider(api_key=eleven_key, voice_id=voice_id)
+
+    elif choice == "elevenlabs":
+        print("[TTS] LERY_TTS_PROVIDER=elevenlabs but ELEVEN_API_KEY is not set")
 
     print("[TTS] Using gTTS")
     return GTTSProvider()
