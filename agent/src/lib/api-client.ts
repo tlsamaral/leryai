@@ -5,6 +5,7 @@ type Json = Record<string, unknown>
 export interface SessionConfig {
   deviceId: string
   userId: string
+  name?: string | null
   level: string
   diagnosisCompleted: boolean
   lesson: {

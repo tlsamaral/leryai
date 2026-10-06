@@ -1,5 +1,17 @@
 import type { LearnerSnapshot, SessionConfig } from '@/lib/api-client.js'
 
+// The name is typed by the user and ends up inside a prompt: keep only the first word,
+// drop control characters and cap the length.
+export function firstName(name: string | null | undefined): string | null {
+  const word = (name ?? '')
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: stripping control chars on purpose
+    .replace(/[\u0000-\u001f\u007f]/g, ' ')
+    .trim()
+    .split(/\s+/)[0]
+    ?.slice(0, 30)
+  return word || null
+}
+
 // Learner Snapshot layer — refresh per session. ~600 tokens budget.
 // Compact view of who the student is and what they need right now.
 export function buildLearnerSnapshot(
@@ -32,7 +44,14 @@ export function buildLearnerSnapshot(
   const dominated = snapshot?.dominatedStructures.slice(0, 5) ?? []
   const openTopics = snapshot?.openTopics.slice(0, 2) ?? []
 
-  const sections: string[] = [`STUDENT LEVEL: ${config.level}`]
+  const sections: string[] = []
+  const name = firstName(config.name)
+  if (name) {
+    sections.push(
+      `STUDENT NAME: ${name}\nUse it naturally and sparingly: in greetings and when encouraging, roughly once every few turns, never in every reply. Speech recognition often garbles names — trust this one over what the transcript says.`,
+    )
+  }
+  sections.push(`STUDENT LEVEL: ${config.level}`)
 
   if (profileLines.length) {
     sections.push(`STUDENT PROFILE:\n${profileLines.join('\n')}`)
