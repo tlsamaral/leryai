@@ -1034,3 +1034,71 @@ class TestSpeakPrompt:
     def test_every_provisioning_event_has_a_prompt(self):
         from provisioning import AP_READY, CONNECTED, FAILED, SPOKEN_PROMPTS, WAITING
         assert {AP_READY, WAITING, FAILED, CONNECTED} <= set(SPOKEN_PROMPTS)
+
+
+# ── student name in conversations ─────────────────────────────────────────────
+
+def _lery_with_name(mocker, name='Talles Amaral'):
+    api = MagicMock()
+    api.get_session_config.return_value = {
+        'level': 'A2', 'diagnosisCompleted': True, 'lesson': {
+            'id': 'l1', 'title': 'Cafe', 'systemPrompt': 'You are a barista.', 'objectives': 'order coffee',
+        }, 'profile': None, 'name': name,
+    }
+    return _make_lery(mocker, api=api)
+
+
+@pytest.mark.unit
+class TestStudentNameInSession:
+    def test_free_talk_brain_is_built_with_the_name(self, mocker):
+        import main
+        _lery_with_name(mocker)  # __init__ builds the free-talk BrainManager from the API config
+        prompt = main.BrainManager.call_args.kwargs['system_prompt']
+        assert 'STUDENT NAME: Talles' in prompt
+        assert 'Amaral' not in prompt
+
+    def test_guided_lesson_prompt_includes_name(self, mocker):
+        lery = _lery_with_name(mocker)
+        with patch('main.BrainManager') as brain_cls:
+            assert lery._switch_to_guided_lesson() is True
+        prompt = brain_cls.call_args.kwargs['system_prompt']
+        assert 'You are a barista.' in prompt
+        assert 'STUDENT NAME: Talles' in prompt
+        assert 'RESPONSE LENGTH CONSTRAINT' in prompt
+
+    def test_guided_lesson_prompt_without_name_is_unchanged(self, mocker):
+        lery = _lery_with_name(mocker, name=None)
+        with patch('main.BrainManager') as brain_cls:
+            lery._switch_to_guided_lesson()
+        assert 'STUDENT NAME' not in brain_cls.call_args.kwargs['system_prompt']
+
+    def test_whisper_gets_the_name_as_a_spelling_hint(self, mocker, tmp_path):
+        lery = _lery_with_name(mocker)
+        audio = tmp_path / 'in.wav'
+        audio.write_bytes(b'RIFF')
+        with patch('main.client') as openai_client:
+            openai_client.audio.transcriptions.create.return_value = MagicMock(text='hello')
+            lery.transcribe_audio(str(audio))
+        prompt = openai_client.audio.transcriptions.create.call_args.kwargs['prompt']
+        assert "The student's name is Talles." in prompt
+
+    def test_whisper_prompt_has_no_name_hint_when_unknown(self, mocker, tmp_path):
+        lery = _lery_with_name(mocker, name=None)
+        audio = tmp_path / 'in.wav'
+        audio.write_bytes(b'RIFF')
+        with patch('main.client') as openai_client:
+            openai_client.audio.transcriptions.create.return_value = MagicMock(text='hello')
+            lery.transcribe_audio(str(audio))
+        assert 'name is' not in openai_client.audio.transcriptions.create.call_args.kwargs['prompt']
+
+    def test_diagnosis_session_uses_the_known_name(self, mocker):
+        lery = _lery_with_name(mocker)
+        lery._config['diagnosisCompleted'] = False
+        lery._speak = MagicMock()
+        lery._mock_audio.record_audio.return_value = None
+        brain_inst = MagicMock()
+        brain_inst.generate_response.return_value = 'Hi Talles!'
+        brain_inst.rate_cefr.return_value = 'A2'
+        with patch('main.BrainManager', return_value=brain_inst) as brain_cls:
+            lery._run_diagnosis_session()
+        assert 'Do NOT ask their name' in brain_cls.call_args.kwargs['system_prompt']

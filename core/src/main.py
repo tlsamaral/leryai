@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import random
+import re
 import sys
 import time
 from enum import Enum
@@ -112,13 +113,43 @@ def _matches_lesson_intent(text: str) -> bool:
     return has_lesson and has_action
 
 
-def _build_diagnosis_prompt() -> str:
+_NAME_GUIDANCE = (
+    "Use it naturally and sparingly: in greetings and when encouraging, roughly once every "
+    "few turns, never in every reply. Speech recognition often garbles names — trust this "
+    "one over what the transcript says."
+)
+
+
+def _student_first_name(config: Optional[dict]) -> Optional[str]:
+    """
+    First word of the student's registered name, or None. The name is typed by the user and
+    ends up inside prompts, so control characters are dropped and the length is capped.
+    """
+    raw = re.sub(r"[\x00-\x1f\x7f]", " ", str((config or {}).get("name") or ""))
+    words = raw.split()
+    return words[0][:30] if words else None
+
+
+def _name_section(config: Optional[dict]) -> str:
+    name = _student_first_name(config)
+    return f"STUDENT NAME: {name}\n{_NAME_GUIDANCE}" if name else ""
+
+
+def _build_diagnosis_prompt(name: Optional[str] = None) -> str:
     """
     System prompt for the icebreaker/diagnosis session.
     Designed to elicit natural speech across a range of complexity so the
     CEFR rater has enough signal to work with.
     """
-    return """You are "Lery", a warm and friendly English tutor in a smart speaker device.
+    if name:
+        opening_step = (
+            f"1. Greet the student by name ({name}) and introduce yourself. Do NOT ask their name — "
+            "you already know it. Ask one simple question about their life."
+        )
+    else:
+        opening_step = "1. Greet warmly and introduce yourself. Ask their name and one simple question about their life."
+
+    return f"""You are "Lery", a warm and friendly English tutor in a smart speaker device.
 This is your FIRST conversation with the student — your goal is to get them talking naturally.
 
 CURRENT MODE: DIAGNOSIS (icebreaker)
@@ -126,7 +157,7 @@ You do NOT know the student's level yet. Start simple, then gently escalate comp
 based on how the student responds. This lets you gauge their real proficiency.
 
 CONVERSATION FLOW:
-1. Greet warmly and introduce yourself. Ask their name and one simple question about their life.
+{opening_step}
 2. React to their answer, then ask a slightly more open question (hobby, job, travel, goals).
 3. Keep the conversation going naturally for 5–8 exchanges.
 4. Do NOT correct errors — you are observing, not teaching, in this session.
@@ -218,6 +249,7 @@ CURRENT MODE: FREE TALK
 The student can chat freely, ask you to roleplay scenarios, or simply practice conversation.
 If the student says "start lesson" or similar, acknowledge it — the system will handle the switch.
 
+{_name_section(config)}
 STUDENT LEVEL: {level}
 {language_rule}
 
@@ -401,7 +433,9 @@ class LeryAI:
         """
         print('\n[Lery] Starting DIAGNOSIS session (first-time level detection)...')
 
-        diagnosis_brain = BrainManager(system_prompt=_build_diagnosis_prompt())
+        diagnosis_brain = BrainManager(
+            system_prompt=_build_diagnosis_prompt(_student_first_name(self._config))
+        )
 
         session_id: Optional[str] = None
         if self.api:
@@ -500,9 +534,11 @@ class LeryAI:
         # Inject level-specific response length limit into the lesson system prompt
         level = (self._config or {}).get("level", "A1")
         response_limit = _RESPONSE_LIMITS.get(level, _RESPONSE_LIMITS["B1"])
+        name_section = _name_section(self._config)
         lesson_prompt_with_limit = (
             f"{self._lesson_system_prompt}\n\n"
-            f"RESPONSE LENGTH CONSTRAINT (overrides everything else):\n{response_limit}"
+            + (f"{name_section}\n\n" if name_section else "")
+            + f"RESPONSE LENGTH CONSTRAINT (overrides everything else):\n{response_limit}"
         )
 
         # Fresh conversation context with lesson prompt
@@ -521,6 +557,9 @@ class LeryAI:
     def transcribe_audio(self, audio_file: str) -> Optional[str]:
         if not os.path.exists(audio_file):
             return None
+        # Helps Whisper spell the student's own name (it heard "Talles" as "Teus").
+        name = _student_first_name(self._config)
+        name_hint = f" The student's name is {name}." if name else ""
         try:
             with open(audio_file, "rb") as audio:
                 transcription = client.audio.transcriptions.create(
@@ -530,6 +569,7 @@ class LeryAI:
                         "English language tutoring session. "
                         "The student speaks primarily in English. "
                         "Occasional Portuguese words or sentences may appear."
+                        + name_hint
                     ),
                 )
             return transcription.text
