@@ -24,14 +24,25 @@ LED_BRIGHTNESS = 80       # Tom mais suave (max 255)
 LED_INVERT     = False
 LED_CHANNEL    = 0
 
-# Cores suaves (R, G, B)
+# Cores suaves (R, G, B) — todas respiram exceto IDLE/ERROR
 COLORS = {
     'IDLE':      (0, 0, 0),         # Apagado
-    'LISTENING': (180, 160, 0),     # Amarelo suave — pulsante
-    'THINKING':  (0, 150, 60),      # Verde suave — estático
-    'SPEAKING':  (0, 60, 160),      # Azul suave — estático
-    'ERROR':     (160, 0, 0),       # Vermelho suave
+    'LISTENING': (180, 160, 0),     # Amarelo suave — respirando
+    'THINKING':  (0, 150, 60),      # Verde suave — respirando
+    'SPEAKING':  (0, 60, 160),      # Azul suave — respirando
+    'ERROR':     (160, 0, 0),       # Vermelho — pisca rápido (urgente)
 }
+
+# Respiração (breathing) — usada em LISTENING / THINKING / SPEAKING
+PULSE_PERIOD_SEC = 2.6     # tempo de um ciclo completo (inspira+expira)
+PULSE_MIN_FACTOR = 0.08    # nunca apaga de verdade — evita "piscar"
+PULSE_MAX_FACTOR = 1.0
+PULSE_SHAPE      = 1.6     # >1 = detém mais tempo nos extremos (respiração orgânica)
+
+# Blink de ERROR — intencionalmente diferente (urgência, não respiração)
+ERROR_BLINK_HZ = 4.0
+
+GPIO_PWM_FREQ_HZ = 200     # PWM por software (fallback sem rpi_ws281x)
 
 
 class LEDController:
@@ -49,11 +60,13 @@ class LEDController:
                 print("[LED] Running in debug mode (no hardware LED)")
                 self.strip = None
 
+        self._gpio_pwm = None
         if not self.strip and HAS_GPIO:
             try:
                 GPIO.setmode(GPIO.BCM)
                 GPIO.setup(LED_PIN, GPIO.OUT)
-                GPIO.output(LED_PIN, GPIO.LOW)
+                self._gpio_pwm = GPIO.PWM(LED_PIN, GPIO_PWM_FREQ_HZ)
+                self._gpio_pwm.start(0)
                 self.use_gpio = True
             except RuntimeError as e:
                 print(f"[LED] Failed to initialize GPIO: {e}")
@@ -72,41 +85,45 @@ class LEDController:
             for i in range(self.strip.numPixels()):
                 self.strip.setPixelColor(i, color)
             self.strip.show()
+        elif self.use_gpio and self._gpio_pwm:
+            # Sem fita endereçável — usa PWM por software p/ brilho proporcional
+            brightness = max(r, g, b) / 255.0
+            self._gpio_pwm.ChangeDutyCycle(brightness * 100)
 
     def _led_worker(self):
-        t = 0.0
+        state_start = time.time()
         last_state = None
 
         while self._running:
             state = self.current_state
-            r, g, b = COLORS.get(state, COLORS['IDLE'])
+            if state != last_state:
+                state_start = time.time()  # fase reinicia a cada troca de estado
+                last_state = state
 
-            if state == 'LISTENING':
-                # Pulsação suave
-                factor = 0.2 + 0.8 * (0.5 + 0.5 * math.sin(t))
-                cur_r = int(r * factor)
-                cur_g = int(g * factor)
-                cur_b = int(b * factor)
-                self._set_all_pixels(cur_r, cur_g, cur_b)
-                t += 0.1
-                time.sleep(0.03)
-            else:
-                # Estático (ou apagado)
-                # Só atualiza a fita se o estado mudou ou se voltamos ao estático
-                if state != last_state:
-                    if state == 'IDLE':
-                        self._set_all_pixels(0, 0, 0)
-                        if self.use_gpio:
-                            GPIO.output(LED_PIN, GPIO.LOW)
-                    else:
-                        self._set_all_pixels(r, g, b)
-                        if self.use_gpio:
-                            GPIO.output(LED_PIN, GPIO.HIGH)
-
-                # Se não estiver animando, descansa um pouco mais pra não gastar CPU atoa
+            if state == 'IDLE':
+                self._set_all_pixels(0, 0, 0)
                 time.sleep(0.1)
+                continue
 
-            last_state = state
+            if state == 'ERROR':
+                # Urgência — pisca, não respira
+                elapsed = time.time() - state_start
+                on = int(elapsed * ERROR_BLINK_HZ * 2) % 2 == 0
+                r, g, b = COLORS['ERROR'] if on else (0, 0, 0)
+                self._set_all_pixels(r, g, b)
+                time.sleep(0.02)
+                continue
+
+            # Respiração suave: easing cosseno + curva de "demora" nos extremos
+            r, g, b = COLORS.get(state, COLORS['IDLE'])
+            elapsed = time.time() - state_start
+            phase = (elapsed % PULSE_PERIOD_SEC) / PULSE_PERIOD_SEC
+            eased = 0.5 - 0.5 * math.cos(2 * math.pi * phase)   # 0..1, suave nas bordas
+            shaped = eased ** PULSE_SHAPE                        # lingers no fundo e no topo
+            factor = PULSE_MIN_FACTOR + (PULSE_MAX_FACTOR - PULSE_MIN_FACTOR) * shaped
+
+            self._set_all_pixels(int(r * factor), int(g * factor), int(b * factor))
+            time.sleep(0.02)  # ~50Hz — movimento sem serrilhado
 
     def set_state(self, state):
         self.current_state = state
@@ -128,8 +145,8 @@ class LEDController:
             if hasattr(self, '_thread') and self._thread.is_alive():
                 self._thread.join(timeout=0.5)
             self._set_all_pixels(0, 0, 0)
-            if self.use_gpio:
-                GPIO.output(LED_PIN, GPIO.LOW)
+            if self.use_gpio and self._gpio_pwm:
+                self._gpio_pwm.stop()
 
 
 def create_led_controller():
