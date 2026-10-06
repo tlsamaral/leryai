@@ -59,7 +59,7 @@ User → Subscription, Device, ConversationSession → InteractionLog
 
 ## Variáveis de ambiente
 
-- `core/.env` — `GOOGLE_API_KEY`, `OPENAI_API_KEY`; opcionais: `LERY_AGENT_URL` (usa o `agent/` como cérebro, com `BrainManager` de fallback), `LERY_AGENT_TIMEOUT`, `LERY_AGENT_COOLDOWN`; voz: `LERY_TTS_PROVIDER=edge|gtts|openai|elevenlabs` (sem ela: ElevenLabs se houver chave, senão Edge grátis, senão gTTS), `LERY_EDGE_VOICE_EN`, `LERY_EDGE_VOICE_PT`, `LERY_EDGE_RATE`, `LERY_TTS_CACHE=0` (desliga o cache de frases curtas)
+- `core/.env` — `GOOGLE_API_KEY`, `OPENAI_API_KEY`; opcionais: `LERY_AGENT_URL` (usa o `agent/` como cérebro, com `BrainManager` de fallback), `LERY_AGENT_TIMEOUT`, `LERY_AGENT_COOLDOWN`; voz: `LERY_TTS_PROVIDER=edge|gtts|openai|elevenlabs` (sem ela: ElevenLabs se houver chave, senão Edge grátis, senão gTTS), `LERY_EDGE_VOICE_EN`, `LERY_EDGE_VOICE_PT`, `LERY_EDGE_RATE`, `LERY_TTS_CACHE=0` (desliga o cache de frases curtas); modelo: `GEMINI_MODEL`, `GEMINI_EVALUATOR_MODEL`, `GEMINI_FALLBACK_MODEL` (padrão `gemini-2.5-flash-lite`, vazio desliga)
 - `api/.env` — `DATABASE_URL`, `JWT_SECRET`
 
 ## Commits

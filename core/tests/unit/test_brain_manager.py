@@ -228,3 +228,157 @@ class TestEvaluateTurn:
         brain.client.models.generate_content.side_effect = Exception('503')
         result = brain.evaluate_turn('test', 'ok')
         assert result is None
+
+
+# ── model selection + fallback ────────────────────────────────────────────────
+
+def _make_brain(mocker, monkeypatch, **env):
+    """BrainManager with a mocked Gemini client and explicit model env (set values win over .env)."""
+    for key, value in env.items():
+        monkeypatch.setenv(key, value)
+    mocker.patch('brain_manager.genai.Client')
+    mocker.patch('brain_manager.time.sleep')
+    mocker.patch('brain_manager.load_dotenv')  # a developer .env must not leak into these tests
+    from brain_manager import BrainManager
+    return BrainManager(system_prompt='You are a tutor.')
+
+
+def _run_with_results(mocker, brain, results):
+    """Drives generate_response with a sequence of future results (exceptions or response mocks)."""
+    future = mocker.MagicMock()
+    future.result.side_effect = results
+    mock_exec = mocker.MagicMock()
+    mock_exec.submit.return_value = future
+    mocker.patch('brain_manager.concurrent.futures.ThreadPoolExecutor', return_value=mock_exec)
+    return brain.generate_response('hi')
+
+
+@pytest.mark.unit
+class TestModelConfig:
+    def test_defaults(self, mocker, monkeypatch):
+        monkeypatch.delenv('GEMINI_MODEL', raising=False)
+        brain = _make_brain(mocker, monkeypatch, GEMINI_EVALUATOR_MODEL='', GEMINI_FALLBACK_MODEL='gemini-2.5-flash-lite')
+        assert brain.model == 'gemini-2.5-flash'
+        assert brain.evaluator_model == 'gemini-2.5-flash'
+        assert brain.fallback_model == 'gemini-2.5-flash-lite'
+
+    def test_conversation_chat_uses_configured_model(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, GEMINI_MODEL='my-model')
+        assert brain.client.chats.create.call_args.kwargs['model'] == 'my-model'
+
+    def test_evaluator_model_defaults_to_conversation_model(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, GEMINI_MODEL='my-model', GEMINI_EVALUATOR_MODEL='')
+        assert brain.evaluator_model == 'my-model'
+
+    def test_empty_fallback_disables_it(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, GEMINI_FALLBACK_MODEL='')
+        assert brain.fallback_model is None
+
+    def test_fallback_equal_to_primary_is_disabled(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, GEMINI_MODEL='same', GEMINI_FALLBACK_MODEL='same')
+        assert brain.fallback_model is None
+
+
+@pytest.mark.unit
+class TestConversationFallback:
+    ENV = dict(GEMINI_MODEL='primary', GEMINI_FALLBACK_MODEL='fallback')
+
+    def test_stays_on_primary_when_it_answers(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, **self.ENV)
+        assert _run_with_results(mocker, brain, [mocker.MagicMock(text='ok')]) == 'ok'
+        assert brain.client.chats.create.call_count == 1  # only the one from __init__
+        assert brain._on_fallback is False
+
+    def test_one_failure_still_retries_on_primary(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, **self.ENV)
+        _run_with_results(mocker, brain, [Exception('503'), mocker.MagicMock(text='ok')])
+        assert brain._on_fallback is False
+
+    def test_switches_to_fallback_after_primary_attempts_keeping_history(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, **self.ENV)
+        brain.chat.get_history.return_value = ['turn-1', 'turn-2']
+
+        result = _run_with_results(
+            mocker, brain, [Exception('503'), Exception('503'), mocker.MagicMock(text='from lite')]
+        )
+
+        assert result == 'from lite'
+        kwargs = brain.client.chats.create.call_args.kwargs
+        assert kwargs['model'] == 'fallback'
+        assert kwargs['history'] == ['turn-1', 'turn-2']
+        assert brain._on_fallback is True
+
+    def test_uses_curated_history(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, **self.ENV)
+        old_chat = brain.chat
+        _run_with_results(mocker, brain, [Exception('503'), Exception('503'), mocker.MagicMock(text='x')])
+        old_chat.get_history.assert_called_once_with(curated=True)
+
+    def test_switch_is_sticky_within_the_session(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, **self.ENV)
+        _run_with_results(mocker, brain, [Exception('503'), Exception('503'), mocker.MagicMock(text='x')])
+        creates = brain.client.chats.create.call_count
+
+        _run_with_results(mocker, brain, [Exception('503'), Exception('503'), mocker.MagicMock(text='y')])
+
+        assert brain.client.chats.create.call_count == creates  # not recreated again
+
+    def test_disabled_fallback_never_switches(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, GEMINI_MODEL='primary', GEMINI_FALLBACK_MODEL='')
+        result = _run_with_results(mocker, brain, [Exception('503')] * 4)
+        assert result == "I'm sorry, I'm having trouble thinking right now."
+        assert brain.client.chats.create.call_count == 1
+
+    def test_failed_switch_disables_fallback_and_keeps_going(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, **self.ENV)
+        brain.client.chats.create.side_effect = RuntimeError('cannot create chat')
+
+        result = _run_with_results(
+            mocker, brain, [Exception('503'), Exception('503'), mocker.MagicMock(text='still primary')]
+        )
+
+        assert result == 'still primary'
+        assert brain.fallback_model is None
+        assert brain._on_fallback is False
+
+    def test_non_retryable_error_does_not_trigger_switch(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, **self.ENV)
+        _run_with_results(mocker, brain, [Exception('401 unauthorized')])
+        assert brain._on_fallback is False
+
+
+@pytest.mark.unit
+class TestOneShotFallback:
+    ENV = dict(GEMINI_MODEL='primary', GEMINI_EVALUATOR_MODEL='eval-primary', GEMINI_FALLBACK_MODEL='fallback')
+
+    def test_rate_cefr_moves_to_fallback_after_primary_attempts(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, **self.ENV)
+        brain.client.models.generate_content.side_effect = [
+            Exception('503'), Exception('503'),
+            make_response('{"estimated_cefr": "B1", "justification": "ok"}'),
+        ]
+
+        assert brain.rate_cefr('I like pizza.') == 'B1'
+
+        models = [c.kwargs['model'] for c in brain.client.models.generate_content.call_args_list]
+        assert models == ['eval-primary', 'eval-primary', 'fallback']
+
+    def test_evaluate_turn_moves_to_fallback_after_primary_attempts(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, **self.ENV)
+        good = ('{"task_achievement": 20, "grammar": 20, "vocabulary": 20, "fluency": 20, '
+                '"total_score": 80, "grammatical_fixes": "x", "reasoning": "y"}')
+        brain.client.models.generate_content.side_effect = [
+            Exception('503'), Exception('503'), make_response(good),
+        ]
+
+        assert brain.evaluate_turn('hi', 'hello')['total_score'] == 80
+
+        models = [c.kwargs['model'] for c in brain.client.models.generate_content.call_args_list]
+        assert models[-1] == 'fallback'
+
+    def test_no_fallback_keeps_evaluator_model(self, mocker, monkeypatch):
+        brain = _make_brain(mocker, monkeypatch, GEMINI_EVALUATOR_MODEL='eval-primary', GEMINI_FALLBACK_MODEL='')
+        brain.client.models.generate_content.side_effect = [Exception('503')] * 4
+        brain.rate_cefr('x')
+        models = {c.kwargs['model'] for c in brain.client.models.generate_content.call_args_list}
+        assert models == {'eval-primary'}

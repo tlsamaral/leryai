@@ -23,6 +23,10 @@ def _wait_seconds(exc: Exception, attempt: int) -> float:
     return _BACKOFF_BASE ** attempt
 _SLOW_THRESHOLD = 3   # seconds before playing hmm sound
 _HARD_TIMEOUT = 10    # seconds per attempt before giving up
+_PRIMARY_ATTEMPTS = 2  # attempts on the primary model before moving to the fallback model
+
+_DEFAULT_MODEL = 'gemini-2.5-flash'
+_DEFAULT_FALLBACK_MODEL = 'gemini-2.5-flash-lite'
 
 
 class BrainManager:
@@ -35,12 +39,41 @@ class BrainManager:
         self.client = genai.Client(api_key=api_key)
         # API-provided prompt takes priority; fall back to local file
         self.system_prompt = system_prompt or self._load_system_prompt()
-        self.chat = self.client.chats.create(
-            model='gemini-2.5-flash',
-            config=types.GenerateContentConfig(
-                system_instruction=self.system_prompt
+
+        # GEMINI_MODEL: conversation model. GEMINI_EVALUATOR_MODEL: one-shot calls (CEFR rating,
+        # turn scoring), defaulting to the conversation model. GEMINI_FALLBACK_MODEL: used when the
+        # primary is overloaded (503/429/timeouts); set it empty to disable the fallback.
+        self.model = os.getenv('GEMINI_MODEL') or _DEFAULT_MODEL
+        self.evaluator_model = os.getenv('GEMINI_EVALUATOR_MODEL') or self.model
+        fallback = os.getenv('GEMINI_FALLBACK_MODEL', _DEFAULT_FALLBACK_MODEL)
+        self.fallback_model = fallback if fallback and fallback != self.model else None
+        self._on_fallback = False
+
+        self.chat = self.client.chats.create(model=self.model, config=self._chat_config())
+
+    def _chat_config(self) -> types.GenerateContentConfig:
+        return types.GenerateContentConfig(system_instruction=self.system_prompt)
+
+    def _switch_chat_to_fallback(self) -> None:
+        """Moves the conversation to the fallback model, keeping its history. Sticky for this instance."""
+        if self._on_fallback or not self.fallback_model:
+            return
+        try:
+            history = self.chat.get_history(curated=True)
+            self.chat = self.client.chats.create(
+                model=self.fallback_model, config=self._chat_config(), history=history
             )
-        )
+            self._on_fallback = True
+            print(f'[BrainManager] {self.model} is struggling — continuing on {self.fallback_model}')
+        except Exception as e:
+            print(f'[BrainManager] Could not switch to fallback model: {e}')
+            self.fallback_model = None
+
+    def _one_shot_model(self, attempt: int) -> str:
+        """Evaluator model for the first attempts, then the fallback (if any) for the remaining ones."""
+        if attempt >= _PRIMARY_ATTEMPTS and self.fallback_model:
+            return self.fallback_model
+        return self.evaluator_model
 
     def _load_system_prompt(self):
         try:
@@ -63,6 +96,8 @@ class BrainManager:
         """
         last_exc = None
         for attempt in range(_MAX_RETRIES):
+            if attempt >= _PRIMARY_ATTEMPTS:
+                self._switch_chat_to_fallback()
             executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
             future = executor.submit(self.chat.send_message, message=user_input)
             executor.shutdown(wait=False)
@@ -136,7 +171,7 @@ Respond ONLY with a valid JSON object, no extra text, no markdown:
         for attempt in range(_MAX_RETRIES):
             try:
                 response = self.client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model=self._one_shot_model(attempt),
                     contents=rater_prompt,
                 )
                 raw = response.text.strip()
@@ -209,7 +244,7 @@ Respond ONLY with valid JSON, no extra text, no markdown fences:
         for attempt in range(_MAX_RETRIES):
             try:
                 response = self.client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model=self._one_shot_model(attempt),
                     contents=prompt,
                 )
                 raw = response.text.strip()
