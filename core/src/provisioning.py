@@ -17,6 +17,16 @@ FAILED = 'failed'            # join failed (usually wrong password) — hotspot 
 
 Announce = Callable[[str], None]
 
+# What Lery says for each event. English only (the learner's target language); played from
+# pre-rendered files in assets/audio/provisioning/<event>.mp3 when present — there is no internet
+# yet, so cloud TTS is impossible and the offline engine sounds robotic.
+SPOKEN_PROMPTS = {
+    AP_READY: "Hi! I need your Wi-Fi. Scan the QR code on my box with your phone.",
+    WAITING: "I'm still waiting. Scan the QR code on my box to connect me to Wi-Fi.",
+    FAILED: "I could not connect. Please check the password and try again.",
+    CONNECTED: "I'm connected! Say, hey Lery, to start.",
+}
+
 
 class ProvisioningFlow:
     """

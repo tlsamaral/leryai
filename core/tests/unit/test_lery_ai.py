@@ -1005,3 +1005,32 @@ class TestAgentIntegration:
 def main_nudges():
     from main import _SILENCE_NUDGES
     return _SILENCE_NUDGES
+
+
+# ── Provisioning prompts ──────────────────────────────────────────────────────
+
+@pytest.mark.unit
+class TestSpeakPrompt:
+    def test_plays_prerendered_asset_when_present(self, lery, mocker):
+        mocker.patch('main.os.path.exists', return_value=True)
+        lery._speak_offline = MagicMock()
+
+        lery._speak_prompt('ap_ready')
+
+        played = lery._mock_audio.play_audio.call_args.args[0]
+        assert played.endswith('provisioning/ap_ready.mp3')
+        lery._speak_offline.assert_not_called()
+
+    def test_falls_back_to_offline_tts_when_asset_missing(self, lery, mocker):
+        from provisioning import SPOKEN_PROMPTS
+        mocker.patch('main.os.path.exists', return_value=False)
+        lery._speak_offline = MagicMock()
+
+        lery._speak_prompt('failed')
+
+        lery._speak_offline.assert_called_once_with(SPOKEN_PROMPTS['failed'])
+        lery._mock_audio.play_audio.assert_not_called()
+
+    def test_every_provisioning_event_has_a_prompt(self):
+        from provisioning import AP_READY, CONNECTED, FAILED, SPOKEN_PROMPTS, WAITING
+        assert {AP_READY, WAITING, FAILED, CONNECTED} <= set(SPOKEN_PROMPTS)

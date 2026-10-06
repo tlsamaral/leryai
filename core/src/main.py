@@ -14,7 +14,7 @@ from api_client import create_api_client
 from audio_manager import AudioManager
 from brain_manager import BrainManager
 from led_controller import LEDController, create_led_controller
-from provisioning import AP_READY, CONNECTED, FAILED, WAITING, ensure_network
+from provisioning import AP_READY, CONNECTED, FAILED, SPOKEN_PROMPTS, WAITING, ensure_network
 from tts_manager import Pyttsx3Provider, create_tts_provider
 from wake_word import create_wake_word_detector
 from wifi_manager import WifiManager
@@ -44,13 +44,7 @@ _ACTIVATION_PHRASES = [
     "What's up?",
 ]
 
-# Spoken during Wi-Fi setup. Offline TTS (no internet yet), so English only.
-_PROVISIONING_PHRASES = {
-    AP_READY: "Hi! I need your Wi-Fi. Scan the QR code on my box with your phone.",
-    WAITING: "I'm still waiting. Scan the QR code on my box to connect me to Wi-Fi.",
-    FAILED: "I could not connect. Please check the password and try again.",
-    CONNECTED: "I'm connected! Say, hey Lery, to start.",
-}
+_PROMPT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "audio", "provisioning")
 
 # Silence check-ins when the session runs on the agent. The agent logs every turn, so a
 # synthetic "the student is silent" prompt would pollute the log — fixed phrases instead.
@@ -308,17 +302,25 @@ class LeryAI:
         def announce(event: str) -> None:
             if event in (AP_READY, WAITING):
                 self.set_state(State.PROVISIONING)
-                self._speak_offline(_PROVISIONING_PHRASES[event])
+                self._speak_prompt(event)
             elif event == FAILED:
                 self.audio_manager.play_error_sound()
-                self._speak_offline(_PROVISIONING_PHRASES[event])
+                self._speak_prompt(event)
                 self.set_state(State.PROVISIONING)
             elif event == CONNECTED:
                 self.audio_manager.play_chime()
-                self._speak_offline(_PROVISIONING_PHRASES[event])
+                self._speak_prompt(event)
                 self.set_state(State.IDLE)
 
         ensure_network(announce=announce)
+
+    def _speak_prompt(self, event: str) -> None:
+        """Plays the pre-rendered prompt for an event, or speaks its text offline if the file is missing."""
+        asset = os.path.join(_PROMPT_DIR, f"{event}.mp3")
+        if os.path.exists(asset):
+            self.audio_manager.play_audio(asset)
+        else:
+            self._speak_offline(SPOKEN_PROMPTS[event])
 
     def _speak_offline(self, text: str) -> None:
         """Speaks without internet (pyttsx3). Falls back to a chime if offline TTS is missing."""
