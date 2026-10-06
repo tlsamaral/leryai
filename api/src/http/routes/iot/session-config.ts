@@ -19,6 +19,7 @@ export async function iotSessionConfig(app: FastifyInstance) {
           200: z.object({
             deviceId: z.string(),
             userId: z.string(),
+            name: z.string(),
             level: z.string(),
             diagnosisCompleted: z.boolean(),
             lesson: z
@@ -60,6 +61,7 @@ export async function iotSessionConfig(app: FastifyInstance) {
       const user = await prisma.user.findUniqueOrThrow({
         where: { id: userId },
         select: {
+          name: true,
           currentLevel: true,
           diagnosisCompleted: true,
           targetLanguageId: true,
@@ -87,6 +89,7 @@ export async function iotSessionConfig(app: FastifyInstance) {
         return reply.status(200).send({
           deviceId,
           userId,
+          name: user.name,
           level: user.currentLevel,
           diagnosisCompleted: user.diagnosisCompleted,
           lesson: {
@@ -129,6 +132,7 @@ export async function iotSessionConfig(app: FastifyInstance) {
       return reply.status(200).send({
         deviceId,
         userId,
+        name: user.name,
         level: user.currentLevel,
         diagnosisCompleted: user.diagnosisCompleted,
         lesson: nextLesson
