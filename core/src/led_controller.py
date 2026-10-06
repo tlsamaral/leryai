@@ -30,7 +30,8 @@ COLORS = {
     'LISTENING': (180, 160, 0),     # Amarelo suave — respirando
     'THINKING':  (0, 150, 60),      # Verde suave — respirando
     'SPEAKING':  (0, 60, 160),      # Azul suave — respirando
-    'ERROR':     (160, 0, 0),       # Vermelho — pisca rápido (urgente)
+    'PROVISIONING': (0, 140, 170),  # Ciano — respirando, aguardando config. de Wi-Fi
+    'ERROR':    (160, 0, 0),       # Vermelho — pisca rápido (urgente)
 }
 
 # Respiração (breathing) — usada em LISTENING / THINKING / SPEAKING
@@ -133,6 +134,7 @@ class LEDController:
             'LISTENING': 'Listening',
             'THINKING': 'Thinking',
             'SPEAKING': 'Speaking',
+            'PROVISIONING': 'Wi-Fi setup',
             'ERROR': 'Error',
         }
         label = state_labels.get(state, 'Unknown')

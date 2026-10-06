@@ -29,6 +29,7 @@ _PALETTES: dict = {
     'LISTENING': {'rgb': (220, 180,   0), 'anim': 'pulse',   'speed': 1.1,  'bloom_op': 0.35, 'core_op': 0.55},
     'THINKING':  {'rgb': (0,   190,  70), 'anim': 'breathe', 'speed': 1.6,  'bloom_op': 0.30, 'core_op': 0.50},
     'SPEAKING':  {'rgb': (0,    80, 220), 'anim': 'wave',    'speed': 2.2,  'bloom_op': 0.35, 'core_op': 0.55},
+    'PROVISIONING': {'rgb': (0, 170, 200), 'anim': 'breathe', 'speed': 1.2, 'bloom_op': 0.30, 'core_op': 0.50},
     'ERROR':     {'rgb': (220,  20,  20), 'anim': 'flash',   'speed': 5.0,  'bloom_op': 0.45, 'core_op': 0.70},
 }
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import random
+import sys
 import time
 from enum import Enum
 from typing import Optional
@@ -12,8 +13,10 @@ from api_client import create_api_client
 from audio_manager import AudioManager
 from brain_manager import BrainManager
 from led_controller import LEDController, create_led_controller
-from tts_manager import create_tts_provider
+from provisioning import AP_READY, CONNECTED, FAILED, WAITING, ensure_network
+from tts_manager import Pyttsx3Provider, create_tts_provider
 from wake_word import create_wake_word_detector
+from wifi_manager import WifiManager
 
 load_dotenv()
 
@@ -39,6 +42,14 @@ _ACTIVATION_PHRASES = [
     "I'm listening!",
     "What's up?",
 ]
+
+# Spoken during Wi-Fi setup. Offline TTS (no internet yet), so English only.
+_PROVISIONING_PHRASES = {
+    AP_READY: "Hi! I need your Wi-Fi. Scan the QR code on my box with your phone.",
+    WAITING: "I'm still waiting. Scan the QR code on my box to connect me to Wi-Fi.",
+    FAILED: "I could not connect. Please check the password and try again.",
+    CONNECTED: "I'm connected! Say, hey Lery, to start.",
+}
 
 _LESSON_TRIGGER_WORDS = {"lesson", "lição", "aula"}
 _LESSON_ACTION_WORDS = {"start", "begin", "do", "let's", "lets", "vamos", "quero", "iniciar", "começa", "começar"}
@@ -81,6 +92,7 @@ class State(Enum):
     LISTENING = "LISTENING"
     THINKING = "THINKING"
     SPEAKING = "SPEAKING"
+    PROVISIONING = "PROVISIONING"
     ERROR = "ERROR"
 
 
@@ -232,6 +244,9 @@ class LeryAI:
         self.led_controller = create_led_controller()
         self.led_controller.set_state("IDLE")
 
+        # Must be online before anything below talks to the API / cloud TTS.
+        self._ensure_network()
+
         self.tts = create_tts_provider()
         self.wake_detector = create_wake_word_detector()
         self.api = create_api_client()
@@ -272,6 +287,32 @@ class LeryAI:
         self.state = new_state
         print(f"State: {self.state.value}")
         self.led_controller.set_state(self.state.value)
+
+    def _ensure_network(self) -> None:
+        """Runs Wi-Fi provisioning (hotspot + captive portal) if Lery has no connection."""
+        def announce(event: str) -> None:
+            if event in (AP_READY, WAITING):
+                self.set_state(State.PROVISIONING)
+                self._speak_offline(_PROVISIONING_PHRASES[event])
+            elif event == FAILED:
+                self.audio_manager.play_error_sound()
+                self._speak_offline(_PROVISIONING_PHRASES[event])
+                self.set_state(State.PROVISIONING)
+            elif event == CONNECTED:
+                self.audio_manager.play_chime()
+                self._speak_offline(_PROVISIONING_PHRASES[event])
+                self.set_state(State.IDLE)
+
+        ensure_network(announce=announce)
+
+    def _speak_offline(self, text: str) -> None:
+        """Speaks without internet (pyttsx3). Falls back to a chime if offline TTS is missing."""
+        try:
+            for f in Pyttsx3Provider().synthesize(text):
+                self.audio_manager.play_audio(f)
+        except Exception as e:
+            print(f"[TTS] Offline speech unavailable: {e}")
+            self.audio_manager.play_chime()
 
     def _ensure_session(self):
         if self._session_id or not self.api:
@@ -607,5 +648,10 @@ class LeryAI:
 
 
 if __name__ == "__main__":
+    if "--reset-wifi" in sys.argv:
+        WifiManager().forget_all()
+        print("Saved Wi-Fi networks removed — Lery will start Wi-Fi setup on next boot.")
+        sys.exit(0)
+
     app = LeryAI()
     app.run()

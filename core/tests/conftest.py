@@ -19,6 +19,7 @@ def fake_env(monkeypatch):
         monkeypatch.setenv("GOOGLE_API_KEY", "test-google-key")
     if not os.environ.get("OPENAI_API_KEY"):
         monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
+    monkeypatch.setenv("LERY_SKIP_WIFI_SETUP", "1")
     monkeypatch.setenv("LERY_API_URL", os.environ.get("LERY_API_URL", "http://localhost:3333"))
     monkeypatch.setenv("LERY_DEVICE_API_KEY", os.environ.get("LERY_DEVICE_API_KEY", "test-device-key"))
 
