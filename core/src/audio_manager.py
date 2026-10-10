@@ -15,33 +15,50 @@ class AudioManager:
                 pass
         self.device = device
 
-        if self.device is None:
-            # Check if default input device has input channels
+        # Resolve a valid input device
+        valid_input_device = None
+
+        if self.device is not None:
+            try:
+                sd.query_devices(self.device, 'input')
+                valid_input_device = self.device
+            except Exception as e:
+                print(f"[Audio] Dispositivo configurado ({self.device}) não aceita gravação: {e}")
+
+        if valid_input_device is None:
+            # Try default input device
             def_input = sd.default.device[0]
-            if def_input is not None and def_input >= 0:
+            if def_input is not None:
                 try:
-                    dev_info = sd.query_devices(def_input)
-                    if dev_info.get('max_input_channels', 0) > 0:
-                        self.device = def_input
+                    sd.query_devices(def_input, 'input')
+                    valid_input_device = def_input
                 except Exception:
                     pass
 
-            # If default device has no input channels (e.g. HDMI on Raspberry Pi), find first available mic
-            if self.device is None:
-                try:
-                    for idx, dev in enumerate(sd.query_devices()):
-                        if dev.get('max_input_channels', 0) > 0:
-                            self.device = idx
-                            print(f"[Audio] Auto-selected microphone device {idx}: {dev.get('name')}")
-                            break
-                except Exception as e:
-                    print(f"[Audio] Failed to query devices: {e}")
+        if valid_input_device is None:
+            # Scan all available devices for one that genuinely supports input
+            try:
+                for idx in range(len(sd.query_devices())):
+                    try:
+                        info = sd.query_devices(idx, 'input')
+                        valid_input_device = idx
+                        print(f"[Audio] Microfone encontrado [{idx}]: {info.get('name')}")
+                        break
+                    except Exception:
+                        continue
+            except Exception as e:
+                print(f"[Audio] Falha ao listar dispositivos de áudio: {e}")
 
-        if self.device is None:
-            raise RuntimeError(
-                "[Audio] Nenhum microfone encontrado! "
-                "Conecte um microfone USB ao Raspberry Pi ou configure LERY_AUDIO_DEVICE no .env."
-            )
+        if valid_input_device is None:
+            print("\n" + "=" * 60)
+            print("❌ ERRO: Nenhum microfone detectado no Raspberry Pi!")
+            print("O Raspberry Pi não tem microfone embutido na placa.")
+            print("Por favor, conecte um microfone USB (ou webcam com microfone).")
+            print("Para listar os dispositivos conectados, rode: arecord -l")
+            print("=" * 60 + "\n")
+            raise RuntimeError("Nenhum microfone de entrada disponível no sistema.")
+
+        self.device = valid_input_device
 
         if sample_rate is None:
             info = sd.query_devices(self.device, 'input')
