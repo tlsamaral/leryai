@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# Lery AI CLI Launcher
+# Permite iniciar o Lery ou seus testes de qualquer lugar do terminal.
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -d "$SCRIPT_DIR/../src" ]; then
+    CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+elif [ -d "/home/lery/leryai/core" ]; then
+    CORE_DIR="/home/lery/leryai/core"
+else
+    CORE_DIR="$PWD"
+fi
+
+REPO_DIR="$(cd "$CORE_DIR/.." && pwd)"
+
+# Detecta se existe virtualenv ou usa python3 padrão
+if [ -f "$REPO_DIR/venv/bin/python3" ]; then
+    PYTHON="$REPO_DIR/venv/bin/python3"
+elif [ -f "$CORE_DIR/venv/bin/python3" ]; then
+    PYTHON="$CORE_DIR/venv/bin/python3"
+else
+    PYTHON="python3"
+fi
+
+cd "$CORE_DIR"
+
+ACTION="${1:-start}"
+
+case "$ACTION" in
+    start)
+        echo "🚀 Iniciando Lery AI..."
+        exec sudo "$PYTHON" src/main.py
+        ;;
+    test|led)
+        echo "✨ Testando LEDs e respiração..."
+        exec sudo "$PYTHON" test_breathing.py
+        ;;
+    wifi)
+        echo "📶 Iniciando Wi-Fi Provisioning..."
+        exec sudo "$PYTHON" scripts/test_wifi_provisioning.py
+        ;;
+    update|pull)
+        echo "🔄 Atualizando Lery AI do GitHub..."
+        cd "$REPO_DIR"
+        git pull origin main
+        ;;
+    help|--help|-h)
+        echo "Lery AI CLI"
+        echo "Uso:"
+        echo "  lery          -> Inicia o assistente de voz"
+        echo "  lery start    -> Inicia o assistente de voz"
+        echo "  lery led      -> Testa os LEDs e efeito breathing"
+        echo "  lery wifi     -> Abre o portal de Wi-Fi provisioning"
+        echo "  lery update   -> Puxa as últimas atualizações do GitHub"
+        ;;
+    *)
+        echo "Comando desconhecido: $ACTION"
+        echo "Use: lery [start | led | wifi | update]"
+        exit 1
+        ;;
+esac
