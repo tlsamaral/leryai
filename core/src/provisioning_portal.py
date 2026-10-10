@@ -16,61 +16,113 @@ _PAGE = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lery · Conectar ao Wi-Fi</title>
 <style>
-  :root { color-scheme: light dark; --bg:#f6f5fb; --card:#fff; --fg:#1b1930; --muted:#6c6a80; --line:#e3e1ee; --accent:#5b3df5; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#14121f; --card:#1e1b2e; --fg:#f1effa; --muted:#9a97b3; --line:#2f2b45; } }
-  * { box-sizing: border-box; }
-  body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font:16px/1.4 system-ui,-apple-system,sans-serif; }
+  /* Identidade Lery: ciano (principal), menta (secundária), fundo gelo, fonte arredondada.
+     Tudo inline de propósito: o celular está no hotspot do Lery, sem internet para buscar fontes/imagens. */
+  :root {
+    color-scheme: light dark;
+    --cyan:#14b8d4; --mint:#4de0b4;
+    --bg:#f3f8fa; --card:#ffffff; --fg:#12303a; --muted:#587783; --line:#d9e9ee;
+    --soft:rgba(20,184,212,.12); --danger-bg:#fdecec; --danger-fg:#8a1c1c; --ok-bg:#e4f8f0; --ok-fg:#0c5a42;
+    --on-accent:#06303a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0b1a20; --card:#12272f; --fg:#e8f6f9; --muted:#8fb0ba; --line:#21404a;
+            --soft:rgba(20,184,212,.18); --danger-bg:#3a1618; --danger-fg:#ffb4b4; --ok-bg:#0f3a2e; --ok-fg:#9df1d2; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:20px 16px 40px; background:var(--bg); color:var(--fg);
+         font:16px/1.45 ui-rounded,"SF Pro Rounded","Nunito","Quicksand",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
   main { max-width:420px; margin:0 auto; }
-  h1 { font-size:22px; margin:8px 0 4px; }
-  p.sub { margin:0 0 16px; color:var(--muted); }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:16px; }
-  .net { display:flex; justify-content:space-between; width:100%; padding:14px 16px; border:0; border-bottom:1px solid var(--line);
-         background:none; color:inherit; font:inherit; text-align:left; cursor:pointer; }
+  .brand { display:flex; align-items:center; gap:12px; margin:4px 0 18px; }
+  .ring { width:48px; height:48px; flex:none; animation:breathe 2.6s ease-in-out infinite; }
+  @keyframes breathe { 0%,100% { opacity:.55; transform:scale(.94); } 50% { opacity:1; transform:scale(1); } }
+  @media (prefers-reduced-motion: reduce) { .ring { animation:none; } }
+  .brand b { font-size:24px; letter-spacing:.2px; }
+  h1 { font-size:21px; line-height:1.25; margin:0 0 6px; }
+  p.sub { margin:0 0 18px; color:var(--muted); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:18px; overflow:hidden; margin-bottom:16px; }
+  .net { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; min-height:52px;
+         padding:12px 16px; border:0; border-bottom:1px solid var(--line); background:none; color:inherit;
+         font:inherit; text-align:left; cursor:pointer; }
   .net:last-child { border-bottom:0; }
-  .net[aria-pressed=true] { background:color-mix(in srgb, var(--accent) 14%, transparent); }
-  .meta { color:var(--muted); font-size:14px; }
-  label { display:block; font-size:14px; color:var(--muted); margin:12px 16px 4px; }
-  input[type=text], input[type=password] { width:calc(100% - 32px); margin:0 16px 8px; padding:12px; font:inherit;
-         border:1px solid var(--line); border-radius:10px; background:var(--bg); color:inherit; }
-  .row { display:flex; align-items:center; gap:8px; margin:0 16px 14px; color:var(--muted); font-size:14px; }
-  button.go { width:100%; padding:14px; border:0; border-radius:12px; background:var(--accent); color:#fff; font:600 16px system-ui; cursor:pointer; }
-  button.go:disabled { opacity:.5; }
-  #msg { margin-top:14px; padding:12px 14px; border-radius:12px; display:none; }
-  #msg.err { display:block; background:#fde8e8; color:#8a1c1c; }
-  #msg.ok { display:block; background:#e6f6ec; color:#16603a; }
+  .net:focus-visible, input:focus-visible, button.go:focus-visible { outline:3px solid var(--cyan); outline-offset:-3px; }
+  .net[aria-pressed=true] { background:var(--soft); box-shadow:inset 4px 0 0 var(--cyan); }
+  .meta { color:var(--muted); font-size:14px; white-space:nowrap; }
+  label { display:block; font-size:14px; color:var(--muted); margin:14px 16px 6px; }
+  input[type=text], input[type=password] { display:block; width:calc(100% - 32px); min-height:48px; margin:0 16px 8px; padding:12px 14px;
+         font:inherit; border:1px solid var(--line); border-radius:12px; background:var(--bg); color:inherit; }
+  .row { display:flex; align-items:center; gap:10px; margin:2px 16px 16px; color:var(--muted); font-size:14px; }
+  .row input { width:20px; height:20px; accent-color:var(--cyan); }
+  .row label { margin:0; }
+  button.go { display:block; width:100%; min-height:52px; border:0; border-radius:14px; cursor:pointer;
+              background:linear-gradient(135deg,var(--cyan),var(--mint)); color:var(--on-accent); font:700 17px ui-rounded,system-ui,sans-serif; }
+  button.go:disabled { opacity:.55; cursor:default; }
+  #msg { display:none; padding:14px 16px; border-radius:14px; }
+  #msg.err { display:block; background:var(--danger-bg); color:var(--danger-fg); }
+  #msg.ok { display:block; background:var(--ok-bg); color:var(--ok-fg); }
+  #done { display:none; }
+  #done h2 { font-size:19px; margin:0 0 8px; }
+  #done ol { margin:8px 0 0; padding-left:20px; }
+  #done li { margin:6px 0; }
+  .note { margin:18px 4px 0; font-size:13px; color:var(--muted); text-align:center; }
 </style>
 </head>
 <body>
 <main>
-  <h1>Conectar o Lery ao Wi-Fi</h1>
-  <p class="sub">Escolha a rede da sua casa. O Lery só usa redes de 2.4&nbsp;GHz.</p>
-  <div class="card" id="nets"><div class="net"><span class="meta">Procurando redes…</span></div></div>
-  <form id="form" class="card" autocomplete="off">
-    <label for="ssid">Nome da rede (SSID)</label>
-    <input type="text" id="ssid" required maxlength="32" autocapitalize="none" autocorrect="off">
-    <label for="pw">Senha</label>
-    <input type="password" id="pw" maxlength="63" autocapitalize="none" autocorrect="off">
-    <div class="row"><input type="checkbox" id="show"><label for="show" style="margin:0">Mostrar senha</label></div>
-    <div style="padding:0 16px 16px"><button class="go" id="go" type="submit">Conectar</button></div>
-  </form>
-  <div id="msg"></div>
+  <div class="brand">
+    <svg class="ring" viewBox="0 0 48 48" aria-hidden="true">
+      <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14b8d4"/><stop offset="1" stop-color="#4de0b4"/></linearGradient></defs>
+      <circle cx="24" cy="24" r="17" fill="none" stroke="url(#g)" stroke-width="6"/>
+    </svg>
+    <b>Lery</b>
+  </div>
+
+  <div id="setup">
+    <h1>Vamos conectar o Lery ao seu Wi-Fi</h1>
+    <p class="sub">Sem pressa. Escolha a rede da sua casa e digite a senha.</p>
+
+    <div class="card" id="nets"><div class="net"><span class="meta">Procurando redes…</span></div></div>
+
+    <form id="form" class="card" autocomplete="off">
+      <label for="ssid">Nome da rede (SSID)</label>
+      <input type="text" id="ssid" required maxlength="32" autocapitalize="none" autocorrect="off">
+      <label for="pw">Senha</label>
+      <input type="password" id="pw" maxlength="63" autocapitalize="none" autocorrect="off">
+      <div class="row"><input type="checkbox" id="show"><label for="show">Mostrar senha</label></div>
+      <div style="padding:0 16px 16px"><button class="go" id="go" type="submit">Conectar</button></div>
+    </form>
+    <div id="msg" role="status"></div>
+    <p class="note">O Lery só usa redes Wi-Fi de 2.4&nbsp;GHz.</p>
+  </div>
+
+  <div id="done" class="card" style="padding:18px 16px">
+    <h2>Tudo certo, estou conectando…</h2>
+    <ol>
+      <li>Este Wi-Fi do Lery vai sumir. É normal.</li>
+      <li>Seu celular volta sozinho para a sua rede.</li>
+      <li>Quando o Lery disser <b>“I’m connected”</b>, é só falar <b>“Hey Lery”</b>.</li>
+    </ol>
+    <p class="note" style="text-align:left;margin:14px 0 0">Se o Wi-Fi <b>Lery-Setup</b> voltar, a senha provavelmente estava errada. Entre nele e tente de novo.</p>
+  </div>
 </main>
 <script>
 const $ = (id) => document.getElementById(id);
 const msg = (text, cls) => { $('msg').textContent = text; $('msg').className = cls; };
+const finish = () => { $('setup').style.display = 'none'; $('done').style.display = 'block'; window.scrollTo(0, 0); };
 
 fetch('/networks').then(r => r.json()).then(list => {
   const box = $('nets');
   box.textContent = '';
   if (!list.length) {
     const d = document.createElement('div'); d.className = 'net';
-    d.innerHTML = '<span class="meta">Nenhuma rede encontrada — digite o nome abaixo.</span>';
-    box.appendChild(d); return;
+    const t = document.createElement('span'); t.className = 'meta';
+    t.textContent = 'Nenhuma rede encontrada. Digite o nome abaixo.';
+    d.appendChild(t); box.appendChild(d); return;
   }
   list.forEach(n => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'net'; b.setAttribute('aria-pressed', 'false');
-    const name = document.createElement('span'); name.textContent = n.ssid;
+    const name = document.createElement('span'); name.textContent = n.ssid;   // textContent: SSIDs are untrusted
     const meta = document.createElement('span'); meta.className = 'meta';
     meta.textContent = (n.secure ? '🔒 ' : '') + n.signal + '%';
     b.append(name, meta);
@@ -95,11 +147,10 @@ $('form').onsubmit = async (e) => {
       body: JSON.stringify({ssid: $('ssid').value, password: $('pw').value}),
     });
     const data = await res.json();
-    if (!res.ok) { msg(data.error || 'Erro ao enviar.', 'err'); $('go').disabled = false; return; }
-    msg('Conectando… O Wi-Fi do Lery vai sumir agora. Quando ele falar "connected", está pronto. ' +
-        'Se o Wi-Fi Lery-Setup voltar, a senha provavelmente estava errada — tente de novo.', 'ok');
+    if (!res.ok) { msg(data.error || 'Não consegui enviar. Tente de novo.', 'err'); $('go').disabled = false; return; }
+    finish();
   } catch (err) {
-    msg('Conectando… se o Wi-Fi do Lery sumiu, é normal. Aguarde o Lery avisar.', 'ok');
+    finish();  // the hotspot usually drops before the reply arrives — that means it worked
   }
 };
 </script>
