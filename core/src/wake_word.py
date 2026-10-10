@@ -100,4 +100,22 @@ def create_wake_word_detector() -> WakeWordDetector:
             device = int(device)
         except ValueError:
             pass
+    else:
+        # Check if default input device has input channels
+        def_input = sd.default.device[0]
+        if def_input is not None and def_input >= 0:
+            try:
+                if sd.query_devices(def_input).get('max_input_channels', 0) > 0:
+                    device = def_input
+            except Exception:
+                pass
+        # Fallback: scan for first device with input channels
+        if device is None:
+            try:
+                for idx, dev in enumerate(sd.query_devices()):
+                    if dev.get('max_input_channels', 0) > 0:
+                        device = idx
+                        break
+            except Exception:
+                pass
     return WakeWordDetector(model_name=model, threshold=threshold, device=device)

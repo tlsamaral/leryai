@@ -15,8 +15,36 @@ class AudioManager:
                 pass
         self.device = device
 
+        if self.device is None:
+            # Check if default input device has input channels
+            def_input = sd.default.device[0]
+            if def_input is not None and def_input >= 0:
+                try:
+                    dev_info = sd.query_devices(def_input)
+                    if dev_info.get('max_input_channels', 0) > 0:
+                        self.device = def_input
+                except Exception:
+                    pass
+
+            # If default device has no input channels (e.g. HDMI on Raspberry Pi), find first available mic
+            if self.device is None:
+                try:
+                    for idx, dev in enumerate(sd.query_devices()):
+                        if dev.get('max_input_channels', 0) > 0:
+                            self.device = idx
+                            print(f"[Audio] Auto-selected microphone device {idx}: {dev.get('name')}")
+                            break
+                except Exception as e:
+                    print(f"[Audio] Failed to query devices: {e}")
+
+        if self.device is None:
+            raise RuntimeError(
+                "[Audio] Nenhum microfone encontrado! "
+                "Conecte um microfone USB ao Raspberry Pi ou configure LERY_AUDIO_DEVICE no .env."
+            )
+
         if sample_rate is None:
-            info = sd.query_devices(self.device or sd.default.device[0], 'input')
+            info = sd.query_devices(self.device, 'input')
             self.sample_rate = int(info['default_samplerate'])
         else:
             self.sample_rate = sample_rate
