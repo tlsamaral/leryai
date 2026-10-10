@@ -43,6 +43,20 @@ class WakeWordDetector:
             print("[WakeWord] openwakeword not installed — falling back to Enter key")
             return False
         except Exception as e:
+            if "doesn't exist" in str(e).lower() or "no_suchfile" in str(e).lower():
+                try:
+                    print(f"[WakeWord] Modelo '{self.model_name}' não encontrado localmente. Baixando modelos padrão...")
+                    import openwakeword.utils
+                    openwakeword.utils.download_models()
+                    from openwakeword.model import Model
+                    try:
+                        self._model = Model(wakeword_model_paths=[self.model_name], inference_framework="onnx")
+                    except Exception:
+                        self._model = Model([self.model_name], inference_framework="onnx")
+                    print(f"[WakeWord] Model loaded: {self.model_name}")
+                    return True
+                except Exception as dl_err:
+                    print(f"[WakeWord] Falha ao baixar modelos automaticamente: {dl_err}")
             print(f"[WakeWord] Failed to load model '{self.model_name}': {e} — falling back to Enter key")
             return False
 
@@ -94,11 +108,23 @@ class WakeWordDetector:
 def create_wake_word_detector() -> WakeWordDetector:
     """
     Factory that reads LERY_WAKE_WORD_MODEL from environment.
-    Default: hey_jarvis (pre-trained, no training required).
-    Switch to custom model: set LERY_WAKE_WORD_MODEL=path/to/hey_lery.onnx
+    Defaults to hey_lery.onnx if present in config/wake_word/, otherwise hey_jarvis.
     """
     import os
-    model = os.getenv("LERY_WAKE_WORD_MODEL", "hey_jarvis")
+    core_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    default_lery_model = os.path.join(core_dir, "config", "wake_word", "hey_lery.onnx")
+
+    model = os.getenv("LERY_WAKE_WORD_MODEL")
+    if not model:
+        if os.path.exists(default_lery_model):
+            model = default_lery_model
+        else:
+            model = "hey_jarvis"
+    elif not os.path.isabs(model):
+        candidate = os.path.normpath(os.path.join(core_dir, model))
+        if os.path.exists(candidate):
+            model = candidate
+
     threshold = float(os.getenv("LERY_WAKE_WORD_THRESHOLD", "0.5"))
     device = os.getenv("LERY_AUDIO_DEVICE")
     if device:
