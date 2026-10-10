@@ -27,16 +27,24 @@ class WakeWordDetector:
         self._available = self._load_model()
         self._consecutive = 0  # frames consecutively above threshold
 
+    def _instantiate_model(self, model_target: str):
+        from openwakeword.model import Model
+        candidates = [
+            {"wakeword_models": [model_target]},
+            {"wakeword_model_paths": [model_target]},
+            {"wakeword_models": [model_target], "inference_framework": "onnx"},
+            {"wakeword_model_paths": [model_target], "inference_framework": "onnx"},
+        ]
+        for kwargs in candidates:
+            try:
+                return Model(**kwargs)
+            except (TypeError, Exception):
+                continue
+        return Model([model_target])
+
     def _load_model(self) -> bool:
         try:
-            from openwakeword.model import Model
-            try:
-                self._model = Model(wakeword_model_paths=[self.model_name], inference_framework="onnx")
-            except (TypeError, Exception):
-                try:
-                    self._model = Model(wakeword_models=[self.model_name], inference_framework="onnx")
-                except (TypeError, Exception):
-                    self._model = Model([self.model_name], inference_framework="onnx")
+            self._model = self._instantiate_model(self.model_name)
             print(f"[WakeWord] Model loaded: {self.model_name}")
             return True
         except ImportError:
@@ -48,11 +56,7 @@ class WakeWordDetector:
                     print(f"[WakeWord] Modelo '{self.model_name}' não encontrado localmente. Baixando modelos padrão...")
                     import openwakeword.utils
                     openwakeword.utils.download_models()
-                    from openwakeword.model import Model
-                    try:
-                        self._model = Model(wakeword_model_paths=[self.model_name], inference_framework="onnx")
-                    except Exception:
-                        self._model = Model([self.model_name], inference_framework="onnx")
+                    self._model = self._instantiate_model(self.model_name)
                     print(f"[WakeWord] Model loaded: {self.model_name}")
                     return True
                 except Exception as dl_err:
