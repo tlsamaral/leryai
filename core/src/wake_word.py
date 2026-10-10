@@ -150,7 +150,7 @@ def create_wake_word_detector(device=None) -> WakeWordDetector:
         if os.path.exists(candidate):
             model = candidate
 
-    threshold = float(os.getenv("LERY_WAKE_WORD_THRESHOLD", "0.5"))
+    threshold = float(os.getenv("LERY_WAKE_WORD_THRESHOLD", "0.3"))
     if device is None:
         device = os.getenv("LERY_AUDIO_DEVICE")
     if device:
