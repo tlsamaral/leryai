@@ -30,7 +30,13 @@ class WakeWordDetector:
     def _load_model(self) -> bool:
         try:
             from openwakeword.model import Model
-            self._model = Model(wakeword_models=[self.model_name], inference_framework="onnx")
+            try:
+                self._model = Model(wakeword_model_paths=[self.model_name], inference_framework="onnx")
+            except (TypeError, Exception):
+                try:
+                    self._model = Model(wakeword_models=[self.model_name], inference_framework="onnx")
+                except (TypeError, Exception):
+                    self._model = Model([self.model_name], inference_framework="onnx")
             print(f"[WakeWord] Model loaded: {self.model_name}")
             return True
         except ImportError:
