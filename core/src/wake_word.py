@@ -75,14 +75,34 @@ class WakeWordDetector:
 
         print(f"[WakeWord] Listening for '{self.model_name}'...")
 
-        detected = threading.Event()
+        # Determine stream sample rate and block size
+        stream_sr = self.SAMPLE_RATE
+        needs_resample = False
+
+        try:
+            sd.check_input_settings(device=self.device, samplerate=self.SAMPLE_RATE, channels=1, dtype="float32")
+        except Exception:
+            try:
+                mic_info = sd.query_devices(self.device, 'input')
+                stream_sr = int(mic_info.get('default_samplerate', 44100))
+                needs_resample = (stream_sr != self.SAMPLE_RATE)
+            except Exception:
+                stream_sr = 44100
+                needs_resample = True
+
+        block_size = int(stream_sr * 0.08) if needs_resample else self.CHUNK
 
         consecutive = [0]  # mutable for closure
 
         def callback(indata: np.ndarray, frames: int, time, status) -> None:
             if detected.is_set():
                 return
-            audio_int16 = (np.squeeze(indata) * 32767).astype(np.int16)
+            audio = np.squeeze(indata)
+            if needs_resample:
+                import scipy.signal
+                audio = scipy.signal.resample(audio, self.CHUNK).astype(np.float32)
+
+            audio_int16 = (audio * 32767).astype(np.int16)
             predictions = self._model.predict(audio_int16)
             for model_name, score in predictions.items():
                 if score > 0.2:
@@ -97,10 +117,10 @@ class WakeWordDetector:
                     consecutive[0] = 0  # reset on any frame below threshold
 
         with sd.InputStream(
-            samplerate=self.SAMPLE_RATE,
+            samplerate=stream_sr,
             channels=1,
             dtype="float32",
-            blocksize=self.CHUNK,
+            blocksize=block_size,
             device=self.device,
             callback=callback,
         ):
@@ -109,7 +129,7 @@ class WakeWordDetector:
         # Stream closed here — mic is free for AudioManager
 
 
-def create_wake_word_detector() -> WakeWordDetector:
+def create_wake_word_detector(device=None) -> WakeWordDetector:
     """
     Factory that reads LERY_WAKE_WORD_MODEL from environment.
     Defaults to hey_lery.onnx if present in config/wake_word/, otherwise hey_jarvis.
@@ -130,7 +150,8 @@ def create_wake_word_detector() -> WakeWordDetector:
             model = candidate
 
     threshold = float(os.getenv("LERY_WAKE_WORD_THRESHOLD", "0.5"))
-    device = os.getenv("LERY_AUDIO_DEVICE")
+    if device is None:
+        device = os.getenv("LERY_AUDIO_DEVICE")
     if device:
         try:
             device = int(device)

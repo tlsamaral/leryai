@@ -283,7 +283,7 @@ class LeryAI:
         self._ensure_network()
 
         self.tts = create_tts_provider()
-        self.wake_detector = create_wake_word_detector()
+        self.wake_detector = create_wake_word_detector(device=self.audio_manager.device)
         self.api = create_api_client()
 
         # Optional remote brain. When set, FREE_TALK / GUIDED_LESSON turns run on the agent
