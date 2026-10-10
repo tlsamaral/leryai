@@ -4,16 +4,16 @@
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [ -d "$SCRIPT_DIR/../src" ]; then
-    CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-elif [ -d "/home/lery/leryai/core" ]; then
-    CORE_DIR="/home/lery/leryai/core"
-else
-    CORE_DIR="$PWD"
-fi
-
-REPO_DIR="$(cd "$CORE_DIR/.." && pwd)"
+# Resolve symlinks to find the real script path
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+    DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+CORE_DIR="$(cd -P "$SCRIPT_DIR/.." && pwd)"
+REPO_DIR="$(cd -P "$CORE_DIR/.." && pwd)"
 
 # Detecta se existe virtualenv ou usa python3 padrão
 if [ -f "$REPO_DIR/venv/bin/python3" ]; then
