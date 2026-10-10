@@ -92,6 +92,7 @@ class WakeWordDetector:
 
         block_size = int(stream_sr * 0.08) if needs_resample else self.CHUNK
 
+        detected = threading.Event()
         consecutive = [0]  # mutable for closure
 
         def callback(indata: np.ndarray, frames: int, time, status) -> None:
