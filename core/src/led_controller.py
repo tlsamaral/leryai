@@ -20,7 +20,7 @@ LED_COUNT      = 16
 LED_PIN        = 10       # Usando GPIO 10 (SPI MOSI) p/ evitar chiado no P2!
 LED_FREQ_HZ    = 800000
 LED_DMA        = 10
-LED_BRIGHTNESS = 80       # Tom mais suave (max 255)
+LED_BRIGHTNESS = 35       # Tom mais suave e discreto (max 255)
 LED_INVERT     = False
 LED_CHANNEL    = 0
 
